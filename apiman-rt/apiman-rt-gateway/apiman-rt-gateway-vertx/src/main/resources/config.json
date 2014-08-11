@@ -1,0 +1,6 @@
+{
+  "registry": { "class": "org.overlord.apiman.rt.engine.mem.InMemoryRegistry", "config": {} },
+  "connector-factory": { "class": "org.overlord.apiman.gateway.HttpConnectorFactory", "config": {} },
+  "policy-factory": { "class": "org.overlord.apiman.rt.engine.policy.PolicyFactoryImpl", "config": {} },
+  "server-port": 8080
+}

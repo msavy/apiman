@@ -1,0 +1,18 @@
+{
+
+  // Java verticle
+  "main":"org.overlord.apiman.gateway.HttpGatewayVerticle",
+
+  // If your module is going to be registered in the Vert.x module registry you will also need the following
+  // mandatory fields
+  "description":"Put description of your module here",
+  "licenses": ["The Apache Software License Version 2.0"],
+  "author": "Marc Savy",
+
+  // Optional fields
+  "developers": ["Marc Savy"],
+  "keywords": ["apiman", "governance", "gateway"],
+  "homepage": "https://github.com/Governance/apiman",
+
+  "auto-redeploy": true
+}

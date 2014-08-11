@@ -240,6 +240,11 @@
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
+        <artifactId>apiman-rt-gateway-vertx</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
         <artifactId>apiman-rt-gateway-war</artifactId>
         <version>${project.version}</version>
         <type>war</type>
