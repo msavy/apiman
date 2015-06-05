@@ -480,7 +480,7 @@ module Apiman {
             }
         }]);
 
-    _module.run(function(editableOptions, editableThemes) {
+    _module.run(['editableOptions', 'editableThemes', function(editableOptions, editableThemes) {
       editableOptions.theme = 'default';
 
       // overwrite templates
@@ -488,7 +488,7 @@ module Apiman {
       editableThemes['default'].cancelTpl = '<button class="btn btn-default" type="button" ng-click="$form.$cancel()"><i class="fa fa-times fa-fw"></i></button>';
       editableThemes['default'].buttonsTpl = '<div></div>';
       editableThemes['default'].formTpl = '<form class="editable-wrap apiman-inline-edit"></form>';
-    });
+  }]);
 
     _module.directive('apimanI18nKey',
         ['Logger', 'TranslationService',
