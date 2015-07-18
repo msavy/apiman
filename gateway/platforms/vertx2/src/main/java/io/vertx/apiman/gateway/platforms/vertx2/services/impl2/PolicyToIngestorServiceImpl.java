@@ -16,6 +16,7 @@ public class PolicyToIngestorServiceImpl implements PolicyToIngestorService {
 
     public PolicyToIngestorServiceImpl() {
         this.uuid = "123-not-really-uuid";
+        System.out.println("Creating PolicyToIngestorServiceImpl");
     }
 
     @Override

@@ -24,12 +24,15 @@ public class InitializeIngestorServiceImpl implements InitializeIngestorService 
         IngestorToPolicyImpl service = new IngestorToPolicyImpl(vertx);
 
         ProxyHelper.registerService(IngestorToPolicyService.class,
-                vertx, service, uuid + ".request");
+                vertx, service, uuid);
+
+        resultHandler.handle(Future.succeededFuture(service));
+
+        System.out.println("Writing to " + uuid + ".response");
 
         PolicyToIngestorService proxy = PolicyToIngestorService.createProxy(vertx, uuid + ".response");
 
         proxy.write("test-response");
 
-        resultHandler.handle(Future.succeededFuture(service));
     }
 }

@@ -37,7 +37,7 @@ public class HttpGatewayVerticle extends AbstractVerticle {
             // Send stuff
 
             // The outer proxy returns an inner proxy, which is our 'connection' session.
-            initService.createIngestor(httpSessionUuid +  ".request", (Handler<AsyncResult<IngestorToPolicyService>>) event -> {
+            initService.createIngestor(httpSessionUuid, (Handler<AsyncResult<IngestorToPolicyService>>) event -> {
                     IngestorToPolicyService send = event.result();
 
                     VertxServiceRequest serviceRequest = HttpServiceFactory.buildRequest(req,
