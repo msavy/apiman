@@ -40,9 +40,7 @@ public class HttpGatewayVerticle extends AbstractVerticle {
             initService.createIngestor(httpSessionUuid, (Handler<AsyncResult<IngestorToPolicyService>>) event -> {
                     IngestorToPolicyService send = event.result();
 
-                    VertxServiceRequest serviceRequest = HttpServiceFactory.buildRequest(req,
-                            "/foo",
-                            false);
+                    VertxServiceRequest serviceRequest = HttpServiceFactory.buildRequest(req, false);
 
                     send.head(serviceRequest, (Handler<AsyncResult<Void>>) ready -> {
                         // Signalled that we can send the body.

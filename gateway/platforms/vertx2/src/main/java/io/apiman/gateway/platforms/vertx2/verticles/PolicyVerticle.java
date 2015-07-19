@@ -8,7 +8,7 @@ import io.vertx.serviceproxy.ProxyHelper;
 
 public class PolicyVerticle extends AbstractVerticle {
 
-  private InitializeIngestorService service;
+  private InitializeIngestorServiceImpl service;
 
   @Override
   public void start() {
