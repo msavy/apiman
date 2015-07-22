@@ -35,6 +35,7 @@ public abstract class ApimanVerticleWithEngine extends ApimanVerticleBase {
 
         engine = new VertxConfigDrivenEngineFactory(vertx, getEngineConfig()).createEngine();
 
+        //System.out.println("After");
         //apiListener = new ApiListener(eb, uuid);
         //apiListener.listen(engine);
     }

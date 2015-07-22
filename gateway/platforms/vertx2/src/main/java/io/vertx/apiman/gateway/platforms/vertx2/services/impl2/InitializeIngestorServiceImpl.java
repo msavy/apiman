@@ -69,9 +69,9 @@ public class InitializeIngestorServiceImpl implements InitializeIngestorService 
         resultHandler.handle(Future.succeededFuture(service));
     }
 
-    private void execute(IngestorToPolicyImpl service, PolicyToIngestorService replyProxy) {
+    private void execute(IngestorToPolicyImpl request, PolicyToIngestorService replyProxy) {
 
-        service.headHandler((Handler<VertxServiceRequest>) serviceRequest -> {
+        request.headHandler((Handler<VertxServiceRequest>) serviceRequest -> {
 
             final IServiceRequestExecutor requestExecutor = engine.executor(serviceRequest,
                     (IAsyncResultHandler<IEngineResult>) result -> {
@@ -99,11 +99,11 @@ public class InitializeIngestorServiceImpl implements InitializeIngestorService 
             });
 
             requestExecutor.streamHandler((IAsyncHandler<ISignalWriteStream>) writeStream -> {
-                service.bodyHandler((Handler<VertxApimanBuffer>) body -> {
+                request.bodyHandler((Handler<VertxApimanBuffer>) body -> {
                     writeStream.write(body);
                 });
 
-                service.endHandler((Handler<Void>) v -> {
+                request.endHandler((Handler<Void>) v -> {
                     writeStream.end();
                 });
             });

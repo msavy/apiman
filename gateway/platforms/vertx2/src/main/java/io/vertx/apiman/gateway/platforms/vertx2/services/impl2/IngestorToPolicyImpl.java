@@ -28,11 +28,13 @@ public class IngestorToPolicyImpl implements IngestorToPolicyService {
 
     public IngestorToPolicyImpl(Vertx vertx) {
         //this.vertx = vertx;
+        System.out.println("Creating IngestorToPolicyImpl");
     }
 
     @Override
     public void head(VertxServiceRequest serviceRequest,
             Handler<AsyncResult<Void>> readyHandler) {
+        System.out.println("Received head");
         this.readyHandler = readyHandler;
         headHandler.handle(serviceRequest);
     }
