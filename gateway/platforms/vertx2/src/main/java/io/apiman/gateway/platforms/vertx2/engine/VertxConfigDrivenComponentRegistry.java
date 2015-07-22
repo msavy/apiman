@@ -63,7 +63,7 @@ public class VertxConfigDrivenComponentRegistry extends ConfigDrivenComponentReg
      * Note that we can't have a static {@link #vertx} object, so we can't override the super method.
      *
      * @param type component type
-     * @param config configuration (if necessary).
+     * @param apimanConfig configuration (if necessary).
      * @return instance of Class<T>
      */
     protected <T> T createWithVertx(Class<T> type, VertxEngineConfig engineConfig, Map<String, String> mapConfig) {
