@@ -44,6 +44,7 @@ import io.vertx.apiman.gateway.platforms.vertx2.services.IngestorToPolicyService
 import io.vertx.core.Vertx;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
 
 /*
   Generated Proxy code - DO NOT EDIT

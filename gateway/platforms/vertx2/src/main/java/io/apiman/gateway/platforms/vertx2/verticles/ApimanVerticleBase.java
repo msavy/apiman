@@ -52,7 +52,10 @@ public abstract class ApimanVerticleBase extends AbstractVerticle {
 
     // Override this for verticle specific config & testing.
     protected VertxEngineConfig getEngineConfig() {
-       return new VertxEngineConfig(config());
+        if (config().isEmpty()) {
+            throw new IllegalStateException("No configuration provided!");
+        }
+        return new VertxEngineConfig(config());
     }
 
     protected String getUuid() {

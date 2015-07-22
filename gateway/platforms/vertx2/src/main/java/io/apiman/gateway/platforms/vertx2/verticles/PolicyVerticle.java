@@ -13,7 +13,7 @@ public class PolicyVerticle extends ApimanVerticleWithEngine {
     public void start() {
         super.start();
 
-        service = new InitializeIngestorServiceImpl(vertx, apimanConfig, engine);
+        service = new InitializeIngestorServiceImpl(vertx, apimanConfig, engine, log);
 
         // Listen for anyone who wants to initialise a PolicyIngestion connection
         ProxyHelper.registerService(InitializeIngestorService.class, vertx, service,
