@@ -7,7 +7,6 @@ import io.vertx.apiman.gateway.platforms.vertx2.services.InitializeIngestorServi
 import io.vertx.apiman.gateway.platforms.vertx2.services.PolicyToIngestorService;
 import io.vertx.apiman.gateway.platforms.vertx2.services.VertxServiceRequest;
 import io.vertx.apiman.gateway.platforms.vertx2.services.impl2.PolicyToIngestorServiceImpl;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.serviceproxy.ProxyHelper;
@@ -15,10 +14,11 @@ import io.vertx.serviceproxy.ProxyHelper;
 import java.util.UUID;
 
 @SuppressWarnings("nls")
-public class HttpGatewayVerticle extends AbstractVerticle {
+public class HttpGatewayVerticle extends ApimanVerticleBase {
 
     @Override
     public void start() {
+        super.start();
 
         vertx.createHttpServer().requestHandler(req -> {
             // Unique ID for this request
@@ -55,5 +55,10 @@ public class HttpGatewayVerticle extends AbstractVerticle {
 
             req.response().end();
         }).listen(8080);
+    }
+
+    @Override
+    public VerticleType verticleType() {
+        return VerticleType.HTTP_GATEWAY;
     }
 }

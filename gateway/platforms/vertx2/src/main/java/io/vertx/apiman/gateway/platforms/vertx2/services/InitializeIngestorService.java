@@ -1,5 +1,7 @@
 package io.vertx.apiman.gateway.platforms.vertx2.services;
 
+import io.apiman.gateway.engine.IEngine;
+import io.apiman.gateway.platforms.vertx2.config.VertxEngineConfig;
 import io.vertx.apiman.gateway.platforms.vertx2.services.impl2.InitializeIngestorServiceImpl;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.AsyncResult;
@@ -12,8 +14,10 @@ public interface InitializeIngestorService {
 
     void createIngestor(String uuid, Handler<AsyncResult<IngestorToPolicyService>> resultHandler);
 
-    static InitializeIngestorService create(Vertx vertx) {
-        return new InitializeIngestorServiceImpl(vertx);
+    static InitializeIngestorService create(Vertx vertx,
+            VertxEngineConfig engineConfig,
+            IEngine engine) {
+        return new InitializeIngestorServiceImpl(vertx, engineConfig, engine);
     }
 
     static InitializeIngestorService createProxy(Vertx vertx, String address) {

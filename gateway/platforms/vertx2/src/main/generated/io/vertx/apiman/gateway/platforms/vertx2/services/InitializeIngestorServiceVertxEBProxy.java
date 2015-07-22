@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import io.vertx.serviceproxy.ProxyHelper;
+import io.apiman.gateway.platforms.vertx2.config.VertxEngineConfig;
+import io.apiman.gateway.engine.IEngine;
 import io.vertx.apiman.gateway.platforms.vertx2.services.InitializeIngestorService;
 import io.vertx.apiman.gateway.platforms.vertx2.services.IngestorToPolicyService;
 import io.vertx.core.Vertx;
