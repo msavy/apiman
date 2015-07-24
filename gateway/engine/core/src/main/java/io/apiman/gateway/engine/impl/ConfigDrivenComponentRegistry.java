@@ -20,6 +20,7 @@ import io.apiman.gateway.engine.IComponentRegistry;
 import io.apiman.gateway.engine.IEngineConfig;
 import io.apiman.gateway.engine.beans.exceptions.ComponentNotFoundException;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,10 +30,10 @@ import java.util.Map;
  * @author eric.wittmann@redhat.com
  */
 public class ConfigDrivenComponentRegistry implements IComponentRegistry {
-    
+
     private IEngineConfig engineConfig;
     private Map<Class<? extends IComponent>, IComponent> components = new HashMap<>();
-    
+
     /**
      * Constructor.
      * @param engineConfig the engine config
@@ -40,7 +41,7 @@ public class ConfigDrivenComponentRegistry implements IComponentRegistry {
     public ConfigDrivenComponentRegistry(IEngineConfig engineConfig) {
         this.engineConfig = engineConfig;
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IComponentRegistry#getComponent(java.lang.Class)
      */
@@ -58,7 +59,7 @@ public class ConfigDrivenComponentRegistry implements IComponentRegistry {
      * Creates the component and registers it in the registry.
      * @param componentType the component type
      * @return the component
-     * @throws ComponentNotFoundException when a policy tries to get a component from 
+     * @throws ComponentNotFoundException when a policy tries to get a component from
      * the context but the component doesn't exist or is otherwise not available.
      */
     public <T extends IComponent> T createAndRegisterComponent(Class<T> componentType) throws ComponentNotFoundException {
@@ -66,7 +67,7 @@ public class ConfigDrivenComponentRegistry implements IComponentRegistry {
             synchronized (components) {
                 Class<T> componentClass = engineConfig.getComponentClass(componentType);
                 Map<String, String> componentConfig = engineConfig.getComponentConfig(componentType);
-                T component = ConfigDrivenEngineFactory.create(componentClass, componentConfig);
+                T component = create(componentClass, componentConfig);
                 components.put(componentType, component);
                 return component;
             }
@@ -74,13 +75,28 @@ public class ConfigDrivenComponentRegistry implements IComponentRegistry {
             throw new ComponentNotFoundException(componentType.getName());
         }
     }
-    
-    /** 
+
+    /**
      * Add a component that may have been instantiated elsewhere.
      * @param klazz component class
      * @param component instantiated component of same class
      */
     protected void addComponentMapping(Class<? extends IComponent> klazz, IComponent component) {
         components.put(klazz, component);
+    }
+
+    protected <T> T create(Class<T> type, Map<String, String> config) {
+        try {
+            Constructor<T> constructor = type.getConstructor(Map.class);
+            return constructor.newInstance(config);
+        } catch (NoSuchMethodException e) {
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return type.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
