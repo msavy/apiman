@@ -39,7 +39,7 @@ public class IngestorToPolicyImpl implements IngestorToPolicyService {
 
         try {
             headHandler.handle(serviceRequest);
-            readyHandler.handle(Future.succeededFuture());
+            //readyHandler.handle(Future.succeededFuture());
         } catch (Exception e) {
             readyHandler.handle(Future.failedFuture(e));
         }
@@ -77,7 +77,15 @@ public class IngestorToPolicyImpl implements IngestorToPolicyService {
         readyHandler.handle(Future.succeededFuture());
     }
 
-    public void fail(Throwable throwable) {
+    public void failHead(Throwable throwable) {
         readyHandler.handle(Future.failedFuture(throwable));
     }
+//
+//    public void fail(Throwable throwable) {
+//        //resultHandler.handle(Future.failedFuture(throwable));
+//    }
+//
+//    public void fail(PolicyFailure policyFailure) {
+//        //resultHandler.handle(Future.succeededFuture(new VertxEngineResult(policyFailure)));
+//    }
 }

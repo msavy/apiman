@@ -6,6 +6,7 @@ import io.apiman.gateway.platforms.vertx2.io.VertxApimanBuffer;
 import io.vertx.apiman.gateway.platforms.vertx2.services.IngestorToPolicyService;
 import io.vertx.apiman.gateway.platforms.vertx2.services.InitializeIngestorService;
 import io.vertx.apiman.gateway.platforms.vertx2.services.PolicyToIngestorService;
+import io.vertx.apiman.gateway.platforms.vertx2.services.VertxEngineResult;
 import io.vertx.apiman.gateway.platforms.vertx2.services.VertxServiceRequest;
 import io.vertx.apiman.gateway.platforms.vertx2.services.VertxServiceResponse;
 import io.vertx.apiman.gateway.platforms.vertx2.services.impl2.PolicyToIngestorServiceImpl;
@@ -81,6 +82,7 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
             });
 
             request.endHandler((Handler<Void>) end -> {
+                // Terminate *send* to Policy
                send.end();
             });
 
@@ -104,8 +106,33 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
             response.write((Buffer) buff.getNativeBuffer());
         });
 
-        receive.endHandler((Handler<Void>) v -> {
+        receive.endHandler((Handler<VertxEngineResult>) vertxEngineResult -> {
+
+            //vertxEngineResult.
+
+            // TODO handle errors here?
             response.end();
+
+//            reply -> {
+//                // Return was not exceptional
+//                if (reply.succeeded()) {
+//                    log.info("Send worked cleanly.");
+//
+//                    VertxEngineResult vertxEngineResult = reply.result();
+//
+//                    if (vertxEngineResult.isSuccess()) {
+//                        //vertxEngineResult.
+//                        log.info("Reply worked, hooray!");
+//                    } else {
+//                        log.info(String.format("Policy failure! %s", vertxEngineResult.getPolicyFailure()));
+//                    }
+//
+//
+//                } else { // Return was exceptional
+//                    // Handle error
+//                    log.info("Error indicated from PolicyVerticle (probably bad request)");
+//                }
+//            });
         });
     }
 
