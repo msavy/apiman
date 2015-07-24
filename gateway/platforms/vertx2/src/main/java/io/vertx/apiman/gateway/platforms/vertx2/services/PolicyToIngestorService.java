@@ -49,5 +49,5 @@ public interface PolicyToIngestorService {
      * Finished transmitting body chunks
      */
     @ProxyClose
-    void end();
+    void end(VertxEngineResult resultHandler);
 }

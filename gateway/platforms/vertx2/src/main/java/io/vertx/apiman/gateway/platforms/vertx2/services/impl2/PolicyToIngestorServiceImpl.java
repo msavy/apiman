@@ -2,6 +2,7 @@ package io.vertx.apiman.gateway.platforms.vertx2.services.impl2;
 
 import io.apiman.gateway.platforms.vertx2.io.VertxApimanBuffer;
 import io.vertx.apiman.gateway.platforms.vertx2.services.PolicyToIngestorService;
+import io.vertx.apiman.gateway.platforms.vertx2.services.VertxEngineResult;
 import io.vertx.apiman.gateway.platforms.vertx2.services.VertxServiceResponse;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -16,7 +17,7 @@ public class PolicyToIngestorServiceImpl implements PolicyToIngestorService {
     private String uuid;
     private Handler<VertxServiceResponse> headHandler;
     private Handler<VertxApimanBuffer> bodyHandler;
-    private Handler<Void> endHandler;
+    private Handler<VertxEngineResult> endHandler;
 
     public PolicyToIngestorServiceImpl() {
         this.uuid = "123-not-really-uuid";
@@ -38,9 +39,9 @@ public class PolicyToIngestorServiceImpl implements PolicyToIngestorService {
     }
 
     @Override
-    public void end() {
-        System.out.println("OK, finished");
-        endHandler.handle((Void) null);
+    public void end(VertxEngineResult result) {
+        System.out.println("OK, finished = got result: " + result);
+        endHandler.handle(result);
     }
 
     public void headHandler(Handler<VertxServiceResponse> handler) {
@@ -51,7 +52,7 @@ public class PolicyToIngestorServiceImpl implements PolicyToIngestorService {
         this.bodyHandler = handler;
     }
 
-    public void endHandler(Handler<Void> handler) {
+    public void endHandler(Handler<VertxEngineResult> handler) {
         this.endHandler = handler;
     }
 }

@@ -100,7 +100,7 @@ public class InitializeIngestorServiceImpl implements InitializeIngestorService 
                     //responseExecutor.error(result.getError());
                     System.out.println("Failed with exception");
                     System.out.println(result.getError().getMessage());
-                    replyProxy.end();
+                    replyProxy.end(null); // TODO FIXME
                 }
             });
 
@@ -132,7 +132,7 @@ public class InitializeIngestorServiceImpl implements InitializeIngestorService 
         });
 
         engineResult.endHandler((IAsyncHandler<Void>) v -> {
-            replyProxy.end();
+            replyProxy.end(null); //TODO FIXME
         });
     }
 }
