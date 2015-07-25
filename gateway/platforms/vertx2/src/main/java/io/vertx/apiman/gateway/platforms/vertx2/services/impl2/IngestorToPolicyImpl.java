@@ -54,7 +54,7 @@ public class IngestorToPolicyImpl implements IngestorToPolicyService {
     }
 
     @Override
-    public void end() {
+    public void end(Handler<AsyncResult<Void>> resultHandler) {
         System.out.println("OK, finished IngestorToPolicyImpl");
 
         if (endHandler != null)

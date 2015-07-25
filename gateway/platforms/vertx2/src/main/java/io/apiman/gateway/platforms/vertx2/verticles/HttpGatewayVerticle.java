@@ -6,7 +6,6 @@ import io.apiman.gateway.platforms.vertx2.io.VertxApimanBuffer;
 import io.vertx.apiman.gateway.platforms.vertx2.services.IngestorToPolicyService;
 import io.vertx.apiman.gateway.platforms.vertx2.services.InitializeIngestorService;
 import io.vertx.apiman.gateway.platforms.vertx2.services.PolicyToIngestorService;
-import io.vertx.apiman.gateway.platforms.vertx2.services.VertxEngineResult;
 import io.vertx.apiman.gateway.platforms.vertx2.services.VertxServiceRequest;
 import io.vertx.apiman.gateway.platforms.vertx2.services.VertxServiceResponse;
 import io.vertx.apiman.gateway.platforms.vertx2.services.impl2.PolicyToIngestorServiceImpl;
@@ -82,8 +81,10 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
             });
 
             request.endHandler((Handler<Void>) end -> {
-                // Terminate *send* to Policy
-               send.end();
+                // Finish *send* to Policy
+               send.end((Handler<AsyncResult<Void>>) sendResult -> {
+
+               });
             });
 
         } else {
@@ -106,7 +107,7 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
             response.write((Buffer) buff.getNativeBuffer());
         });
 
-        receive.endHandler((Handler<VertxEngineResult>) vertxEngineResult -> {
+        receive.endHandler((Handler<Void>) vertxEngineResult -> {
 
             //vertxEngineResult.
 

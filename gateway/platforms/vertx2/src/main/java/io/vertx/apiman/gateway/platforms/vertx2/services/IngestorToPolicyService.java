@@ -50,5 +50,5 @@ public interface IngestorToPolicyService {
      * Finished transmitting body chunks
      */
     @ProxyClose
-    void end();
+    void end(Handler<AsyncResult<Void>> resultHandler);
  }
