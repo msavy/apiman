@@ -17,7 +17,7 @@ public class PolicyToIngestorServiceImpl implements PolicyToIngestorService {
     private String uuid;
     private Handler<VertxServiceResponse> headHandler;
     private Handler<VertxApimanBuffer> bodyHandler;
-    private Handler<VertxEngineResult> endHandler;
+    private Handler<Void> endHandler;
 
     public PolicyToIngestorServiceImpl() {
         this.uuid = "123-not-really-uuid";
@@ -39,9 +39,16 @@ public class PolicyToIngestorServiceImpl implements PolicyToIngestorService {
     }
 
     @Override
-    public void end(VertxEngineResult result) {
-        System.out.println("OK, finished = got result: " + result);
-        endHandler.handle(result);
+    public void end(Handler<AsyncResult<Void>> resultHandler) {
+        System.out.println("OK, finished = got result: ");
+        endHandler.handle((Void) null);
+        resultHandler.handle(Future.succeededFuture());
+    }
+
+    @Override
+    public void policyFailure(VertxEngineResult policyFailure) {
+        // TODO Auto-generated method stub
+
     }
 
     public void headHandler(Handler<VertxServiceResponse> handler) {
@@ -52,7 +59,7 @@ public class PolicyToIngestorServiceImpl implements PolicyToIngestorService {
         this.bodyHandler = handler;
     }
 
-    public void endHandler(Handler<VertxEngineResult> handler) {
+    public void endHandler(Handler<Void> handler) {
         this.endHandler = handler;
     }
 }
