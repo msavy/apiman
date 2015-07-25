@@ -79,15 +79,22 @@ public class IngestorToPolicyServiceVertxEBProxy implements IngestorToPolicyServ
     _vertx.eventBus().send(_address, _json, _deliveryOptions);
   }
 
-  public void end() {
+  public void end(Handler<AsyncResult<Void>> resultHandler) {
     if (closed) {
-      throw new IllegalStateException("Proxy is closed");
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
     }
     closed = true;
     JsonObject _json = new JsonObject();
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "end");
-    _vertx.eventBus().send(_address, _json, _deliveryOptions);
+    _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
   }
 
 
