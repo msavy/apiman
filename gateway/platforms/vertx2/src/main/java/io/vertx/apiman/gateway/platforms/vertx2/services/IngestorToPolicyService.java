@@ -36,7 +36,7 @@ public interface IngestorToPolicyService {
      * @param readyHandler when ready to transmit body
      */
     void head(VertxServiceRequest serviceRequest,
-            Handler<AsyncResult<Void>> readyHandler);
+            Handler<AsyncResult<Boolean>> readyHandler);
 
     /**
      * Write a body chunks
@@ -48,6 +48,7 @@ public interface IngestorToPolicyService {
 
     /**
      * Finished transmitting body chunks
+     * @param resultHandler the result handler
      */
     @ProxyClose
     void end(Handler<AsyncResult<Void>> resultHandler);

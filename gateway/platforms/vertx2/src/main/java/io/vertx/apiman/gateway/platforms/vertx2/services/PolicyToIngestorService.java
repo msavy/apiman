@@ -47,12 +47,14 @@ public interface PolicyToIngestorService {
 
     /**
      * Finished all actions.
+     * @param resultHandler the result handler
      */
     @ProxyClose
     void end(Handler<AsyncResult<Void>> resultHandler);
 
     /**
      * Indicate failure
+     * @param policyFailure the policy failure
      */
-    void policyFailure(VertxEngineResult policyFailure);
+    void policyFailure(VertxPolicyFailure policyFailure);
 }
