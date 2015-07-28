@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import io.vertx.serviceproxy.ProxyHelper;
-import io.vertx.apiman.gateway.platforms.vertx2.services.VertxEngineResult;
 import io.vertx.apiman.gateway.platforms.vertx2.services.VertxServiceResponse;
+import io.vertx.apiman.gateway.platforms.vertx2.services.VertxPolicyFailure;
 import io.vertx.core.Vertx;
 import io.vertx.core.AsyncResult;
 import io.vertx.apiman.gateway.platforms.vertx2.services.PolicyToIngestorService;
@@ -98,7 +98,7 @@ public class PolicyToIngestorServiceVertxEBProxy implements PolicyToIngestorServ
     });
   }
 
-  public void policyFailure(VertxEngineResult policyFailure) {
+  public void policyFailure(VertxPolicyFailure policyFailure) {
     if (closed) {
       throw new IllegalStateException("Proxy is closed");
     }

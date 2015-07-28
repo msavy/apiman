@@ -37,8 +37,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
-import io.vertx.apiman.gateway.platforms.vertx2.services.VertxEngineResult;
 import io.vertx.apiman.gateway.platforms.vertx2.services.VertxServiceResponse;
+import io.vertx.apiman.gateway.platforms.vertx2.services.VertxPolicyFailure;
 import io.vertx.core.Vertx;
 import io.vertx.core.AsyncResult;
 import io.vertx.apiman.gateway.platforms.vertx2.services.PolicyToIngestorService;
@@ -132,7 +132,7 @@ public class PolicyToIngestorServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "policyFailure": {
-        service.policyFailure(json.getJsonObject("policyFailure") == null ? null : new io.vertx.apiman.gateway.platforms.vertx2.services.VertxEngineResult(json.getJsonObject("policyFailure")));
+        service.policyFailure(json.getJsonObject("policyFailure") == null ? null : new io.vertx.apiman.gateway.platforms.vertx2.services.VertxPolicyFailure(json.getJsonObject("policyFailure")));
         break;
       }
       default: {

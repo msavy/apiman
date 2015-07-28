@@ -12,6 +12,7 @@ import java.util.Iterator;
 @DataObject
 public class VertxPolicyFailure extends PolicyFailure {
     private static final long serialVersionUID = 6303864238553908191L;
+    private String rawRepresentation;
 
     public VertxPolicyFailure(PolicyFailureType type, int failureCode, String message) {
         super(type, failureCode, message);
@@ -28,6 +29,7 @@ public class VertxPolicyFailure extends PolicyFailure {
         setResponseCode(copy.getResponseCode());
         setMessage(copy.getMessage());
         setHeaders(copy.getHeaders());
+        setRaw(Json.encode(copy)); // TODO horrible, fixme
     }
 
     public VertxPolicyFailure(JsonObject json) {
@@ -47,6 +49,7 @@ public class VertxPolicyFailure extends PolicyFailure {
      * @see java.lang.Object#toString()
      */
     @Override
+    @SuppressWarnings("nls")
     public String toString() {
         final int maxLen = 10;
         return "VertxPolicyFailure [toJson()=" + toJson() + ", getMessage()=" + getMessage()
@@ -56,6 +59,7 @@ public class VertxPolicyFailure extends PolicyFailure {
                 + hashCode() + "]";
     }
 
+    @SuppressWarnings("nls")
     private String toString(Collection<?> collection, int maxLen) {
         StringBuilder builder = new StringBuilder();
         builder.append("[");
@@ -67,5 +71,13 @@ public class VertxPolicyFailure extends PolicyFailure {
         }
         builder.append("]");
         return builder.toString();
+    }
+
+    public String getRaw() {
+        return rawRepresentation;
+    }
+
+    public void setRaw(String raw) {
+        this.rawRepresentation = raw;
     }
 }
