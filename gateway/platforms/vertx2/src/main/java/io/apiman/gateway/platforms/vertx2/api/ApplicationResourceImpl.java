@@ -10,7 +10,7 @@ import io.vertx.ext.web.RoutingContext;
 
 import org.eclipse.jetty.http.HttpStatus;
 
-public class ApplicationResourceImpl extends RestResource implements IApplicationResource, RouteBuilder {
+public class ApplicationResourceImpl implements IApplicationResource, RouteBuilder {
 
     private static final String ORG_ID = "organizationId"; //$NON-NLS-1$
     private static final String APP_ID = "applicationId"; //$NON-NLS-1$

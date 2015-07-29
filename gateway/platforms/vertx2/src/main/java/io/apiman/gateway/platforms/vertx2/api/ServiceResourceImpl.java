@@ -12,7 +12,7 @@ import io.vertx.ext.web.RoutingContext;
 
 import org.eclipse.jetty.http.HttpStatus;
 
-public class ServiceResourceImpl extends RestResource implements IServiceResource, RouteBuilder {
+public class ServiceResourceImpl implements IServiceResource, RouteBuilder {
     private static final String ORG_ID = "organizationId"; //$NON-NLS-1$
     private static final String SVC_ID = "serviceId"; //$NON-NLS-1$
     private static final String VER = "version"; //$NON-NLS-1$
