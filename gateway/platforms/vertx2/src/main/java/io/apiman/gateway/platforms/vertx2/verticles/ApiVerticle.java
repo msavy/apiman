@@ -12,9 +12,6 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
-import io.vertx.ext.web.handler.CookieHandler;
-import io.vertx.ext.web.handler.SessionHandler;
-import io.vertx.ext.web.sstore.LocalSessionStore;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -33,9 +30,9 @@ public class ApiVerticle extends ApimanVerticleBase {
         Router router = Router.router(vertx);
 
         if (apimanConfig.isAuthenticationEnabled()) {
-            AuthHandler basicAuthHandler = BasicAuthHandler.create(this::authenticateBasic);
-            router.route().handler(CookieHandler.create());
-            router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
+            AuthHandler basicAuthHandler = BasicAuthHandler.create(this::authenticateBasic, apimanConfig.getRealm());
+            //router.route().handler(CookieHandler.create());
+            //router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
             router.route("/*").handler(basicAuthHandler);
         }
 

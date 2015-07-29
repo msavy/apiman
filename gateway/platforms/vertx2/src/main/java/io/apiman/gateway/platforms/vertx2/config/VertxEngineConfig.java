@@ -47,8 +47,6 @@ public class VertxEngineConfig implements IEngineConfig {
 
     public static final String API_GATEWAY_COMPONENT_PREFIX = "components";
 
-    private static final String API_GATEWAY_AUTH_PREFIX = "auth";
-
     public static final String API_GATEWAY_GATEWAY_SERVER_PORT = "server-port";
 
     public static final String API_GATEWAY_CONFIG = "config";
@@ -76,7 +74,6 @@ public class VertxEngineConfig implements IEngineConfig {
     //public static final String APIMAN_API_SUBSCRIBE = "apiman.api.subscribe";
 
     //private static final String API_GATEWAY_AUTH_ENABLED = "authenticated";
-    private static final String API_GATEWAY_AUTH_REALM = "realm";
     private static final String API_GATEWAY_HOSTNAME = "hostname";
     private static final String API_GATEWAY_ENDPOINT = "endpoint";
     private static final String API_GATEWAY_PREFER_SECURE = "preferSecure";
