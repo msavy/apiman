@@ -2,10 +2,9 @@ package io.apiman.gateway.platforms.vertx2.api;
 
 import io.apiman.gateway.api.rest.contract.ISystemResource;
 import io.apiman.gateway.engine.beans.SystemStatus;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-
-import org.eclipse.jetty.http.HttpStatus;
 
 public class SystemResourceImpl implements ISystemResource, RouteBuilder {
 
@@ -21,7 +20,7 @@ public class SystemResourceImpl implements ISystemResource, RouteBuilder {
 
     public void getStatus(RoutingContext routingContext) {
         if (getStatus() == null) {
-            error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, "Status invalid", null); //$NON-NLS-1$
+            error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, "Status invalid", null); //$NON-NLS-1$
         } else {
             writeBody(routingContext, getStatus());
         }

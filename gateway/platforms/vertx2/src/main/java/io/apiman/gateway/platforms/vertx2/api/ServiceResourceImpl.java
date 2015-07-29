@@ -6,11 +6,10 @@ import io.apiman.gateway.engine.beans.Service;
 import io.apiman.gateway.engine.beans.ServiceEndpoint;
 import io.apiman.gateway.engine.beans.exceptions.PublishingException;
 import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-
-import org.eclipse.jetty.http.HttpStatus;
 
 public class ServiceResourceImpl implements IServiceResource, RouteBuilder {
     private static final String ORG_ID = "organizationId"; //$NON-NLS-1$
@@ -28,11 +27,11 @@ public class ServiceResourceImpl implements IServiceResource, RouteBuilder {
     public void publish(RoutingContext routingContext) {
         try {
             publish(Json.decodeValue(routingContext.getBodyAsString(), Service.class));
-            end(routingContext, HttpStatus.CREATED_201);
+            end(routingContext, HttpResponseStatus.CREATED);
         } catch (PublishingException e) {
-            error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } catch (NotAuthorizedException e) {
-            error(routingContext, HttpStatus.UNAUTHORIZED_401, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
         }
     }
 
@@ -51,11 +50,11 @@ public class ServiceResourceImpl implements IServiceResource, RouteBuilder {
 
         try {
             retire(orgId, svcId, ver);
-            end(routingContext, HttpStatus.NO_CONTENT_204);
+            end(routingContext, HttpResponseStatus.NO_CONTENT);
         } catch (RegistrationException e) {
-            error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } catch (NotAuthorizedException e) {
-            error(routingContext, HttpStatus.UNAUTHORIZED_401, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
         }
     }
 
@@ -76,7 +75,7 @@ public class ServiceResourceImpl implements IServiceResource, RouteBuilder {
             ServiceEndpoint endpoint = getServiceEndpoint(orgId, svcId, ver);
             writeBody(routingContext, endpoint);
         } catch (NotAuthorizedException e) {
-            error(routingContext, HttpStatus.UNAUTHORIZED_401, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
         }
     }
 
