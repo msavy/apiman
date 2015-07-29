@@ -5,8 +5,8 @@ import io.vertx.ext.web.Router;
 
 public interface RouteBuilder {
 
-    static String join(String action, String... args) {
-        return action + "/:" + SimpleStringUtils.join("/:", args);
+    static String join(String... args) {
+        return ":" + SimpleStringUtils.join("/:", args);
     }
 
     void buildRoutes(Router router);
@@ -14,6 +14,7 @@ public interface RouteBuilder {
     String getPath();
 
     public static void main(String... args) {
-        System.out.println(join("delete", "organizationId", "applicationId", "version"));
+        System.out.println("delete "+ join("organizationId", "applicationId", "version"));
+        System.out.println(join("organizationId", "applicationId", "version"));
     }
 }

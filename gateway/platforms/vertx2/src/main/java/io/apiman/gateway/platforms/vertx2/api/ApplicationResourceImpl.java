@@ -16,7 +16,7 @@ public class ApplicationResourceImpl extends RestResource implements IApplicatio
     private static final String APP_ID = "applicationId"; //$NON-NLS-1$
     private static final String VER = "version"; //$NON-NLS-1$
     private static final String REGISTER = "register"; //$NON-NLS-1$
-    private static final String UNREGISTER = RouteBuilder.join("unregister", ORG_ID, APP_ID, VER); //$NON-NLS-1$
+    private static final String UNREGISTER = "unregister/" + RouteBuilder.join(ORG_ID, APP_ID, VER); //$NON-NLS-1$
 
     @Override
     public void register(Application application) throws RegistrationException, NotAuthorizedException {
@@ -26,6 +26,7 @@ public class ApplicationResourceImpl extends RestResource implements IApplicatio
     public void register(RoutingContext routingContext) {
         try {
             register(Json.decodeValue(routingContext.getBodyAsString(), Application.class));
+            end(routingContext, HttpStatus.NO_CONTENT_204);
         } catch (RegistrationException e) {
             error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage(), e);
         } catch (NotAuthorizedException e) {
@@ -42,7 +43,15 @@ public class ApplicationResourceImpl extends RestResource implements IApplicatio
         String orgId = routingContext.request().getParam(ORG_ID);
         String appId = routingContext.request().getParam(APP_ID);
         String ver = routingContext.request().getParam(VER);
-        unregister(orgId, appId, ver);
+
+        try {
+            unregister(orgId, appId, ver);
+            end(routingContext, HttpStatus.NO_CONTENT_204);
+        } catch (RegistrationException e) {
+            error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage(), e);
+        } catch (NotAuthorizedException e) {
+            error(routingContext, HttpStatus.UNAUTHORIZED_401, e.getMessage(), e);
+        }
     }
 
     @Override
