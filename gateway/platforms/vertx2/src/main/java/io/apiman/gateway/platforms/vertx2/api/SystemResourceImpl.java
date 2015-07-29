@@ -7,7 +7,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-public class SystemResourceImpl implements ISystemResource, RouteBuilder {
+public class SystemResourceImpl implements ISystemResource, IRouteBuilder {
 
     private static final String STATUS = "status"; //$NON-NLS-1$
 

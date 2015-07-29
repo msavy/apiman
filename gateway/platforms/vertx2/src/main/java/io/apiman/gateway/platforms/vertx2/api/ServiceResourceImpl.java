@@ -16,13 +16,13 @@ import io.vertx.ext.web.RoutingContext;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class ServiceResourceImpl implements IServiceResource, RouteBuilder {
+public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
     private static final String ORG_ID = "organizationId"; //$NON-NLS-1$
     private static final String SVC_ID = "serviceId"; //$NON-NLS-1$
     private static final String VER = "version"; //$NON-NLS-1$
     private static final String PUBLISH = "publish"; //$NON-NLS-1$
-    private static final String RETIRE = RouteBuilder.join(ORG_ID, SVC_ID, VER);
-    private static final String ENDPOINT = RouteBuilder.join(ORG_ID, SVC_ID, VER) + "/endpoint"; //$NON-NLS-1$
+    private static final String RETIRE = IRouteBuilder.join(ORG_ID, SVC_ID, VER);
+    private static final String ENDPOINT = IRouteBuilder.join(ORG_ID, SVC_ID, VER) + "/endpoint"; //$NON-NLS-1$
     private VertxEngineConfig apimanConfig;
     private String host;
 
