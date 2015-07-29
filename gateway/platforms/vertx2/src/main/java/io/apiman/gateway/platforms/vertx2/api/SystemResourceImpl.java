@@ -2,6 +2,7 @@ package io.apiman.gateway.platforms.vertx2.api;
 
 import io.apiman.gateway.api.rest.contract.ISystemResource;
 import io.apiman.gateway.engine.beans.SystemStatus;
+import io.apiman.gateway.platforms.vertx2.config.VertxEngineConfig;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -9,6 +10,10 @@ import io.vertx.ext.web.RoutingContext;
 public class SystemResourceImpl implements ISystemResource, RouteBuilder {
 
     private static final String STATUS = "status"; //$NON-NLS-1$
+
+    public SystemResourceImpl(VertxEngineConfig apimanConfig) {
+        // TODO Auto-generated constructor stub
+    }
 
     @Override
     public SystemStatus getStatus() {
