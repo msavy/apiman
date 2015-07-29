@@ -4,11 +4,10 @@ import io.apiman.gateway.api.rest.contract.IApplicationResource;
 import io.apiman.gateway.api.rest.contract.exceptions.NotAuthorizedException;
 import io.apiman.gateway.engine.beans.Application;
 import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-
-import org.eclipse.jetty.http.HttpStatus;
 
 public class ApplicationResourceImpl implements IApplicationResource, RouteBuilder {
 
@@ -26,11 +25,11 @@ public class ApplicationResourceImpl implements IApplicationResource, RouteBuild
     public void register(RoutingContext routingContext) {
         try {
             register(Json.decodeValue(routingContext.getBodyAsString(), Application.class));
-            end(routingContext, HttpStatus.NO_CONTENT_204);
+            end(routingContext, HttpResponseStatus.NO_CONTENT);
         } catch (RegistrationException e) {
-            error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } catch (NotAuthorizedException e) {
-            error(routingContext, HttpStatus.UNAUTHORIZED_401, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
         }
     }
 
@@ -46,11 +45,11 @@ public class ApplicationResourceImpl implements IApplicationResource, RouteBuild
 
         try {
             unregister(orgId, appId, ver);
-            end(routingContext, HttpStatus.NO_CONTENT_204);
+            end(routingContext, HttpResponseStatus.NO_CONTENT);
         } catch (RegistrationException e) {
-            error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } catch (NotAuthorizedException e) {
-            error(routingContext, HttpStatus.UNAUTHORIZED_401, e.getMessage(), e);
+            error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
         }
     }
 

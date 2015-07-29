@@ -1,6 +1,7 @@
 package io.apiman.gateway.platforms.vertx2.api;
 
 import io.apiman.common.util.SimpleStringUtils;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
@@ -8,8 +9,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 import javax.ws.rs.core.MediaType;
-
-import org.eclipse.jetty.http.HttpStatus;
 
 @SuppressWarnings("nls")
 public interface RouteBuilder {
@@ -26,11 +25,14 @@ public interface RouteBuilder {
         return "/" + (path.length() == 0 ? getPath() : getPath() + "/" + path);
     }
 
-    default <T> void error(RoutingContext context, int code, String message, T object) {
-        HttpServerResponse response = context.response().setStatusCode(code);
+    default <T> void error(RoutingContext context, HttpResponseStatus code, String message, T object) {
+        HttpServerResponse response = context.response().setStatusCode(code.code());
 
-        if (message != null)
+        if (message == null) {
+            response.setStatusMessage(code.reasonPhrase());
+        } else {
             response.setStatusMessage(message);
+        }
 
         if(object != null) {
             response.setChunked(true)
@@ -44,12 +46,12 @@ public interface RouteBuilder {
     default <T> void writeBody(RoutingContext context, T object) {
         context.response().putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
             .setChunked(true)
-            .setStatusCode(HttpStatus.OK_200)
+            .setStatusCode(HttpResponseStatus.OK.code())
             .end(Json.encode(object), "UTF-8");
     }
 
-    default void end(RoutingContext context, int statusCode) {
-        context.response().setStatusCode(statusCode).end();
+    default void end(RoutingContext context, HttpResponseStatus statusCode) {
+        context.response().setStatusCode(statusCode.code()).setStatusMessage(statusCode.reasonPhrase()).end();
     }
 
     public static void main(String... args) {
