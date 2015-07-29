@@ -7,21 +7,21 @@ import io.vertx.ext.web.RoutingContext;
 
 import org.eclipse.jetty.http.HttpStatus;
 
-public class SystemResourceImpl extends RestResource implements ISystemResource, RouteBuilder {
+public class SystemResourceImpl implements ISystemResource, RouteBuilder {
 
-    private static final String STATUS = "status";
+    private static final String STATUS = "status"; //$NON-NLS-1$
 
     @Override
     public SystemStatus getStatus() {
         SystemStatus status = new SystemStatus();
         status.setUp(true);
-        status.setVersion("1"); // TODO do something more sensible
+        status.setVersion("1"); // TODO do something more sensible //$NON-NLS-1$
         return status;
     }
 
     public void getStatus(RoutingContext routingContext) {
         if (getStatus() == null) {
-            error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, "Status invalid", null);
+            error(routingContext, HttpStatus.INTERNAL_SERVER_ERROR_500, "Status invalid", null); //$NON-NLS-1$
         } else {
             writeBody(routingContext, getStatus());
         }
@@ -34,6 +34,6 @@ public class SystemResourceImpl extends RestResource implements ISystemResource,
 
     @Override
     public String getPath() {
-        return "system";
+        return "system"; //$NON-NLS-1$
     }
 }
