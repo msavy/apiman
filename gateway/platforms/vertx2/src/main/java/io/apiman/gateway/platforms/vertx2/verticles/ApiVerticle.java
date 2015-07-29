@@ -1,7 +1,7 @@
 package io.apiman.gateway.platforms.vertx2.verticles;
 
 import io.apiman.gateway.platforms.vertx2.api.ApplicationResourceImpl;
-import io.apiman.gateway.platforms.vertx2.api.RouteBuilder;
+import io.apiman.gateway.platforms.vertx2.api.IRouteBuilder;
 import io.apiman.gateway.platforms.vertx2.api.ServiceResourceImpl;
 import io.apiman.gateway.platforms.vertx2.api.SystemResourceImpl;
 import io.vertx.core.AsyncResult;
@@ -26,9 +26,9 @@ public class ApiVerticle extends ApimanVerticleBase {
     public void start() {
         super.start();
 
-        RouteBuilder applicationResource = new ApplicationResourceImpl(apimanConfig);
-        RouteBuilder serviceResource = new ServiceResourceImpl(apimanConfig);
-        RouteBuilder systemResource = new SystemResourceImpl(apimanConfig);
+        IRouteBuilder applicationResource = new ApplicationResourceImpl(apimanConfig);
+        IRouteBuilder serviceResource = new ServiceResourceImpl(apimanConfig);
+        IRouteBuilder systemResource = new SystemResourceImpl(apimanConfig);
 
         Router router = Router.router(vertx);
 

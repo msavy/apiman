@@ -10,13 +10,13 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-public class ApplicationResourceImpl implements IApplicationResource, RouteBuilder {
+public class ApplicationResourceImpl implements IApplicationResource, IRouteBuilder {
 
     private static final String ORG_ID = "organizationId"; //$NON-NLS-1$
     private static final String APP_ID = "applicationId"; //$NON-NLS-1$
     private static final String VER = "version"; //$NON-NLS-1$
     private static final String REGISTER = "register"; //$NON-NLS-1$
-    private static final String UNREGISTER = "unregister/" + RouteBuilder.join(ORG_ID, APP_ID, VER); //$NON-NLS-1$
+    private static final String UNREGISTER = "unregister/" + IRouteBuilder.join(ORG_ID, APP_ID, VER); //$NON-NLS-1$
 
     public ApplicationResourceImpl(VertxEngineConfig apimanConfig) {
         // TODO Auto-generated constructor stub
