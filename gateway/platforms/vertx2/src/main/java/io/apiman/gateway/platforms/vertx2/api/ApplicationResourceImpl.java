@@ -20,8 +20,7 @@ public class ApplicationResourceImpl implements IApplicationResource, IRouteBuil
     private static final String ORG_ID = "organizationId"; //$NON-NLS-1$
     private static final String APP_ID = "applicationId"; //$NON-NLS-1$
     private static final String VER = "version"; //$NON-NLS-1$
-    private static final String REGISTER = "register"; //$NON-NLS-1$
-    private static final String UNREGISTER = "unregister/" + IRouteBuilder.join(ORG_ID, APP_ID, VER); //$NON-NLS-1$
+    private static final String UNREGISTER = IRouteBuilder.join(ORG_ID, APP_ID, VER);
     private IRegistry registry;
 
     public ApplicationResourceImpl(VertxEngineConfig apimanConfig, IEngine engine) {
@@ -46,7 +45,7 @@ public class ApplicationResourceImpl implements IApplicationResource, IRouteBuil
     public void register(RoutingContext routingContext) {
         try {
             routingContext.request().bodyHandler((Handler<Buffer>) buffer -> {
-                register(Json.decodeValue(buffer.toString("utf-8"), Application.class));
+                register(Json.decodeValue(buffer.toString("utf-8"), Application.class)); //$NON-NLS-1$
                 end(routingContext, HttpResponseStatus.NO_CONTENT);
             });
         } catch (RegistrationException e) {
@@ -97,7 +96,7 @@ public class ApplicationResourceImpl implements IApplicationResource, IRouteBuil
 
     @Override
     public void buildRoutes(Router router) {
-        router.put(buildPath(REGISTER)).handler(this::register);
+        router.put(buildPath("")).handler(this::register); //$NON-NLS-1$
         router.delete(buildPath(UNREGISTER)).handler(this::unregister);
     }
 }
