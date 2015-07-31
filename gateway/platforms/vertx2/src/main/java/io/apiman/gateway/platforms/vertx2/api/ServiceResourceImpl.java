@@ -55,9 +55,8 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
         try {
             routingContext.request().bodyHandler((Handler<Buffer>) buffer -> {
                 publish(Json.decodeValue(buffer.toString("utf-8"), Service.class)); //$NON-NLS-1$
-                end(routingContext, HttpResponseStatus.NO_CONTENT);
+                end(routingContext, HttpResponseStatus.CREATED);
             });
-            end(routingContext, HttpResponseStatus.CREATED);
         } catch (PublishingException e) {
             error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         } catch (NotAuthorizedException e) {
