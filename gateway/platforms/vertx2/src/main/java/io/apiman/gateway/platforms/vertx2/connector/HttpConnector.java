@@ -121,18 +121,13 @@ class HttpConnector implements IServiceConnectionResponse, IServiceConnection {
     }
 
     private void doConnection() {
-
-        //String destination = servicePath + serviceRequest.getDestination(); FIXME need to cater for RESTful path style
-
-        //serviceHost = "127.0.0.1";
-        //servicePort = 2772;
-
-        String destination = "/";//"/api-manager";//"/apiman-manager/";//servicePath;
+        String destination = servicePath + serviceRequest.getDestination();
 
         System.out.println("destination =" + destination);
         System.out.println(HttpMethod.valueOf(serviceRequest.getType()));
         System.out.println(servicePort);
         System.out.println(serviceHost);
+        System.out.println(serviceRequest.getQueryParams().size());
 
         clientRequest = client.request(HttpMethod.valueOf(serviceRequest.getType()),
                 servicePort,
