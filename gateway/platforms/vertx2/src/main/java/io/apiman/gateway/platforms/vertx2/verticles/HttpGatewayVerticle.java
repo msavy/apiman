@@ -15,8 +15,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.net.JksOptions;
 import io.vertx.serviceproxy.ProxyHelper;
 
 import java.util.HashSet;
@@ -42,28 +44,48 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
     public void start() {
         super.start();
 
-        vertx.createHttpServer().requestHandler(req -> {
-            req.response().setChunked(true);
+        vertx.createHttpServer()
+            .requestHandler(this::requestHandler)
+            .listen(apimanConfig.getPort(VerticleType.HTTP));
 
-            // Pause the request, as we want to give explicit permission to transmit body chunks
-            req.pause();
+        if (apimanConfig.isSSL()) {
+            HttpServerOptions sslOptions = new HttpServerOptions()
+                    .setSsl(true)
+                    .setKeyStoreOptions(
+                            new JksOptions()
+                                .setPath(apimanConfig.getKeyStore())
+                                .setPassword(apimanConfig.getKeyStorePassword()))
+                    .setTrustStoreOptions(
+                            new JksOptions()
+                                .setPath(apimanConfig.getTrustStore())
+                                .setPassword(apimanConfig.getTrustStorePassword()));
 
-            // Unique ID for this request
-            String httpSessionUuid = UUID.randomUUID().toString();
+            vertx.createHttpServer(sslOptions)
+                .requestHandler(this::requestHandler)
+                .listen(apimanConfig.getPort(VerticleType.HTTPS));
+        }
+    }
 
-            // Create proxy in order to initialise a unique channel with a PolicyVerticle
-            InitializeIngestorService initService = InitializeIngestorService.createProxy(vertx,
-                            VertxEngineConfig.GATEWAY_ENDPOINT_POLICY_INGESTION);
+    private void requestHandler(HttpServerRequest req) {
+        req.response().setChunked(true);
 
-            // Setup response leg first
-            setupResponse(req.response(), httpSessionUuid);
+        // Pause the request, as we want to give explicit permission to transmit body chunks
+        req.pause();
 
-            // The outer proxy returns an inner proxy, which is our request 'connection'
-            initService.createIngestor(httpSessionUuid, (Handler<AsyncResult<IngestorToPolicyService>>) result -> {
-                setupRequest(req, result, httpSessionUuid);
-            });
+        // Unique ID for this request
+        String httpSessionUuid = UUID.randomUUID().toString();
 
-        }).listen(apimanConfig.getPort(VerticleType.HTTP));
+        // Create proxy in order to initialise a unique channel with a PolicyVerticle
+        InitializeIngestorService initService = InitializeIngestorService.createProxy(vertx,
+                        VertxEngineConfig.GATEWAY_ENDPOINT_POLICY_INGESTION);
+
+        // Setup response leg first
+        setupResponse(req.response(), httpSessionUuid);
+
+        // The outer proxy returns an inner proxy, which is our request 'connection'
+        initService.createIngestor(httpSessionUuid, (Handler<AsyncResult<IngestorToPolicyService>>) result -> {
+            setupRequest(req, result, httpSessionUuid);
+        });
     }
 
     // Setup request leg
