@@ -44,12 +44,15 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
     public void start() {
         super.start();
 
-        vertx.createHttpServer()
+        HttpServerOptions standardOptions = new HttpServerOptions()
+            .setHost(apimanConfig.getHostname());
+
+        vertx.createHttpServer(standardOptions)
             .requestHandler(this::requestHandler)
             .listen(apimanConfig.getPort(VerticleType.HTTP));
 
         if (apimanConfig.isSSL()) {
-            HttpServerOptions sslOptions = new HttpServerOptions()
+            HttpServerOptions sslOptions = new HttpServerOptions(standardOptions)
                     .setSsl(true)
                     .setKeyStoreOptions(
                             new JksOptions()

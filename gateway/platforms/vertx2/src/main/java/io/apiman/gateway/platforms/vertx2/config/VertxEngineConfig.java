@@ -88,7 +88,6 @@ public class VertxEngineConfig implements IEngineConfig {
 
     private JsonObject config;
     private HashMap<String, String> basicAuthMap = new HashMap<>();
-;
 
     public VertxEngineConfig(JsonObject config) {
         this.config = config;
@@ -179,7 +178,7 @@ public class VertxEngineConfig implements IEngineConfig {
         return config.getJsonObject(AUTH).getString("realm");
     }
 
-    public String hostname() {
+    public String getHostname() {
         return stringConfigWithDefault(API_GATEWAY_HOSTNAME, "localhost");
     }
 
