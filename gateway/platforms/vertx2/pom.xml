@@ -15,8 +15,15 @@
 
   <properties>
     <main.verticle>io.apiman.gateway.platforms.vertx2.verticles.InitVerticle</main.verticle>
-    <vert-x-version-move-me-to-parent-pom>3.0.0</vert-x-version-move-me-to-parent-pom>
+    <vert-x-version-move-me-to-parent-pom>3.1.0-SNAPSHOT</vert-x-version-move-me-to-parent-pom>
   </properties>
+  
+  <repositories>
+    <repository>
+        <id>snapshots-repo</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+</repositories>
 
   <dependencies>         
     <!-- Vert.x provided dependencies -->
