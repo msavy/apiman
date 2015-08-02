@@ -61,7 +61,6 @@ public class HttpServiceFactory {
         multimapToMap(apimanRequest.getHeaders(), req.headers(), Collections.<String>emptySet());
         multimapToMap(apimanRequest.getQueryParams(), req.params(), Collections.<String>emptySet());
         mungePath(req, apimanRequest);
-
         return apimanRequest;
     }
 
