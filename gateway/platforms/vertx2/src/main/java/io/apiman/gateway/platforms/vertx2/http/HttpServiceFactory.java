@@ -104,26 +104,8 @@ public class HttpServiceFactory {
     private static String parseApiKey(HttpServerRequest req) {
         String headerKey = req.headers().get("X-API-Key");
         if (headerKey == null || headerKey.trim().length() == 0) {
-            headerKey = parseApiKeyFromQuery(req);
+            headerKey = req.getParam("apikey");
         }
         return headerKey;
-    }
-
-    private static String parseApiKeyFromQuery(HttpServerRequest req) {
-        String queryString = req.query();
-
-        if(queryString == null)
-            return "<none>";
-
-        int idx = queryString.indexOf("apikey=");
-        if (idx >= 0) {
-            int endIdx = queryString.indexOf('&', idx);
-            if (endIdx == -1) {
-                endIdx = queryString.length();
-            }
-            return queryString.substring(idx + 7, endIdx);
-        } else {
-            return null;
-        }
     }
 }
