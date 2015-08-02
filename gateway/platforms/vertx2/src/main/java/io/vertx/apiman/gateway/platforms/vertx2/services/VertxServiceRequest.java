@@ -42,7 +42,7 @@ public class VertxServiceRequest extends ServiceRequest {
 
     public JsonObject toJson() {
         JsonObject asJson = new JsonObject();
-        VertxServiceRequestConverter.fromJson(asJson, this);
+        VertxServiceRequestConverter.toJson(this, asJson);
         return asJson;
     }
     /* (non-Javadoc)

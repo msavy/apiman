@@ -2,7 +2,6 @@ package io.vertx.apiman.gateway.platforms.vertx2.services;
 
 import io.apiman.gateway.engine.beans.ServiceResponse;
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Collection;
@@ -35,7 +34,7 @@ public class VertxServiceResponse extends ServiceResponse {
 
     public JsonObject toJson() {
         JsonObject asJson = new JsonObject();
-        VertxServiceResponseConverter.fromJson(asJson, this);
+        VertxServiceResponseConverter.toJson(this, asJson);
         return asJson;
     }
 
