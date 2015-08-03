@@ -276,7 +276,6 @@ public class VertxEngineConfig implements IEngineConfig {
     }
 
     public int getVerticleCount(VerticleType verticleType) {
-        System.out.println(verticleType.name());
         return getVerticleConfig(verticleType.name()).getInteger(COUNT);
     }
 
