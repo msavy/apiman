@@ -263,12 +263,12 @@ public class VertxEngineConfig implements IEngineConfig {
     }
 
     public JsonObject getVerticleConfig(String verticleType) {
-        return config.getJsonObject(VERTICLES).getJsonObject(verticleType);
+        return config.getJsonObject(VERTICLES).getJsonObject(verticleType.toLowerCase());
     }
 
 
     public int getPort(String name) {
-        return getVerticleConfig(name.toLowerCase()).getInteger(PORT);
+        return getVerticleConfig(name).getInteger(PORT);
     }
 
     public int getPort(VerticleType verticleType) {
@@ -276,6 +276,7 @@ public class VertxEngineConfig implements IEngineConfig {
     }
 
     public int getVerticleCount(VerticleType verticleType) {
+        System.out.println(verticleType.name());
         return getVerticleConfig(verticleType.name()).getInteger(COUNT);
     }
 
