@@ -4,6 +4,7 @@ import io.apiman.gateway.platforms.vertx2.http.HttpExecutor;
 import io.vertx.core.http.HttpServerOptions;
 
 public class HttpGatewayVerticle extends ApimanVerticleBase {
+    public static final VerticleType VERTICLE_TYPE = VerticleType.HTTP;
 
     @Override
     public void start() {
@@ -14,11 +15,11 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
 
         vertx.createHttpServer(standardOptions)
             .requestHandler(new HttpExecutor(vertx, log, apimanConfig))
-            .listen(apimanConfig.getPort(VerticleType.HTTP));
+            .listen(apimanConfig.getPort(VERTICLE_TYPE));
     }
 
     @Override
     public VerticleType verticleType() {
-        return VerticleType.HTTP;
+        return VERTICLE_TYPE;
     }
 }
