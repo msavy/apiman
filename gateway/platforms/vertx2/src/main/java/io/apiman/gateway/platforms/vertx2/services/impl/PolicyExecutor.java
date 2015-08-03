@@ -63,15 +63,16 @@ public class PolicyExecutor {
 
                     if (engineResult.isResponse()) {
                         doResponse(engineResult, replyProxy);
+                        requestService.succeeded(); // no exception
                     } else {
                         System.out.println("Failed with policy denial");
                         replyProxy.policyFailure(new VertxPolicyFailure(engineResult.getPolicyFailure()));
                         requestService.failHead();
+                        requestService.endHandler((Handler<Void>) v -> {
+                            end();
+                        });
                     }
-                    requestService.succeeded(); // no exception
                 } else {
-//                    System.out.println("Failed with exception");
-//                    System.out.println(result.getError().getMessage());
                     // Necessary to fail head to ensure #end is called. Could refactor this to call end ourselves, possibly.
                     requestService.failHead();
                     requestService.endHandler((Handler<Void>) v -> {
@@ -93,7 +94,6 @@ public class PolicyExecutor {
                     writeStream.end();
                 });
 
-                //requestService.succeeded();
                 requestService.ready();
             });
 
