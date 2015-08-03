@@ -26,8 +26,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.weld.exceptions.IllegalArgumentException;
-
 /**
  * Construct {@link VertxServiceRequest} and {@link VertxServiceResponse} objects from {@link HttpServerRequest},
  * {@link HttpServerResponse} and {@link HttpClientResponse}
