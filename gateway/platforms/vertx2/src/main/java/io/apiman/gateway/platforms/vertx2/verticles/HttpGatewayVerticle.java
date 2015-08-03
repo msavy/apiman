@@ -14,7 +14,7 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
             .setHost(apimanConfig.getHostname());
 
         vertx.createHttpServer(standardOptions)
-            .requestHandler(new HttpExecutor(vertx, log, apimanConfig))
+            .requestHandler(new HttpExecutor(vertx, log, false))
             .listen(apimanConfig.getPort(VERTICLE_TYPE));
     }
 
