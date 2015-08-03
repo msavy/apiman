@@ -132,9 +132,10 @@ public class HttpGatewayVerticle extends ApimanVerticleBase {
 //
                         System.out.println("End called....");
                         send.end((Handler<AsyncResult<Void>>) sendResult -> {
-                            if (sendResult.failed())
+                            if (sendResult.failed()) {
                                 System.out.println("There was an error, we'll catch it here...");
-                            //setError(request.response(), sendResult.cause());
+                                setError(request.response(), sendResult.cause());
+                            }
                         });
                     }
 
