@@ -31,8 +31,7 @@ public class InitVerticle extends ApimanVerticleBase {
     }
 
     private DeploymentOptions buildDeploymentOptions(DeploymentOptions base, VerticleType type) {
-        return new DeploymentOptions(base).setInstances(apimanConfig
-                .getVerticleCount(type));
+        return new DeploymentOptions(base).setInstances(apimanConfig.getVerticleCount(type));
     }
 
     @Override
