@@ -149,7 +149,6 @@ public class HttpServiceConnection implements IServiceConnection, IServiceConnec
                 }
             }
 
-
             if (isSsl) {
                 HttpsURLConnection https = (HttpsURLConnection) connection;
                 SSLSocketFactory socketFactory = sslStrategy.getSocketFactory();
