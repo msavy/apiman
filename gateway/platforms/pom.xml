@@ -14,7 +14,7 @@
     <module>servlet</module>
     <module>undertow</module>
     <!-- <module>vertx</module> -->
-    <module>vertx2</module>
+    <module>vertx3</module>
     <module>war</module>
     <module>war/wildfly8</module>
   </modules>
