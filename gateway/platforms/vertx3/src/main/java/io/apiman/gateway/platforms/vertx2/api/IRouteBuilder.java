@@ -25,6 +25,11 @@ import io.vertx.ext.web.RoutingContext;
 
 import javax.ws.rs.core.MediaType;
 
+/**
+ * Route building helper
+ *
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 @SuppressWarnings("nls")
 public interface IRouteBuilder {
 
