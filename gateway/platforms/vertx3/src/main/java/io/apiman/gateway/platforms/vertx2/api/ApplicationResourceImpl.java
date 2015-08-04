@@ -30,6 +30,11 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Implement {@link ApplicationResourceImpl} using Vert.x Web.
+ *
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 public class ApplicationResourceImpl implements IApplicationResource, IRouteBuilder {
 
     private static final String ORG_ID = "organizationId"; //$NON-NLS-1$
