@@ -1,7 +1,8 @@
 package io.apiman.gateway.platforms.vertx3.io;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
+
+import java.util.Map.Entry;
 
 public class VertxServiceRequestConverter {
 
@@ -30,6 +31,18 @@ public class VertxServiceRequestConverter {
     if (json.getValue("type") instanceof String) {
       obj.setType((String)json.getValue("type"));
     }
+    //if (json.getValue("headers") instanceof Map) {
+    //obj.setHeaders((Map<String,String>) json.getJsonObject("headers").getMap());
+    //  }
+
+    for (Entry<String, Object> entry : json.getJsonObject("headers").getMap().entrySet()) {
+        if (entry.getValue() instanceof String) {
+            obj.getHeaders().put(entry.getKey(), (String) entry.getValue());
+        }
+    }
+
+
+
   }
 
   public static void toJson(VertxServiceRequest obj, JsonObject json) {
@@ -54,6 +67,9 @@ public class VertxServiceRequestConverter {
     json.put("transportSecure", obj.isTransportSecure());
     if (obj.getType() != null) {
       json.put("type", obj.getType());
+    }
+    if (obj.getHeaders() != null) {
+      json.put("headers", obj.getHeaders());
     }
   }
 }
