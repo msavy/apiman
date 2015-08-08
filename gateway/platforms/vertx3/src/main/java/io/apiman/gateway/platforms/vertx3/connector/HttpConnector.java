@@ -198,7 +198,7 @@ class HttpConnector implements IServiceConnectionResponse, IServiceConnection {
         clientRequest.setChunked(true);
         clientRequest.headers().addAll(serviceRequest.getHeaders());
 
-        System.out.println(String.format("Sending Content-Type of: %s", serviceRequest.getHeaders().get("Content-Type")));
+//        System.out.println(String.format("Sending Content-Type of: %s", serviceRequest.getHeaders().get("Content-Type")));
 
         if (authType == RequiredAuthType.BASIC) {
             clientRequest.putHeader("Authorization", Basic.encode(basicOptions.getUsername(), basicOptions.getPassword()));
