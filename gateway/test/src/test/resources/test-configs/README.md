@@ -2,6 +2,6 @@ To execute the tests with your specific JSON config, set its name (without file 
 
 For example: 
   - `apiman.gateway-test.config=servlet-es`
-  - `apiman.gateway-test.config=vertx-mem`
+  - `apiman.gateway-test.config=vertx3-mem`
   
 If left unset, `default` will be assumed.
