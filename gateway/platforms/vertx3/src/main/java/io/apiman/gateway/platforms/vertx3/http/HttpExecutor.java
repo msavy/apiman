@@ -47,7 +47,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * @author Marc Savy {@literal <msavy@redhat.com>}
  */
 @SuppressWarnings("nls")
-class HttpExecutor implements Handler<HttpServerRequest> {
+public class HttpExecutor implements Handler<HttpServerRequest> {
 
     private HttpServerRequest request;
     private HttpServerResponse response;
