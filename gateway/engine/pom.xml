@@ -18,6 +18,7 @@
     <module>ispn</module>
     <module>es</module>
     <module>influxdb</module>
+    <module>prometheus</module>
   </modules>
 
   <profiles>
