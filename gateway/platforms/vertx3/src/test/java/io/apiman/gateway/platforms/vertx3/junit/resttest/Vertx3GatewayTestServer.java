@@ -15,6 +15,15 @@
  */
 package io.apiman.gateway.platforms.vertx3.junit.resttest;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.util.concurrent.CountDownLatch;
+
+import org.codehaus.jackson.JsonNode;
+
+import io.apiman.common.util.ReflectionUtils;
 import io.apiman.gateway.platforms.vertx3.verticles.InitVerticle;
 import io.apiman.test.common.echo.EchoServer;
 import io.apiman.test.common.resttest.IGatewayTestServer;
@@ -23,13 +32,6 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.concurrent.CountDownLatch;
-
-import org.codehaus.jackson.JsonNode;
 
 /**
  * A Vert.x 3 version of the gateway test server
@@ -45,6 +47,7 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
     private String conf;
     private CountDownLatch startLatch;
     private CountDownLatch stopLatch;
+    private Resetter resetter;
     private Vertx vertx;
 
     /**
@@ -53,13 +56,11 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
     public Vertx3GatewayTestServer() {
     }
 
-    /**
-     * @see io.apiman.gateway.test.junit.IGatewayTestServer#configure(org.codehaus.jackson.JsonNode)
-     */
     @Override
     public void configure(JsonNode config) {
         ClassLoader classLoader = getClass().getClassLoader();
         String fPath = config.get("config").asText();
+        resetter = getResetter(config.get("resetter").asText());
         File file = new File(classLoader.getResource(fPath).getFile());
         try {
             conf = new String(Files.readAllBytes(file.toPath()));
@@ -67,33 +68,22 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
             throw new RuntimeException(e);
         }
     }
-    /**
-     * @see io.apiman.gateway.test.junit.IGatewayTestServer#getApiEndpoint()
-     */
+
     @Override
     public String getApiEndpoint() {
         return "http://localhost:" + API_PORT;
     }
 
-    /**
-     * @see io.apiman.gateway.test.junit.IGatewayTestServer#getGatewayEndpoint()
-     */
     @Override
     public String getGatewayEndpoint() {
         return "http://localhost:" + GW_PORT;
     }
 
-    /**
-     * @see io.apiman.gateway.test.junit.IGatewayTestServer#getEchoTestEndpoint()
-     */
     @Override
     public String getEchoTestEndpoint() {
         return "http://localhost:" + ECHO_PORT;
     }
 
-    /**
-     * @see io.apiman.gateway.test.junit.IGatewayTestServer#start()
-     */
     @Override
     public void start() {
         try {
@@ -121,22 +111,28 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
         }
     }
 
-    /**
-     * @see io.apiman.gateway.test.junit.IGatewayTestServer#stop()
-     */
     @Override
     public void stop() {
         try {
             stopLatch = new CountDownLatch(1);
             echoServer.stop();
-            // Seems to be a vert.x bug
-            //vertx.deploymentIDs().stream().forEach(id -> undeploy(id, stopLatch));
+
             vertx.close(result -> {
                 stopLatch.countDown();
             });
 
             stopLatch.await();
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected Resetter getResetter(String name) {
+        Class<Resetter> c = (Class<Resetter>) ReflectionUtils.<Resetter>loadClass(name);
+        try {
+            return c.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw new RuntimeException(e);
         }
     }
