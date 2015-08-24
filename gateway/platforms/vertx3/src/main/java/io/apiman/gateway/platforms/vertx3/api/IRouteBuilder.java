@@ -45,7 +45,7 @@ public interface IRouteBuilder {
         return "/" + (path.length() == 0 ? getPath() : getPath() + "/" + path);
     }
 
-    default <T extends Exception> void error(RoutingContext context, HttpResponseStatus code, String message, T object) {
+    default <T extends Throwable> void error(RoutingContext context, HttpResponseStatus code, String message, T object) {
         HttpServerResponse response = context.response().setStatusCode(code.code());
         response.putHeader("X-API-Gateway-Error", "true");
 

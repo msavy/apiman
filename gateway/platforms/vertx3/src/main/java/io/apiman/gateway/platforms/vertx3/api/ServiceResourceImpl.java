@@ -15,6 +15,9 @@
  */
 package io.apiman.gateway.platforms.vertx3.api;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import io.apiman.common.util.SimpleStringUtils;
 import io.apiman.gateway.api.rest.contract.IServiceResource;
 import io.apiman.gateway.api.rest.contract.exceptions.NotAuthorizedException;
@@ -33,9 +36,6 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 /**
  * Service Resource route builder
  *
@@ -51,36 +51,40 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
     private VertxEngineConfig apimanConfig;
     private String host;
     private IRegistry registry;
+    private RoutingContext routingContext;
+    private IEngine engine;
 
     public ServiceResourceImpl(VertxEngineConfig apimanConfig, IEngine engine) {
         this.apimanConfig = apimanConfig;
         this.registry = engine.getRegistry();
+        this.engine = engine;
     }
 
     @Override
     public void publish(Service service) throws PublishingException, NotAuthorizedException {
         registry.publishService(service, (IAsyncResultHandler<Void>) result -> {
             if (result.isError()) {
-                if (result.getError() instanceof PublishingException) {
-                    throw (PublishingException) result.getError();
-                } else if (result.getError() instanceof NotAuthorizedException) {
-                    throw (NotAuthorizedException) result.getError();
+                Throwable e = result.getError();
+                if (e instanceof PublishingException) {
+                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+                } else if (e instanceof NotAuthorizedException) {
+                    error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
                 } else {
-                    throw new RuntimeException(result.getError());
+                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
                 }
+            } else {
+                end(routingContext, HttpResponseStatus.NO_CONTENT);
             }
         });
     }
 
     public void publish(RoutingContext routingContext) {
+        this.routingContext = routingContext;
         routingContext.request().bodyHandler((Handler<Buffer>) buffer -> {
             try {
                 publish(Json.decodeValue(buffer.toString("utf-8"), Service.class));
-                end(routingContext, HttpResponseStatus.NO_CONTENT);
-            } catch (PublishingException e) {
-                error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-            } catch (NotAuthorizedException e) {
-                error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
+            } catch (Exception e) {
+                error(routingContext, HttpResponseStatus.BAD_REQUEST, e.getMessage(), e);
             }
         });
     }
@@ -92,32 +96,30 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
         service.setOrganizationId(organizationId);
         service.setServiceId(serviceId);
         service.setVersion(version);
+
         registry.retireService(service, (IAsyncResultHandler<Void>) result -> {
             if (result.isError()) {
-                if (result.getError() instanceof RegistrationException) {
-                    throw (RegistrationException) result.getError();
-                } else if (result.getError() instanceof NotAuthorizedException) {
-                    throw (NotAuthorizedException) result.getError();
+                Throwable e = result.getError();
+                if (e instanceof RegistrationException) {
+                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+                } else if (e instanceof NotAuthorizedException) {
+                    error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
                 } else {
-                    throw new RuntimeException(result.getError());
+                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
                 }
+            } else {
+                end(routingContext, HttpResponseStatus.NO_CONTENT);
             }
         });
     }
 
     public void retire(RoutingContext routingContext) {
+        this.routingContext = routingContext;
         String orgId = routingContext.request().getParam(ORG_ID);
         String svcId = routingContext.request().getParam(SVC_ID);
         String ver = routingContext.request().getParam(VER);
 
-        try {
-            retire(orgId, svcId, ver);
-            end(routingContext, HttpResponseStatus.NO_CONTENT);
-        } catch (RegistrationException e) {
-            error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-        } catch (NotAuthorizedException e) {
-            error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
-        }
+        retire(orgId, svcId, ver);
     }
 
     // TODO refactor to look up serviceId in engine, we can then determine more accurately what the URL scheme should be.
@@ -165,8 +167,14 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
 
     @Override
     public void buildRoutes(Router router) {
-        router.put(buildPath("")).handler(this::publish);
-        router.delete(buildPath(RETIRE)).handler(this::retire);
+        System.out.println("Calling #buildRoutes");
+
+        router.put(buildPath("")).handler(
+                new ServiceResourceImpl(apimanConfig, engine)::publish
+                );
+        router.delete(buildPath(RETIRE)).handler(
+                new ServiceResourceImpl(apimanConfig, engine)::retire
+                );
         router.get(buildPath(ENDPOINT)).handler(this::getServiceEndpoint);
     }
 
