@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import org.codehaus.jackson.JsonNode;
 
 import io.apiman.common.util.ReflectionUtils;
+import io.apiman.gateway.platforms.vertx3.config.VertxEngineConfig;
 import io.apiman.gateway.platforms.vertx3.verticles.InitVerticle;
 import io.apiman.test.common.echo.EchoServer;
 import io.apiman.test.common.resttest.IGatewayTestServer;
@@ -49,6 +50,7 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
     private CountDownLatch stopLatch;
     private Resetter resetter;
     private Vertx vertx;
+    private JsonObject vertxConf;
 
     /**
      * Constructor.
@@ -93,7 +95,8 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
             startLatch = new CountDownLatch(1);
 
             DeploymentOptions options = new DeploymentOptions();
-            options.setConfig(new JsonObject(conf));
+            vertxConf = new JsonObject(conf);
+            options.setConfig(vertxConf);
 
             vertx.deployVerticle(InitVerticle.class.getCanonicalName(),
                     options, new Handler<AsyncResult<String>>() {
@@ -129,11 +132,18 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
 
     protected Resetter getResetter(String name) {
         Class<Resetter> c = (Class<Resetter>) ReflectionUtils.<Resetter>loadClass(name);
+        VertxEngineConfig vxEngineConf = new VertxEngineConfig(vertxConf);
+
         try {
-            return c.getConstructor().newInstance();
+            return c.newInstance();
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            throw new RuntimeException(e);
+                  | SecurityException e) {
+            try {
+                return c.getConstructor(VertxEngineConfig.class).newInstance(vxEngineConf);
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                    | SecurityException | InvocationTargetException | NoSuchMethodException f) {
+                throw new RuntimeException(f);
+            }
         }
     }
 }

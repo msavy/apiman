@@ -49,7 +49,7 @@ public class InitVerticle extends ApimanVerticleBase {
 
     private void checkFail(AsyncResult<String> result) {
         if (result.failed())
-            throw new RuntimeException(String.format("Failed to deploy %s verticles: %s"), result.cause()); //$NON-NLS-1$
+            throw new RuntimeException(String.format("Failed to deploy verticles: %s", result.cause().getMessage()), result.cause()); //$NON-NLS-1$
     }
 
     private DeploymentOptions buildDeploymentOptions(DeploymentOptions base, VerticleType type) {

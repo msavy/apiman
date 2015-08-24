@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import io.apiman.gateway.engine.es.AbstractESComponent;
+import io.apiman.gateway.engine.es.ESConstants;
 import io.searchbox.core.Delete;
 
 public class EsResetter extends AbstractESComponent implements Resetter {
@@ -15,7 +16,7 @@ public class EsResetter extends AbstractESComponent implements Resetter {
     @Override
     public void reset() {
         try {
-            getClient().execute(new Delete.Builder("apiman").build());
+            getClient().execute(new Delete.Builder(ESConstants.INDEX_NAME).build());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
