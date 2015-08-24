@@ -45,17 +45,15 @@ public class ApiVerticle extends ApimanVerticleWithEngine {
     @Override
     public void start() {
         super.start();
-
+        // This will be refactored shortly to factory pattern. This is just a quick testing bodge..
         IRouteBuilder applicationResource = new ApplicationResourceImpl(apimanConfig, engine, null);
-        IRouteBuilder serviceResource = new ServiceResourceImpl(apimanConfig, engine);
+        IRouteBuilder serviceResource = new ServiceResourceImpl(apimanConfig, engine, null);
         IRouteBuilder systemResource = new SystemResourceImpl(apimanConfig, engine);
 
         Router router = Router.router(vertx);
 
         if (apimanConfig.isAuthenticationEnabled()) {
             AuthHandler basicAuthHandler = BasicAuthHandler.create(this::authenticateBasic, apimanConfig.getRealm());
-            //router.route().handler(CookieHandler.create());
-            //router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
             router.route("/*").handler(basicAuthHandler);
         }
 

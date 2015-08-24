@@ -54,10 +54,11 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
     private RoutingContext routingContext;
     private IEngine engine;
 
-    public ServiceResourceImpl(VertxEngineConfig apimanConfig, IEngine engine) {
+    public ServiceResourceImpl(VertxEngineConfig apimanConfig, IEngine engine, RoutingContext routingContext) {
         this.apimanConfig = apimanConfig;
         this.registry = engine.getRegistry();
         this.engine = engine;
+        this.routingContext = routingContext;
     }
 
     @Override
@@ -78,8 +79,7 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
         });
     }
 
-    public void publish(RoutingContext routingContext) {
-        this.routingContext = routingContext;
+    public void publish() {
         routingContext.request().bodyHandler((Handler<Buffer>) buffer -> {
             try {
                 publish(Json.decodeValue(buffer.toString("utf-8"), Service.class));
@@ -113,8 +113,7 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
         });
     }
 
-    public void retire(RoutingContext routingContext) {
-        this.routingContext = routingContext;
+    public void retire() {
         String orgId = routingContext.request().getParam(ORG_ID);
         String svcId = routingContext.request().getParam(SVC_ID);
         String ver = routingContext.request().getParam(VER);
@@ -167,14 +166,12 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
 
     @Override
     public void buildRoutes(Router router) {
-        System.out.println("Calling #buildRoutes");
-
-        router.put(buildPath("")).handler(
-                new ServiceResourceImpl(apimanConfig, engine)::publish
-                );
-        router.delete(buildPath(RETIRE)).handler(
-                new ServiceResourceImpl(apimanConfig, engine)::retire
-                );
+        router.put(buildPath("")).handler(routingContext -> {
+            new ServiceResourceImpl(apimanConfig, engine, routingContext).publish();
+        });
+        router.delete(buildPath(RETIRE)).handler(routingContext -> {
+            new ServiceResourceImpl(apimanConfig, engine, routingContext).retire();
+        });
         router.get(buildPath(ENDPOINT)).handler(this::getServiceEndpoint);
     }
 
