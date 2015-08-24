@@ -62,13 +62,15 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
     public void configure(JsonNode config) {
         ClassLoader classLoader = getClass().getClassLoader();
         String fPath = config.get("config").asText();
-        resetter = getResetter(config.get("resetter").asText());
         File file = new File(classLoader.getResource(fPath).getFile());
+
         try {
             conf = new String(Files.readAllBytes(file.toPath()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        vertxConf = new JsonObject(conf);
+        resetter = getResetter(config.get("resetter").asText());
     }
 
     @Override
@@ -89,13 +91,14 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
     @Override
     public void start() {
         try {
+            resetter.reset();
+
             vertx = Vertx.vertx();
             echoServer.start();
 
             startLatch = new CountDownLatch(1);
 
             DeploymentOptions options = new DeploymentOptions();
-            vertxConf = new JsonObject(conf);
             options.setConfig(vertxConf);
 
             vertx.deployVerticle(InitVerticle.class.getCanonicalName(),

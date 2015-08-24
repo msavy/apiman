@@ -15,6 +15,15 @@
  */
 package io.apiman.gateway.engine.es;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+
 import io.apiman.gateway.engine.IRegistry;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResult;
@@ -35,15 +44,6 @@ import io.searchbox.core.DeleteByQuery;
 import io.searchbox.core.Get;
 import io.searchbox.core.Index;
 import io.searchbox.params.Parameters;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 
 /**
  * An implementation of the Registry that uses elasticsearch as a storage
@@ -66,6 +66,10 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
      */
     @Override
     public void publishService(final Service service, final IAsyncResultHandler<Void> handler) {
+
+        System.err.println("Attempting to publish service: " + service);
+
+
         try {
             String id = getServiceId(service);
 
@@ -91,6 +95,7 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
                 }
             });
         } catch (Exception e) {
+            System.err.println("Exception in publish service: " + service);
             handler.handle(AsyncResultImpl.create(
                     new PublishingException(Messages.i18n.format("ESRegistry.ErrorPublishingService"), e),  //$NON-NLS-1$
                     Void.class));
