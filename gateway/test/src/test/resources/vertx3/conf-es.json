@@ -5,7 +5,8 @@
       "client.type": "jest",
       "client.cluster-name": "elasticsearch_msavy",
       "client.host": "127.0.0.1",
-      "client.port": "9201"
+      "client.port": "9200",
+      "client.initialize": true
     }
   },
 
@@ -48,7 +49,8 @@
           "client.type": "jest",
           "client.cluster-name": "elasticsearch_msavy",
           "client.host": "localhost",
-          "client.port": "9201"
+          "client.port": "9200",
+          "client.initialize": true
         }
       },
 
@@ -58,7 +60,8 @@
           "client.type": "jest",
           "client.cluster-name": "elasticsearch_msavy",
           "client.host": "localhost",
-          "client.port": "9201"
+          "client.port": "9200",
+          "client.initialize": true
         }
       },
 

@@ -36,6 +36,8 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * A Vert.x 3 version of the gateway test server
+ *
+ * @author Marc Savy {@literal <msavy@redhat.com>}
  */
 @SuppressWarnings("nls")
 public class Vertx3GatewayTestServer implements IGatewayTestServer {
@@ -134,7 +136,8 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
     }
 
     protected Resetter getResetter(String name) {
-        Class<Resetter> c = (Class<Resetter>) ReflectionUtils.<Resetter>loadClass(name);
+        @SuppressWarnings("unchecked")
+        Class<Resetter> c = (Class<Resetter>) ReflectionUtils.loadClass(name);
         VertxEngineConfig vxEngineConf = new VertxEngineConfig(vertxConf);
 
         try {

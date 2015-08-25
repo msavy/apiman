@@ -55,10 +55,10 @@ public interface IRouteBuilder {
             response.setStatusMessage(message);
         }
 
-        if(object != null) {
-            JsonObject errorResponse = new JsonObject();
-            errorResponse.put("errorType", object.getClass().getSimpleName())
-                .put("message", object.getMessage());
+        if (object != null) {
+            JsonObject errorResponse = new JsonObject()
+                    .put("errorType", object.getClass().getSimpleName())
+                    .put("message", object.getMessage());
 
             response.setChunked(true)
                 .putHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)

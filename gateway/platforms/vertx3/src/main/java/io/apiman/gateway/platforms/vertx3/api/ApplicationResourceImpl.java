@@ -46,7 +46,14 @@ public class ApplicationResourceImpl implements IApplicationResource, IRouteBuil
     private VertxEngineConfig apimanConfig;
     private IEngine engine;
 
-    public ApplicationResourceImpl(VertxEngineConfig apimanConfig, IEngine engine, RoutingContext routingContext) {
+    public ApplicationResourceImpl(VertxEngineConfig apimanConfig, IEngine engine) {
+        this.registry = engine.getRegistry();
+        this.apimanConfig = apimanConfig;
+        this.engine = engine;
+        this.routingContext = null;
+    }
+
+    private ApplicationResourceImpl(VertxEngineConfig apimanConfig, IEngine engine, RoutingContext routingContext) {
         this.registry = engine.getRegistry();
         this.apimanConfig = apimanConfig;
         this.engine = engine;
@@ -66,7 +73,6 @@ public class ApplicationResourceImpl implements IApplicationResource, IRouteBuil
                     error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
                 }
             } else {
-                System.out.println("Registered " + application);
                 end(routingContext, HttpResponseStatus.NO_CONTENT);
             }
         });
@@ -102,7 +108,6 @@ public class ApplicationResourceImpl implements IApplicationResource, IRouteBuil
                     error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
                 }
             } else {
-                System.out.println("Unregistered " + application);
                 end(routingContext, HttpResponseStatus.NO_CONTENT);
             }
         });
@@ -112,7 +117,6 @@ public class ApplicationResourceImpl implements IApplicationResource, IRouteBuil
         String orgId = routingContext.request().getParam(ORG_ID);
         String appId = routingContext.request().getParam(APP_ID);
         String ver = routingContext.request().getParam(VER);
-
         unregister(orgId, appId, ver);
     }
 
@@ -123,7 +127,7 @@ public class ApplicationResourceImpl implements IApplicationResource, IRouteBuil
 
     @Override
     public void buildRoutes(Router router) {
-        router.put(buildPath("")).handler( routingContext -> {
+        router.put(buildPath("")).handler( routingContext -> { //$NON-NLS-1$
             new ApplicationResourceImpl(apimanConfig, engine, routingContext).register();
         });
 

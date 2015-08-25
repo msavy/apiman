@@ -46,8 +46,8 @@ public class ApiVerticle extends ApimanVerticleWithEngine {
     public void start() {
         super.start();
         // This will be refactored shortly to factory pattern. This is just a quick testing bodge..
-        IRouteBuilder applicationResource = new ApplicationResourceImpl(apimanConfig, engine, null);
-        IRouteBuilder serviceResource = new ServiceResourceImpl(apimanConfig, engine, null);
+        IRouteBuilder applicationResource = new ApplicationResourceImpl(apimanConfig, engine);
+        IRouteBuilder serviceResource = new ServiceResourceImpl(apimanConfig, engine);
         IRouteBuilder systemResource = new SystemResourceImpl(apimanConfig, engine);
 
         Router router = Router.router(vertx);

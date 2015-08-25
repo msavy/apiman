@@ -54,7 +54,14 @@ public class ServiceResourceImpl implements IServiceResource, IRouteBuilder {
     private RoutingContext routingContext;
     private IEngine engine;
 
-    public ServiceResourceImpl(VertxEngineConfig apimanConfig, IEngine engine, RoutingContext routingContext) {
+    public ServiceResourceImpl(VertxEngineConfig apimanConfig, IEngine engine) {
+        this.apimanConfig = apimanConfig;
+        this.registry = engine.getRegistry();
+        this.engine = engine;
+        this.routingContext = null;
+    }
+
+    private ServiceResourceImpl(VertxEngineConfig apimanConfig, IEngine engine, RoutingContext routingContext) {
         this.apimanConfig = apimanConfig;
         this.registry = engine.getRegistry();
         this.engine = engine;
