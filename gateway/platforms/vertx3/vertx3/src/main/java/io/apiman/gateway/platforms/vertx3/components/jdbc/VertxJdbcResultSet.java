@@ -31,7 +31,7 @@ import org.joda.time.DateTime;
 public class VertxJdbcResultSet implements IJdbcResultSet {
 
     private ResultSet resultSet;
-    private int row = 0;
+    private int row = -1;
     private List<JsonArray> rows;
 
     public VertxJdbcResultSet(ResultSet resultSet) {
@@ -76,7 +76,6 @@ public class VertxJdbcResultSet implements IJdbcResultSet {
      */
     @Override
     public void next() {
-        indexCheck();
         row += 1;
     }
 
@@ -89,7 +88,7 @@ public class VertxJdbcResultSet implements IJdbcResultSet {
     }
 
     private void indexCheck() {
-        if (!hasNext()) {
+        if (row > (getRowSize()-1)) {
             throw new ArrayIndexOutOfBoundsException(
                     String.format("Row size: %d. Attempted invalid index: %d", getRowSize(), row + 1)); //$NON-NLS-1$
         }
