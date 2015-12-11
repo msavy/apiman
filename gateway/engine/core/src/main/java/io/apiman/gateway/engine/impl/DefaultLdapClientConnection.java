@@ -49,8 +49,8 @@ public class DefaultLdapClientConnection implements ILdapClientConnection {
 
         public void connect(final IAsyncResultHandler<Void> resultHandler) {
             try {
-                this.connection = LDAPConnectionFactory.build(socketFactory, config.getScheme(), config.getHost(),
-                        config.getPort(), config.getBindDn(), config.getBindPassword());
+                connection = LDAPConnectionFactory.build(socketFactory, config);
+                connection.bind(config.getBindDn(), config.getBindPassword());
                 resultHandler.handle(AsyncResultImpl.create((Void) null));
             } catch (LDAPException e) {
                 resultHandler.handle(AsyncResultImpl.<Void>create(e));
@@ -99,15 +99,13 @@ public class DefaultLdapClientConnection implements ILdapClientConnection {
         @Override
         public void close() {
             if (!closed)
-                connection.close();
+                LDAPConnectionFactory.releaseConnection(connection);
             closed = true;
         }
 
         @Override
         public void close(IAsyncResultHandler<Void> closeResultHandler) {
-            if (!closed)
-                connection.close();
-            closed = true;
+            close();
             closeResultHandler.handle(AsyncResultImpl.create((Void) null));
         }
     }
