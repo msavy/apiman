@@ -40,7 +40,9 @@ public class DefaultLdapClientConnection implements ILdapClientConnection {
         private boolean closed;
         private SSLSocketFactory socketFactory;
 
-        public DefaultLdapClientConnection(LdapConfigBean config, SSLSocketFactory socketFactory) {
+        public DefaultLdapClientConnection(
+                LdapConfigBean config,
+                SSLSocketFactory socketFactory) {
             this.config = config;
             this.socketFactory = socketFactory;
         }
