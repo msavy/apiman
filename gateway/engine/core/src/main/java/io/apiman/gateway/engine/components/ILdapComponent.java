@@ -24,5 +24,5 @@ public interface ILdapComponent extends IComponent {
      * @param config the configuration
      * @param handler the handler indicating the success of the LDAP BIND.
      */
-    void bind(LdapConfigBean config, IAsyncResultHandler<LdapResult> handler);
+    void bind(LdapConfigBean config, IAsyncResultHandler<ILdapResult> handler);
 }

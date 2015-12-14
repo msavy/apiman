@@ -20,9 +20,9 @@ import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResult;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.ILdapComponent;
+import io.apiman.gateway.engine.components.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.ILdapClientConnection;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapResultCode;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -65,10 +65,10 @@ public class DefaultLdapComponent implements ILdapComponent {
     @Override
     public void connect(LdapConfigBean config, final IAsyncResultHandler<ILdapClientConnection> handler) {
         final DefaultLdapClientConnection connection = new DefaultLdapClientConnection(config, DEFAULT_SOCKET_FACTORY);
-        connection.connect(new IAsyncResultHandler<LdapResultCode>() {
+        connection.connect(new IAsyncResultHandler<ILdapResult>() {
 
             @Override
-            public void handle(IAsyncResult<LdapResultCode> result) {
+            public void handle(IAsyncResult<ILdapResult> result) {
                 if (result.isSuccess()) {
                     handler.handle(AsyncResultImpl.<ILdapClientConnection>create(connection));
                 } else {
@@ -79,7 +79,7 @@ public class DefaultLdapComponent implements ILdapComponent {
     }
 
     @Override
-    public void bind(LdapConfigBean config, IAsyncResultHandler<LdapResultCode> handler) {
+    public void bind(LdapConfigBean config, IAsyncResultHandler<ILdapResult> handler) {
         DefaultLdapClientConnection.bind(DEFAULT_SOCKET_FACTORY, config, handler);
     }
 }

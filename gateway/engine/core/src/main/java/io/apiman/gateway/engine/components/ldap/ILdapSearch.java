@@ -18,7 +18,7 @@ package io.apiman.gateway.engine.components.ldap;
 
 import io.apiman.gateway.engine.async.IAsyncHandler;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapException;
+import io.apiman.gateway.engine.components.ldap.result.LdapException;
 
 import java.util.List;
 

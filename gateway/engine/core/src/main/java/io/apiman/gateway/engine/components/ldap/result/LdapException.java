@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-package io.apiman.gateway.engine.components;
+package io.apiman.gateway.engine.components.ldap.result;
 
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapResultCode;
+/**
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
+public class LdapException extends Exception {
+    private static final long serialVersionUID = 7864217780903440819L;
+    private LdapResultCode resultCode;
 
-public interface LdapResult {
-    LdapResultCode getResultCode();
-    String getMessage();
+    public LdapException(LdapResultCode resultCode, String message, Throwable e) {
+        super(message, e);
+        this.resultCode = resultCode;
+    }
+
+    public LdapResultCode getResultCode() {
+        return resultCode;
+    }
 }

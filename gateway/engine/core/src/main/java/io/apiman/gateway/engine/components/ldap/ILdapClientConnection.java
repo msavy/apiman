@@ -16,7 +16,7 @@
 package io.apiman.gateway.engine.components.ldap;
 
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapException;
+import io.apiman.gateway.engine.components.ldap.result.LdapException;
 
 /**
  * Represents an ongoing LDAP connection

@@ -14,23 +14,11 @@
  * limitations under the License.
  */
 
-package io.apiman.gateway.engine.components.ldap.exceptions;
+package io.apiman.gateway.engine.components;
 
-import com.unboundid.ldap.sdk.LDAPException;
+import io.apiman.gateway.engine.components.ldap.result.LdapResultCode;
 
-/**
- * @author Marc Savy {@literal <msavy@redhat.com>}
- */
-public class DefaultExceptionFactory {
-
-    /**
-     * Convert LDAP Exceptions
-     *
-     * @param e the LDAP Exception
-     * @return an apiman LdapExeption
-     */
-    public static LdapException create(LDAPException e) {
-        return new LdapException(DefaultLdapResultCodeFactory.convertResultCode(e.getResultCode()),
-                e.getDiagnosticMessage(), e);
-    }
+public interface ILdapResult {
+    LdapResultCode getResultCode();
+    String getMessage();
 }

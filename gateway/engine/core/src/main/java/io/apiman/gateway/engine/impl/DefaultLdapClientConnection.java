@@ -18,14 +18,16 @@ package io.apiman.gateway.engine.impl;
 
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
+import io.apiman.gateway.engine.components.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.ILdapClientConnection;
 import io.apiman.gateway.engine.components.ldap.ILdapSearch;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
 import io.apiman.gateway.engine.components.ldap.LdapSearchScope;
-import io.apiman.gateway.engine.components.ldap.exceptions.DefaultExceptionFactory;
-import io.apiman.gateway.engine.components.ldap.exceptions.DefaultLdapResultCodeFactory;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapException;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapResultCode;
+import io.apiman.gateway.engine.components.ldap.result.DefaultExceptionFactory;
+import io.apiman.gateway.engine.components.ldap.result.DefaultLdapResultCodeFactory;
+import io.apiman.gateway.engine.components.ldap.result.LdapException;
+import io.apiman.gateway.engine.components.ldap.result.LdapResult;
+import io.apiman.gateway.engine.components.ldap.result.LdapResultCode;
 
 import javax.net.ssl.SSLSocketFactory;
 
@@ -50,43 +52,48 @@ public class DefaultLdapClientConnection implements ILdapClientConnection {
             this.socketFactory = socketFactory;
         }
 
-        public static void evalBindReturn(ResultCode resultCode, LDAPException e,
-                IAsyncResultHandler<LdapResultCode> handler) {
+        public static void evalBindReturn(ResultCode resultCode, String message, LDAPException e,
+                IAsyncResultHandler<ILdapResult> handler) {
             LdapResultCode ldapResultCode = DefaultLdapResultCodeFactory.convertResultCode(resultCode);
 
-            // Return success and standard auth failure through here?
-            if (LdapResultCode.isAuthFailure(ldapResultCode) || LdapResultCode.isSuccess(ldapResultCode)) {
-                handler.handle(AsyncResultImpl.create(ldapResultCode));
+            if (ldapResultCode == LdapResultCode.OTHER_FAILURE) {
+                if (e != null) {
+                    handler.handle(AsyncResultImpl.<ILdapResult>create(DefaultExceptionFactory.create(e)));
+                } else {
+                    handler.handle(AsyncResultImpl.<ILdapResult>create(DefaultExceptionFactory.create(resultCode, message)));
+                }
             } else {
-                handler.handle(AsyncResultImpl.<LdapResultCode>create(DefaultExceptionFactory.create(e)));
+                handler.handle(AsyncResultImpl.<ILdapResult>create(new LdapResult(resultCode, message)));
             }
         }
 
         public static void bind(SSLSocketFactory socketFactory, LdapConfigBean config,
-                IAsyncResultHandler<LdapResultCode> handler) {
+                IAsyncResultHandler<ILdapResult> handler) {
             LDAPConnection connection = null;
             try {
                 connection = LDAPConnectionFactory.build(socketFactory, config);
                 BindResult bindResponse = connection.bind(config.getBindDn(), config.getBindPassword());
-                evalBindReturn(bindResponse.getResultCode(), null, handler);
+                evalBindReturn(bindResponse.getResultCode(), bindResponse.getDiagnosticMessage(), null, handler);
                 LDAPConnectionFactory.releaseConnection(connection);
             } catch (LDAPException e) { // generally errors as an exception, also potentially normal return(!).
-                evalBindReturn(e.getResultCode(), e, handler);
+                evalBindReturn(e.getResultCode(), e.getDiagnosticMessage(), e, handler);
                 LDAPConnectionFactory.releaseConnectionAfterException(connection, e);
             } catch (Exception e) {
                 LDAPConnectionFactory.releaseDefunct(connection);
+                handler.handle(AsyncResultImpl.<ILdapResult>create(e));
             }
         }
 
-        public void connect(final IAsyncResultHandler<LdapResultCode> handler) {
+        public void connect(final IAsyncResultHandler<ILdapResult> handler) {
             try {
                 connection = LDAPConnectionFactory.build(socketFactory, config);
-                BindResult result = connection.bind(config.getBindDn(), config.getBindPassword());
-                evalBindReturn(result.getResultCode(), null, handler);
+                BindResult bindResponse = connection.bind(config.getBindDn(), config.getBindPassword());
+                evalBindReturn(bindResponse.getResultCode(), bindResponse.getDiagnosticMessage(), null, handler);
             } catch (LDAPException e) {
-                evalBindReturn(e.getResultCode(), e, handler);
+                evalBindReturn(e.getResultCode(), e.getDiagnosticMessage(), e, handler);
             } catch (Exception e) {
                 LDAPConnectionFactory.releaseDefunct(connection);
+                handler.handle(AsyncResultImpl.<ILdapResult>create(e));
             }
         }
 

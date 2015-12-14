@@ -16,7 +16,6 @@
 
 package io.apiman.gateway.platforms.vertx3.components.ldap;
 
-import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.ldap.ILdapSearchEntry;
 import io.apiman.gateway.engine.components.ldap.LdapSearchScope;
@@ -40,11 +39,7 @@ public class LdapSearchImpl extends DefaultLdapSearchImpl {
         vertx.executeBlocking(blocking -> {
             super.search(result);
             blocking.complete();
-        }, res -> {
-            if (res.failed()) {
-                result.handle(AsyncResultImpl.create(res.cause()));
-            }
-        });
+        }, res -> {});
     }
 
 }

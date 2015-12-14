@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.apiman.gateway.engine.components.ldap.exceptions;
+package io.apiman.gateway.engine.components.ldap.result;
 
 /**
  * Various LDAP response codes

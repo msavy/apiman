@@ -16,8 +16,7 @@
 
 package io.apiman.gateway.platforms.vertx3.components.ldap;
 
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapException;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapResultCode;
+import io.apiman.gateway.engine.components.ldap.result.LdapResultCode;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestCompletion;
 import io.vertx.ext.unit.TestSuite;
@@ -43,7 +42,7 @@ public class LdapBindTests extends LdapTestParent {
                      result.getError().printStackTrace(System.out);
 
                  context.assertTrue(result.isSuccess());
-                 context.assertTrue(result.getResult().equals(LdapResultCode.SUCCESS));
+                 context.assertTrue(result.getResult().getResultCode().equals(LdapResultCode.SUCCESS));
                  async.complete();
              });
 
@@ -66,7 +65,7 @@ public class LdapBindTests extends LdapTestParent {
                      result.getError().printStackTrace(System.out);
 
                  context.assertTrue(result.isSuccess());
-                 context.assertTrue(result.getResult().equals(LdapResultCode.INVALID_CREDENTIALS));
+                 context.assertTrue(result.getResult().getResultCode().equals(LdapResultCode.INVALID_CREDENTIALS));
                  async.complete();
              });
 
@@ -89,7 +88,7 @@ public class LdapBindTests extends LdapTestParent {
                      result.getError().printStackTrace(System.out);
 
                  context.assertTrue(result.isSuccess());
-                 context.assertTrue(result.getResult().equals(LdapResultCode.INVALID_CREDENTIALS));
+                 context.assertTrue(result.getResult().getResultCode().equals(LdapResultCode.INVALID_CREDENTIALS));
                  async.complete();
              });
 
@@ -108,11 +107,8 @@ public class LdapBindTests extends LdapTestParent {
              Async async = context.async();
 
              ldapClientComponent.bind(config, result -> {
-                 if (result.isError())
-                     result.getError().printStackTrace(System.out);
-
                  context.assertTrue(result.isSuccess());
-                 context.assertTrue(result.getResult().equals(LdapResultCode.INVALID_CREDENTIALS));
+                 context.assertTrue(result.getResult().getResultCode().equals(LdapResultCode.INVALID_CREDENTIALS));
                  async.complete();
              });
 
@@ -132,12 +128,10 @@ public class LdapBindTests extends LdapTestParent {
         TestCompletion completion = TestSuite.create("").test("",  context -> {
              Async async = context.async();
 
-             System.out.println("should only be once");
-
              ldapClientComponent.bind(config, result -> {
-                 context.assertTrue(result.isError());
-                 LdapException error = (LdapException) result.getError();
-                 context.assertEquals(LdapResultCode.INVALID_DN_SYNTAX, error.getResultCode());
+                 context.assertTrue(result.isSuccess());
+                 context.assertTrue(result.getResult().getResultCode().equals(LdapResultCode.INVALID_DN_SYNTAX));
+                 context.assertTrue(result.getResult().getMessage().equals("Incorrect DN given : x (0x78 ) is invalid"));
                  async.complete();
              });
 

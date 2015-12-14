@@ -21,6 +21,7 @@ import io.apiman.gateway.engine.async.IAsyncResult;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.beans.ApiRequest;
 import io.apiman.gateway.engine.components.ILdapComponent;
+import io.apiman.gateway.engine.components.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.ILdapAttribute;
 import io.apiman.gateway.engine.components.ldap.ILdapClientConnection;
 import io.apiman.gateway.engine.components.ldap.ILdapDn;
@@ -28,8 +29,9 @@ import io.apiman.gateway.engine.components.ldap.ILdapRdn;
 import io.apiman.gateway.engine.components.ldap.ILdapSearchEntry;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
 import io.apiman.gateway.engine.components.ldap.LdapSearchScope;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapException;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapResultCode;
+import io.apiman.gateway.engine.components.ldap.result.LdapException;
+import io.apiman.gateway.engine.components.ldap.result.LdapResult;
+import io.apiman.gateway.engine.components.ldap.result.LdapResultCode;
 import io.apiman.gateway.engine.policies.AuthorizationPolicy;
 import io.apiman.gateway.engine.policies.config.basicauth.LDAPBindAsType;
 import io.apiman.gateway.engine.policies.config.basicauth.LDAPIdentitySource;
@@ -119,12 +121,12 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
                 }
             }));
         } else {
-            bind(config, ldapConfigBean, ldapComponent, context, new IAsyncResultHandler<LdapResultCode>() {
+            bind(config, ldapConfigBean, ldapComponent, context, new IAsyncResultHandler<ILdapResult>() {
 
                 @Override
-                public void handle(IAsyncResult<LdapResultCode> result) {
+                public void handle(IAsyncResult<ILdapResult> result) {
                     if (result.isSuccess()) {
-                        if (LdapResultCode.isSuccess(result.getResult())) {
+                        if (LdapResultCode.isSuccess(result.getResult().getResultCode())) {
                             handler.handle(AsyncResultImpl.create(Boolean.TRUE));
                         } else { // An auth failure
                             handler.handle(AsyncResultImpl.create(Boolean.FALSE));
@@ -138,7 +140,7 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
     }
 
     private void bind(final LDAPIdentitySource config, final LdapConfigBean ldapConfigBean, final ILdapComponent ldapComponent,
-            final IPolicyContext context, final IAsyncResultHandler<LdapResultCode> handler) {
+            final IPolicyContext context, final IAsyncResultHandler<ILdapResult> handler) {
         // If no role extraction is needed, just do a fast and simple BIND & exit
         if (!config.isExtractRoles()) {
             ldapComponent.bind(ldapConfigBean, handler);
@@ -153,7 +155,7 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
     }
 
     private void extractRoles(final ILdapClientConnection connection, final String userDn, final LDAPIdentitySource config,
-            final IPolicyContext context, final IAsyncResultHandler<LdapResultCode> resultHandler) {
+            final IPolicyContext context, final IAsyncResultHandler<ILdapResult> resultHandler) {
         final Set<String> roles = new HashSet<>();
 
         connection.search(userDn, "(objectClass=*)", LdapSearchScope.SUBTREE) //$NON-NLS-1$
@@ -161,7 +163,7 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
             // At the moment it's just generic, but in future we can make better use of it.
             @Override
             public void handle(LdapException exception) {
-                resultHandler.handle(AsyncResultImpl.<LdapResultCode>create(exception));
+                resultHandler.handle(AsyncResultImpl.<ILdapResult>create(exception));
             }
         }).search(successHandler(resultHandler, new IAsyncHandler<List<ILdapSearchEntry>>() {
 
@@ -178,9 +180,9 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
                                 addRoles(attr);
                             }
                         }
-                    resultHandler.handle(AsyncResultImpl.create(LdapResultCode.SUCCESS));
+                    resultHandler.handle(AsyncResultImpl.create(LdapResult.SUCCESS));
                     } catch (Exception e) { // Potentially invalid RDN format
-                        resultHandler.handle(AsyncResultImpl.<LdapResultCode>create(e));
+                        resultHandler.handle(AsyncResultImpl.<ILdapResult>create(e));
                     }
                 }
             }
@@ -241,7 +243,7 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
 
     private void handleLdapSearch(final ILdapClientConnection connection, List<ILdapSearchEntry> searchEntries, LDAPIdentitySource config,
             LdapConfigBean ldapConfigBean, ILdapComponent ldapComponent, IPolicyContext context, String username,
-            String password, IAsyncResultHandler<Boolean> handler) {
+            String password, final IAsyncResultHandler<Boolean> handler) {
 
         if (searchEntries.size() > 1) {
             NamingException ex = new NamingException("Found multiple entries for the same username: " + username); //$NON-NLS-1$
@@ -253,16 +255,16 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
             if (userDn != null) {
                 ldapConfigBean.setBindDn(userDn);
                 ldapConfigBean.setBindPassword(password);
-                bind(config, ldapConfigBean, ldapComponent, context, new IAsyncResultHandler<LdapResultCode>() {
+                bind(config, ldapConfigBean, ldapComponent, context, new IAsyncResultHandler<ILdapResult>() {
 
                     @Override
-                    public void handle(IAsyncResult<LdapResultCode> result) {
+                    public void handle(IAsyncResult<ILdapResult> result) {
                         if (result.isError()) {
                             connection.close((LdapException) result.getError());
                         } else {
+                            handler.handle(AsyncResultImpl.create(Boolean.TRUE));
                             connection.close();
                         }
-                        //handler.handle(result);
                     }
                 });
             } else {

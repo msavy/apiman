@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.apiman.gateway.engine.components.ldap.exceptions;
+package io.apiman.gateway.engine.components.ldap.result;
 
 import com.unboundid.ldap.sdk.ResultCode;
 

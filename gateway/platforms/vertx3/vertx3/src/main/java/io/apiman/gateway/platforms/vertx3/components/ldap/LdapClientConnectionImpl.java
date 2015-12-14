@@ -21,7 +21,7 @@ import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.ldap.ILdapSearch;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
 import io.apiman.gateway.engine.components.ldap.LdapSearchScope;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapException;
+import io.apiman.gateway.engine.components.ldap.result.LdapException;
 import io.apiman.gateway.engine.impl.DefaultLdapClientConnection;
 import io.vertx.core.Vertx;
 

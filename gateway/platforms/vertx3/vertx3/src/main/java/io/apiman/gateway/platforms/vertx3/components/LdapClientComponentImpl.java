@@ -18,9 +18,9 @@ package io.apiman.gateway.platforms.vertx3.components;
 
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
+import io.apiman.gateway.engine.components.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.ILdapClientConnection;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
-import io.apiman.gateway.engine.components.ldap.exceptions.LdapResultCode;
 import io.apiman.gateway.engine.impl.DefaultLdapClientConnection;
 import io.apiman.gateway.engine.impl.DefaultLdapComponent;
 import io.apiman.gateway.platforms.vertx3.common.config.VertxEngineConfig;
@@ -53,7 +53,7 @@ public class LdapClientComponentImpl extends DefaultLdapComponent {
     }
 
     @Override
-    public void bind(LdapConfigBean config, IAsyncResultHandler<LdapResultCode> handler) {
+    public void bind(LdapConfigBean config, IAsyncResultHandler<ILdapResult> handler) {
         vertx.executeBlocking(blocking -> {
             DefaultLdapClientConnection.bind(DEFAULT_SOCKET_FACTORY, config, handler);
             blocking.succeeded();
