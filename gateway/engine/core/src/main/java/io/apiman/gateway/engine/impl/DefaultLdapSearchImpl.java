@@ -20,21 +20,17 @@ import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncHandler;
 import io.apiman.gateway.engine.async.IAsyncResult;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
-import io.apiman.gateway.engine.components.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.ILdapSearch;
 import io.apiman.gateway.engine.components.ldap.ILdapSearchEntry;
 import io.apiman.gateway.engine.components.ldap.LdapSearchScope;
 import io.apiman.gateway.engine.components.ldap.result.DefaultExceptionFactory;
-import io.apiman.gateway.engine.components.ldap.result.DefaultLdapResultCodeFactory;
 import io.apiman.gateway.engine.components.ldap.result.LdapException;
-import io.apiman.gateway.engine.components.ldap.result.LdapResultCode;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPException;
-import com.unboundid.ldap.sdk.ResultCode;
 import com.unboundid.ldap.sdk.SearchResultEntry;
 import com.unboundid.ldap.sdk.SearchScope;
 
@@ -64,7 +60,6 @@ public class DefaultLdapSearchImpl implements ILdapSearch {
         } catch (LDAPException e) {
             ldapErrorHandler.handle(DefaultExceptionFactory.create(e));
         } catch (Exception e) {
-            System.err.println("Error was some other exception? ");
             result.handle(AsyncResultImpl.<List<SearchResultEntry>>create(e));
         }
     }
@@ -98,20 +93,5 @@ public class DefaultLdapSearchImpl implements ILdapSearch {
     public ILdapSearch setLdapErrorHandler(IAsyncHandler<LdapException> handler) {
         this.ldapErrorHandler = handler;
         return this;
-    }
-
-    public void evalSearchReturn(ResultCode resultCode, String message, LDAPException e,
-            IAsyncResultHandler<ILdapResult> handler) {
-        LdapResultCode ldapResultCode = DefaultLdapResultCodeFactory.convertResultCode(resultCode);
-
-//        if (ldapResultCode == LdapResultCode.OTHER_FAILURE) {
-//            if (e != null) {
-//                handler.handle(AsyncResultImpl.<ILdapResult>create(DefaultExceptionFactory.create(e)));
-//            } else {
-//                handler.handle(AsyncResultImpl.<ILdapResult>create(DefaultExceptionFactory.create(resultCode, message)));
-//            }
-//        } else {
-//            handler.handle(AsyncResultImpl.<ILdapResult>create(new LdapResult(resultCode, message)));
-//        }
     }
 }

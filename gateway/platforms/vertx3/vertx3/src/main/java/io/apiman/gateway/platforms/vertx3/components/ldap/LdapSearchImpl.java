@@ -26,6 +26,9 @@ import java.util.List;
 
 import com.unboundid.ldap.sdk.LDAPConnection;
 
+/**
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 public class LdapSearchImpl extends DefaultLdapSearchImpl {
     private Vertx vertx;
 

@@ -49,12 +49,10 @@ import org.apache.commons.lang.text.StrSubstitutor;
 
 /**
  * An identity validator that uses the static information in the config
- * to validate the user.
- *
- * Uses the {@link ILdapComponent}.
+ * to validate the user via {@link ILdapComponent}.
  *
  * @author eric.wittmann@redhat.com
- * @author msavy
+ * @author marc.savy@redhat.com
  */
 public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySource> {
 
@@ -200,43 +198,6 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
                 }
             }
         }));
-
-//        connection.search(userDn, "(objectClass=*)", LdapSearchScope.SUBTREE, successHandler(resultHandler, //$NON-NLS-1$
-//                new IAsyncHandler<List<ILdapSearchEntry>>() {
-//
-//            @Override
-//            public void handle(List<ILdapSearchEntry> result) {
-//                // Look through all results (usually should only be 1)
-//                for (ILdapSearchEntry searchResult : result) {
-//                    // Get membership attribute (if any)
-//                    List<ILdapAttribute> attrs = searchResult.getAttributes();
-//
-//                    try { // Look through all attrs - grab relevant RDNS, for each attribute (e.g. cn)
-//                        for (ILdapAttribute attr : attrs) {
-//                            if (attr.getBaseName().equals(config.getMembershipAttribute())) {
-//                                addRoles(attr);
-//                            }
-//                        }
-//                    } catch (Exception e) { // Potentially invalid RDN format
-//                        resultHandler.handle(AsyncResultImpl.<Void>create(e));
-//                    }
-//                    resultHandler.handle(AsyncResultImpl.create((Void) null));
-//                }
-//            }
-//
-//            private void addRoles(ILdapAttribute attr) {
-//                // Treat value as an RDN
-//                for (ILdapDn dn : attr.getValuesAsDn()) {
-//                    for (ILdapRdn rdns : dn.getRdns()) {
-//                        if (rdns.hasAttribute(config.getRolenameAttribute())) {
-//                            for (String value : rdns.getAttributeValues()) {
-//                                roles.add(value);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }));
 
         context.setAttribute(AuthorizationPolicy.AUTHENTICATED_USER_ROLES, roles);
     }
