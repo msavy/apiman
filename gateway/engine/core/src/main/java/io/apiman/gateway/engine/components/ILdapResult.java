@@ -18,7 +18,17 @@ package io.apiman.gateway.engine.components;
 
 import io.apiman.gateway.engine.components.ldap.result.LdapResultCode;
 
+/**
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 public interface ILdapResult {
+    /**
+     * @return the LDAP result code
+     */
     LdapResultCode getResultCode();
+
+    /**
+     * @return get the result message
+     */
     String getMessage();
 }
