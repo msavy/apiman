@@ -38,9 +38,9 @@ import com.unboundid.ldap.sdk.ResultCode;
  * @author Marc Savy {@literal <msavy@redhat.com>}
  */
 public class DefaultLdapClientConnection implements ILdapClientConnection {
-        private LdapConfigBean config;
-        private LDAPConnection connection;
-        private boolean closed;
+        protected LdapConfigBean config;
+        protected LDAPConnection connection;
+        protected boolean closed;
         private SSLSocketFactory socketFactory;
 
         public DefaultLdapClientConnection(
@@ -55,7 +55,7 @@ public class DefaultLdapClientConnection implements ILdapClientConnection {
             LdapResultCode ldapResultCode = DefaultLdapResultCodeFactory.convertResultCode(resultCode);
 
             // Return success and standard auth failure through here?
-            if (LdapResultCode.isAuthFailure(ldapResultCode) || LdapResultCode.isSuccess(LdapResultCode.SUCCESS)) {
+            if (LdapResultCode.isAuthFailure(ldapResultCode) || LdapResultCode.isSuccess(ldapResultCode)) {
                 handler.handle(AsyncResultImpl.create(ldapResultCode));
             } else {
                 handler.handle(AsyncResultImpl.<LdapResultCode>create(DefaultExceptionFactory.create(e)));
