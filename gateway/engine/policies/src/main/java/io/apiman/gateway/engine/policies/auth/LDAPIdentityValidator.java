@@ -223,8 +223,13 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
                         if (result.isError()) {
                             connection.close((LdapException) result.getError());
                         } else {
-                            handler.handle(AsyncResultImpl.create(Boolean.TRUE));
-                            connection.close();
+                            LdapResultCode resultCode = result.getResult().getResultCode();
+                            if (LdapResultCode.isSuccess(resultCode)) {
+                                handler.handle(AsyncResultImpl.create(Boolean.TRUE));
+                            } else {
+                                handler.handle(AsyncResultImpl.create(Boolean.FALSE));// TODO handle errors better?
+                            }
+                            connection.close(); // TODO modify to use pool.
                         }
                     }
                 });
