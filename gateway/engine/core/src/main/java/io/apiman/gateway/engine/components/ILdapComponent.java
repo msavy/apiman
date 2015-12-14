@@ -3,6 +3,7 @@ package io.apiman.gateway.engine.components;
 import io.apiman.gateway.engine.IComponent;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.ldap.ILdapClientConnection;
+import io.apiman.gateway.engine.components.ldap.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
 
 /**

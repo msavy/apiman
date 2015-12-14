@@ -16,7 +16,7 @@
 
 package io.apiman.gateway.engine.components.ldap.result;
 
-import io.apiman.gateway.engine.components.ILdapResult;
+import io.apiman.gateway.engine.components.ldap.ILdapResult;
 
 import com.unboundid.ldap.sdk.ResultCode;
 

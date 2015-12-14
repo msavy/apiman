@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package io.apiman.gateway.engine.components;
+package io.apiman.gateway.engine.components.ldap;
 
 import io.apiman.gateway.engine.components.ldap.result.LdapResultCode;
 
 /**
+ * An LDAP result (status).
+ *
  * @author Marc Savy {@literal <msavy@redhat.com>}
  */
 public interface ILdapResult {

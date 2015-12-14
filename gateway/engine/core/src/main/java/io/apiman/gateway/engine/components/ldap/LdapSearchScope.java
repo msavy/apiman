@@ -17,6 +17,8 @@
 package io.apiman.gateway.engine.components.ldap;
 
 /**
+ * LDAP search scope (see LDAP spec).
+ *
  * @author Marc Savy {@literal <msavy@redhat.com>}
  */
 public enum LdapSearchScope {

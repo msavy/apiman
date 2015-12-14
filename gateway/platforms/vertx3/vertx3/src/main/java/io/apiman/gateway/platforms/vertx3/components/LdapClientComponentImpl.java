@@ -18,8 +18,8 @@ package io.apiman.gateway.platforms.vertx3.components;
 
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
-import io.apiman.gateway.engine.components.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.ILdapClientConnection;
+import io.apiman.gateway.engine.components.ldap.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
 import io.apiman.gateway.engine.impl.DefaultLdapClientConnection;
 import io.apiman.gateway.engine.impl.DefaultLdapComponent;

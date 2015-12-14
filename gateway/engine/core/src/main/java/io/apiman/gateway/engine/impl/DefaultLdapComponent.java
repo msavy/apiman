@@ -20,8 +20,8 @@ import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResult;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.ILdapComponent;
-import io.apiman.gateway.engine.components.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.ILdapClientConnection;
+import io.apiman.gateway.engine.components.ldap.ILdapResult;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
 
 import java.security.GeneralSecurityException;

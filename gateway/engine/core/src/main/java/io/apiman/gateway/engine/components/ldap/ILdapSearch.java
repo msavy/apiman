@@ -23,6 +23,8 @@ import io.apiman.gateway.engine.components.ldap.result.LdapException;
 import java.util.List;
 
 /**
+ * Perform an LDAP Search
+ *
  * @author Marc Savy {@literal <msavy@redhat.com>}
  */
 public interface ILdapSearch {
