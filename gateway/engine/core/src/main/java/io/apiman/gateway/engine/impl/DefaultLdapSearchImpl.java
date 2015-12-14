@@ -90,7 +90,8 @@ public class DefaultLdapSearchImpl implements ILdapSearch {
     }
 
     @Override
-    public void setLdapErrorHandler(IAsyncHandler<LdapException> handler) {
+    public ILdapSearch setLdapErrorHandler(IAsyncHandler<LdapException> handler) {
         this.ldapErrorHandler = handler;
+        return this;
     }
 }

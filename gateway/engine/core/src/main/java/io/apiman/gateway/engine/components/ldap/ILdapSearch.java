@@ -30,8 +30,9 @@ public interface ILdapSearch {
      * Handle LDAP Exceptions
      *
      * @param handler the handler
+     * @return fluent
      */
-    void setLdapErrorHandler(IAsyncHandler<LdapException> handler);
+    ILdapSearch setLdapErrorHandler(IAsyncHandler<LdapException> handler);
 
     /**
      * Search LDAP
