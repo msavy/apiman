@@ -13,38 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.apiman.gateway.engine.components.ldap;
 
+import io.apiman.gateway.engine.async.IAsyncHandler;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.ldap.exceptions.LdapException;
 
+import java.util.List;
+
 /**
- * Represents an ongoing LDAP connection
- *
  * @author Marc Savy {@literal <msavy@redhat.com>}
  */
-public interface ILdapClientConnection extends AutoCloseable {
-
+public interface ILdapSearch {
     /**
-     * Perform a simple LDAP search
+     * Handle LDAP Exceptions
      *
-     * @param searchDn the search
-     * @param filter the query filter
-     * @param scope the scope
-     * @param result the query results
-     * @return ldap search ready to execute
+     * @param handler the handler
      */
-    ILdapSearch search(String searchDn, String filter, LdapSearchScope scope);
+    void setLdapErrorHandler(IAsyncHandler<LdapException> handler);
 
     /**
-     * Indicates whether connection was successfully closed.
+     * Search LDAP
      *
      * @param result the result
      */
-    void close(IAsyncResultHandler<Void> result);
-
-    @Override
-    void close();
-
-    void close(LdapException e);
+    void search(IAsyncResultHandler<List<ILdapSearchEntry>> result);
 }

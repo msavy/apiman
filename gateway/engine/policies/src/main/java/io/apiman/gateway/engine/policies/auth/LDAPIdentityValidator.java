@@ -25,6 +25,7 @@ import io.apiman.gateway.engine.components.ldap.ILdapAttribute;
 import io.apiman.gateway.engine.components.ldap.ILdapClientConnection;
 import io.apiman.gateway.engine.components.ldap.ILdapDn;
 import io.apiman.gateway.engine.components.ldap.ILdapRdn;
+import io.apiman.gateway.engine.components.ldap.ILdapSearch;
 import io.apiman.gateway.engine.components.ldap.ILdapSearchEntry;
 import io.apiman.gateway.engine.components.ldap.LdapConfigBean;
 import io.apiman.gateway.engine.components.ldap.LdapSearchScope;
@@ -102,11 +103,11 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
                 ldapComponent.connect(ldapConfigBean, successHandler(handler, new IAsyncHandler<ILdapClientConnection>() {
 
                     @Override
-                    public void handle(ILdapClientConnection connection) {
+                    public void handle(final ILdapClientConnection connection) {
                         String searchBaseDN = formatDn(config.getUserSearch().getBaseDn(), username, request);
                         String searchExpr = formatDn(config.getUserSearch().getExpression(), username, request);
 
-                        connection.search(searchBaseDN, searchExpr, LdapSearchScope.SUBTREE,
+                        ILdapSearch search = connection.search(searchBaseDN, searchExpr, LdapSearchScope.SUBTREE,
                                 successHandler(handler, new IAsyncHandler<List<ILdapSearchEntry>>() {
 
                                     @Override
@@ -121,7 +122,18 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
                                             if (userDn != null) {
                                                 ldapConfigBean.setBindDn(userDn);
                                                 ldapConfigBean.setBindPassword(password);
-                                                bind(config, ldapConfigBean, ldapComponent, context, handler);
+                                                bind(config, ldapConfigBean, ldapComponent, context, new IAsyncResultHandler<Boolean>() {
+
+                                                    @Override
+                                                    public void handle(IAsyncResult<Boolean> result) {
+                                                        if (result.isError()) {
+                                                            connection.closeWithError();
+                                                        } else {
+                                                            connection.close();
+                                                        }
+                                                        handler.handle(result);
+                                                    }
+                                                });
                                             } else {
                                                 handler.handle(AsyncResultImpl.create(Boolean.FALSE));
                                             }
@@ -146,7 +158,7 @@ public class LDAPIdentityValidator implements IIdentityValidator<LDAPIdentitySou
         } else { // Otherwise open up longer-lived connection and query role info.
             ldapComponent.connect(ldapConfigBean, successHandler(handler, new IAsyncHandler<ILdapClientConnection>() {
                 @Override // Extract the roles.
-                public void handle(ILdapClientConnection connection) {
+                public void handle(final ILdapClientConnection connection) {
                     extractRoles(connection, ldapConfigBean.getBindDn(), config, context, new IAsyncResultHandler<Void>() {
 
                         @Override
