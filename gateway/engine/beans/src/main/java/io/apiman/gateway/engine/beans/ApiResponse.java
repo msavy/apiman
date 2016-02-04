@@ -15,6 +15,8 @@
  */
 package io.apiman.gateway.engine.beans;
 
+import io.apiman.gateway.engine.beans.util.HeaderMap;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +35,8 @@ public class ApiResponse implements IApiObject, Serializable {
 
     private int code;
     private String message;
-    private Map<String, String> headers = new HeaderHashMap();
+    private HeaderMap headers = new HeaderMap();
+
     @JsonIgnore
     private transient Map<String, Object> attributes = new HashMap<>();
 
@@ -47,15 +50,15 @@ public class ApiResponse implements IApiObject, Serializable {
      * @see io.apiman.gateway.engine.beans.IApiObject#getHeaders()
      */
     @Override
-    public Map<String, String> getHeaders() {
+    public HeaderMap getHeaders() {
         return headers;
     }
 
     /**
-     * @see io.apiman.gateway.engine.beans.IApiObject#setHeaders(java.util.Map)
+     * @see io.apiman.gateway.engine.beans.IApiObject#setHeaders(HeaderMap)
      */
     @Override
-    public void setHeaders(Map<String, String> headers) {
+    public void setHeaders(HeaderMap headers) {
         this.headers = headers;
     }
 
@@ -116,4 +119,5 @@ public class ApiResponse implements IApiObject, Serializable {
     public Object getAttribute(String name) {
         return this.attributes.get(name);
     }
+
 }

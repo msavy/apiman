@@ -16,8 +16,7 @@
 package io.apiman.test.policies;
 
 import io.apiman.gateway.engine.beans.ApiResponse;
-
-import java.util.Map;
+import io.apiman.gateway.engine.beans.util.HeaderMap;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -61,7 +60,7 @@ public class PolicyTestResponse {
         return this.response.getHeaders().get(name);
     }
 
-    public Map<String, String> headers() {
+    public HeaderMap headers() {
         return response.getHeaders();
     }
 

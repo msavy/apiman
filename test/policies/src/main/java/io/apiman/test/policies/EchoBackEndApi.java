@@ -49,7 +49,7 @@ public class EchoBackEndApi implements IPolicyTestBackEndApi {
                 echoResponse.setBodySha1(DigestUtils.shaHex(requestBody));
             }
             echoResponse.setCounter(counter++);
-            echoResponse.setHeaders(request.getHeaders());
+            echoResponse.setHeaders(request.getHeaders().toMap());
             echoResponse.setMethod(request.getType());
             echoResponse.setResource(request.getDestination());
             echoResponse.setUri("urn:" + request.getDestination());

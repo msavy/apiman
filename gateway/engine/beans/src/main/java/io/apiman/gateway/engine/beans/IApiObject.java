@@ -15,7 +15,7 @@
  */
 package io.apiman.gateway.engine.beans;
 
-import java.util.Map;
+import io.apiman.gateway.engine.beans.util.HeaderMap;
 
 /**
  * Represents common elements of {@link ApiRequest} and {@link ApiResponse}.
@@ -27,10 +27,10 @@ public interface IApiObject {
     /**
      * @return the headers
      */
-    Map<String, String> getHeaders();
+    HeaderMap getHeaders();
 
     /**
      * @param headers the headers to set
      */
-    void setHeaders(Map<String, String> headers);
+    void setHeaders(HeaderMap headers);
 }
