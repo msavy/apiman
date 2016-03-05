@@ -20,18 +20,23 @@ import io.apiman.manager.api.beans.orgs.OrganizationBean;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Models an API.
@@ -65,7 +70,9 @@ public class ApiBean implements Serializable, Cloneable {
     private Date createdOn;
     @Column(name = "num_published", updatable=true, nullable=true)
     private Integer numPublished;
-
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval=true, fetch=FetchType.LAZY, mappedBy="api")
+    @JsonIgnore
+    private Set<ApiVersionBean> apiVersionSet = new LinkedHashSet<>();
 
     /**
      * Constructor.

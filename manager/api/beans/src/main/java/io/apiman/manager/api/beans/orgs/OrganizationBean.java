@@ -15,16 +15,30 @@
  */
 package io.apiman.manager.api.beans.orgs;
 
+<<<<<<< a33125e420b944f4eb60ffe7c7b73b760a5fc97f
+=======
+import io.apiman.manager.api.beans.apis.ApiBean;
+import io.apiman.manager.api.beans.clients.ClientBean;
+import io.apiman.manager.api.beans.plans.PlanBean;
+
+>>>>>>> Initial stab at jpa delete stuff before refactoring...
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * An APIMan Organization.  This is an important top level entity in the APIMan
@@ -54,6 +68,15 @@ public class OrganizationBean implements Serializable {
     private String modifiedBy;
     @Column(name = "modified_on", updatable=true, nullable=false)
     private Date modifiedOn;
+    @OneToMany(fetch=FetchType.LAZY, orphanRemoval=true, cascade={CascadeType.REMOVE}, mappedBy="organization")
+    @JsonIgnore
+    private Set<PlanBean> planSet = new LinkedHashSet<>();
+    @OneToMany(fetch=FetchType.LAZY, orphanRemoval=true, cascade={CascadeType.REMOVE}, mappedBy="organization")
+    @JsonIgnore
+    private Set<ApiBean> apiSet = new LinkedHashSet<>();
+    @OneToMany(fetch=FetchType.LAZY, orphanRemoval=true, cascade={CascadeType.REMOVE}, mappedBy="organization")
+    @JsonIgnore
+    private Set<ClientBean> clientSet = new LinkedHashSet<>();
 
     /**
      * Constructor.
