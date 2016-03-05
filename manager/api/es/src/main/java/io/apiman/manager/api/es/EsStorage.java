@@ -2284,6 +2284,56 @@ public class EsStorage implements IStorage, IStorageQuery {
     }
 
     @Override
+    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) {
+        return null;
+    }
+
+    @Override
+    public Iterator<ClientVersionBean> getAllActiveClientVersions(OrganizationBean organizationBean, int lim) throws StorageException {
+        return null;
+    }
+
+    @Override
+    public Iterator<ApiVersionBean> getAllActiveApiVersions(OrganizationBean organizationBean, int lim) throws StorageException {
+        return null;
+    }
+
+    @Override
+    public Iterator<PlanVersionBean> getAllActivePlanVersions(OrganizationBean organizationBean, int lim) throws StorageException {
+        return null;
+    }
+
+    @Override
+    public void deleteAllMemberships(OrganizationBean organizationBean) throws StorageException {
+
+    }
+
+    @Override
+    public void deleteAllAuditEntries(OrganizationBean organizationBean) throws StorageException {
+
+    }
+
+    @Override
+    public void deleteAllContracts(OrganizationBean organizationBean) throws StorageException {
+
+    }
+
+    @Override
+    public void deleteAllClients(OrganizationBean organizationBean) throws StorageException {
+
+    }
+
+    @Override
+    public void deleteAllPlans(OrganizationBean organizationBean) throws StorageException {
+
+    }
+
+    @Override
+    public void deleteAllApis(OrganizationBean organizationBean) throws StorageException {
+
+    }
+
+    @Override
     public Iterator<RoleMembershipBean> getAllMemberships(String organizationId) throws StorageException {
         return getAll("roleMembership", new IUnmarshaller<RoleMembershipBean>() { //$NON-NLS-1$
             @Override

@@ -455,7 +455,7 @@ public abstract class AbstractJpaStorage {
          */
         @Override
         public void remove() {
-            // Not implemented.
+            throw new UnsupportedOperationException();
         }
 
     }

@@ -122,6 +122,7 @@ import io.apiman.manager.api.rest.contract.exceptions.ClientVersionAlreadyExists
 import io.apiman.manager.api.rest.contract.exceptions.ClientVersionNotFoundException;
 import io.apiman.manager.api.rest.contract.exceptions.ContractAlreadyExistsException;
 import io.apiman.manager.api.rest.contract.exceptions.ContractNotFoundException;
+import io.apiman.manager.api.rest.contract.exceptions.EntityStillActiveException;
 import io.apiman.manager.api.rest.contract.exceptions.GatewayNotFoundException;
 import io.apiman.manager.api.rest.contract.exceptions.InvalidApiStatusException;
 import io.apiman.manager.api.rest.contract.exceptions.InvalidClientStatusException;
@@ -166,6 +167,7 @@ import java.util.TreeMap;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -276,6 +278,76 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             storage.rollbackTx();
             throw new SystemErrorException(e);
         }
+    }
+
+    @Override
+    public OrganizationBean delete(@PathParam("organizationId") String organizationId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
+        try {
+            System.out.println("hello");
+            storage.beginTx();
+            System.out.println("again");
+
+
+            OrganizationBean organizationBean = storage.getOrganization(organizationId);
+
+            // If org bean not found.
+            if (organizationBean == null) {
+                throw ExceptionFactory.organizationNotFoundException(organizationId);
+            }
+
+            // Any active app versions?
+            Iterator<ClientVersionBean> clientAppsVers = storage.getAllActiveClientVersions(organizationBean, 5); // TODO don't use magic number
+            if (clientAppsVers.hasNext()) {
+                throw ExceptionFactory.entityStillActiveExceptionClientVersions(clientAppsVers);
+            }
+
+            // Any active API versions?
+            Iterator<ApiVersionBean> apiVers = storage.getAllActiveApiVersions(organizationBean, 5); // TODO don't use magic number
+            if (apiVers.hasNext()) {
+                throw ExceptionFactory.entityStillActiveExceptionApiVersions(apiVers);
+            }
+
+            // Any unbroken contracts?
+            Iterator<ContractBean> contracts = storage.getAllActiveContracts(organizationBean, 5); // TODO don't use magic number
+            if (contracts.hasNext()) {
+                //throw ExceptionFactory.entityStillActiveExceptionContracts(contracts);
+            }
+
+            // Any active plans versions?
+            Iterator<PlanVersionBean> planVers = storage.getAllActivePlanVersions(organizationBean, 5); // TODO don't use magic number
+            if (planVers.hasNext()) {
+                log.warn("There are locked plans(s): these will be deleted.");
+                //throw ExceptionFactory.entityStillActiveExceptionPlanVersions(planVers);
+            }
+
+            // If we're here, then we assume everything has gone OK so far...
+            // Could we replace this with a cascade setup?
+
+            // Remove memberships
+            storage.deleteAllMemberships(organizationBean);
+            // Remove audit entries (as now orphaned)
+            storage.deleteAllAuditEntries(organizationBean);
+            // Remove contracts
+            storage.deleteAllContracts(organizationBean);
+            // Remove Plans
+            storage.deleteAllPlans(organizationBean);
+            // Remove APIs and ApiVersions
+            storage.deleteAllApis(organizationBean);
+            // Remove Clients and ClientVersions
+            storage.deleteAllClients(organizationBean);
+            // Delete Org container
+            storage.deleteOrganization(organizationBean);
+            // Commit
+            storage.commitTx();
+        } catch (AbstractRestException e) {
+            System.err.println(e);
+            storage.rollbackTx();
+            throw e;
+        } catch (Exception e) {
+            storage.rollbackTx();
+            throw new SystemErrorException(e);
+        }
+        return null;
     }
 
     /**

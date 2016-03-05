@@ -173,4 +173,17 @@ public interface IStorage {
     public Iterator<PolicyBean> getAllPolicies(String organizationId, String entityId, String version, PolicyType type) throws StorageException;
     public Iterator<UserBean> getAllUsers() throws StorageException;
     public Iterator<RoleBean> getAllRoles() throws StorageException;
+
+    // Stuff for delete
+    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) throws StorageException;
+    public Iterator<ClientVersionBean> getAllActiveClientVersions(OrganizationBean organizationBean, int lim) throws StorageException;
+    public Iterator<ApiVersionBean> getAllActiveApiVersions(OrganizationBean organizationBean, int lim) throws StorageException;
+    public Iterator<PlanVersionBean> getAllActivePlanVersions(OrganizationBean organizationBean, int lim) throws StorageException;
+
+    public void deleteAllMemberships(OrganizationBean organizationBean) throws StorageException;
+    public void deleteAllAuditEntries(OrganizationBean organizationBean) throws StorageException;
+    public void deleteAllContracts(OrganizationBean organizationBean) throws StorageException;
+    public void deleteAllClients(OrganizationBean organizationBean) throws StorageException;
+    public void deleteAllPlans(OrganizationBean organizationBean) throws StorageException;
+    public void deleteAllApis(OrganizationBean organizationBean) throws StorageException;
 }
