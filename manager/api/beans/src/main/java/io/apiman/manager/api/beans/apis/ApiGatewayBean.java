@@ -17,6 +17,7 @@ package io.apiman.manager.api.beans.apis;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.Entity;
 import java.io.Serializable;
 
 /**

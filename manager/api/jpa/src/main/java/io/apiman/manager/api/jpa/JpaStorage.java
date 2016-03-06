@@ -90,8 +90,10 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -2371,10 +2373,10 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
 
     @Override
     public void deleteAllApis(OrganizationBean organizationBean) throws StorageException {
+        deleteAllApiVersions(organizationBean);
+
         String jpql = "DELETE ApiBean a "
                 + " WHERE a.organization.id = :orgId";
-
-        deleteAllApiVersions(organizationBean);
 
         Query query = getActiveEntityManager().createQuery(jpql);
         query.setParameter("orgId", organizationBean.getId());
@@ -2382,18 +2384,36 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
     }
 
     private void deleteAllApiVersions(OrganizationBean organizationBean) throws StorageException {
-        String jpql = "DELETE ApiVersionBean deleteBean"
-                + " WHERE deleteBean IN ("
-                + "SELECT v"
-                + "  FROM ApiVersionBean v"
-                + "  JOIN v.api a "
-                + "  JOIN a.organization o "
-                + " WHERE o.id = :orgId "
-                + ")";
+        EntityManager em = getActiveEntityManager();
+        CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+        CriteriaDelete<ApiVersionBean> criteriaDelete = criteriaBuilder.createCriteriaDelete(ApiVersionBean.class);
 
-        Query query = getActiveEntityManager().createQuery(jpql);
-        query.setParameter("orgId", organizationBean.getId());
-        query.executeUpdate();
+
+//        CriteriaDelete delete = criteriaBuilder.createCriteriaDelete(Employee.class);
+//        Root employee = delete.from(Employee.class);
+//        delete.where(criteriaBuilder.greaterThan(employee.get("salary"), 100000));
+//        Query query = entityManager.createQuery(delete);
+//        int rowCount = query.executeUpdate();
+
+        Root<ApiVersionBean> candidate = criteriaDelete.from(ApiVersionBean.class);
+        Subquery<ApiVersionBean> subquery = criteriaDelete.subquery(ApiVersionBean.class);
+        subquery.where(criteriaBuilder.equal(candidate.get("api").get("organization").get("id"), organizationBean.getId()));
+            //    .where(criteriaBuilder.equal(candidate.get("api").get("organization").get("id"), organizationBean.getId()))
+        //);
+        em.createQuery(criteriaDelete).executeUpdate();
+
+//        String jpql = "DELETE ApiVersionBean deleteBean"
+//                + " WHERE deleteBean IN ("
+//                + "SELECT v"
+//                + "  FROM ApiVersionBean v"
+//                + "  JOIN v.api a "
+//                + "  JOIN a.organization o "
+//                + " WHERE o.id = :orgId "
+//                + ")";
+//
+//        Query query = getActiveEntityManager().createQuery(jpql);
+//        query.setParameter("orgId", organizationBean.getId());
+//        query.executeUpdate();
     }
 
     @Override

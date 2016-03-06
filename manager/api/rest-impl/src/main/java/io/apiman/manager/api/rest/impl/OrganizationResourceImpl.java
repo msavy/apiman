@@ -331,10 +331,10 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             storage.deleteAllContracts(organizationBean);
             // Remove Plans
             storage.deleteAllPlans(organizationBean);
-            // Remove APIs and ApiVersions
-            storage.deleteAllApis(organizationBean);
             // Remove Clients and ClientVersions
             storage.deleteAllClients(organizationBean);
+            // Remove APIs and ApiVersions
+            storage.deleteAllApis(organizationBean);
             // Delete Org container
             storage.deleteOrganization(organizationBean);
             // Commit
