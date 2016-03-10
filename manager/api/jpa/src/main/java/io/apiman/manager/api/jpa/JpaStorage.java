@@ -74,7 +74,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2227,21 +2226,45 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
 
     @Override
     public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) throws StorageException {
-        return Collections.emptyIterator(); // TODO If any of the parties are in the org we're trying to delete! (i.e. check each one)
-//        String jpql = "SELECT v "
-//                + " FROM ContractVersionBean v "
-//                + " JOIN v.client c "
-//                + " JOIN c.organization o "
-//                + "WHERE o.id = :orgId "
-//                + "  AND v.status = :status";
-//
-//        Query query = getActiveEntityManager().createQuery(jpql);
-//        query.setParameter("orgId", organizationBean.getId());
-//        query.setParameter("status", ClientStatus.Registered);
-//        if (lim > 0) {
-//            query.setMaxResults(lim); // TODO does this apply pre or post query
-//        }
-//        return super.getAll(ContractBean.class, query);
+        String jpql =
+                  " SELECT contractBean "
+                + " FROM ContractBean contractBean "
+                // Api
+                + " JOIN contractBean.api apiVersion "
+                + " JOIN apiVersion.api api "
+                + " JOIN api.organization apiOrg "
+                // Client
+                + " JOIN contractBean.client clientVersion "
+                + " JOIN clientVersion.client client "
+                + " JOIN api.organization clientOrg "
+                // Check API status
+                + " WHERE (apiOrg.id = :orgId AND apiVersion.status = :apiStatus)"
+                // Check In-Org ClientApp status
+                + " OR (clientOrg.id = :orgId AND clientVersion.status = :clientStatus)"
+                // Check Out-Org ClientApp status
+                + " OR contractBean IN ( "
+                      + " SELECT cb2 FROM ContractBean cb2  "
+                      // Client
+                      + " JOIN cb2.client cb2ClientVersion "
+                      // Api
+                      + " JOIN cb2.api cb2ApiVersion "
+                      + " JOIN cb2ApiVersion.api cb2Api "
+                      + " JOIN cb2Api.organization cb2ApiOrg "
+                      // All contracts where Client still registered
+                      // AND API is member of candidate Org
+                      + " WHERE cb2ClientVersion.status = :clientStatus "
+                      + " AND cb2ApiOrg.id = :orgId "
+                + ")";
+
+        Query query = getActiveEntityManager().createQuery(jpql);
+        query.setParameter("orgId", organizationBean.getId());
+        query.setParameter("clientStatus", ClientStatus.Registered);
+        query.setParameter("apiStatus", ApiStatus.Published);
+
+        if (lim > 0) {
+            query.setMaxResults(lim);
+        }
+        return super.getAll(ContractBean.class, query);
     }
 
     @Override
@@ -2257,7 +2280,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.setParameter("orgId", organizationBean.getId());
         query.setParameter("status", ClientStatus.Registered);
         if (lim > 0) {
-            query.setMaxResults(lim); // TODO does this apply pre or post query
+            query.setMaxResults(lim);
         }
         return super.getAll(ClientVersionBean.class, query);
     }
@@ -2276,7 +2299,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.setParameter("orgId", organizationBean.getId());
         query.setParameter("status", ApiStatus.Published);
         if (lim > 0) {
-            query.setMaxResults(lim); // TODO does this apply pre or post query
+            query.setMaxResults(lim);
         }
         return super.getAll(ApiVersionBean.class, query);
     }
@@ -2294,7 +2317,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.setParameter("orgId", organizationBean.getId());
         query.setParameter("status", PlanStatus.Locked);
         if (lim > 0) {
-            query.setMaxResults(lim); // TODO does this apply pre or post query
+            query.setMaxResults(lim);
         }
         return super.getAll(PlanVersionBean.class, query);
     }
@@ -2373,14 +2396,19 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
 
     @Override
     public void deleteAllApis(OrganizationBean organizationBean) throws StorageException {
-        deleteAllApiVersions(organizationBean);
+//        deleteAllApiVersions(organizationBean);
+//
+//        String jpql = "DELETE ApiBean a "
+//                + " WHERE a.organization.id = :orgId";
+//
+//        Query query = getActiveEntityManager().createQuery(jpql);
+//        query.setParameter("orgId", organizationBean.getId());
+//        query.executeUpdate();
 
-        String jpql = "DELETE ApiBean a "
-                + " WHERE a.organization.id = :orgId";
+        EntityManager em = getActiveEntityManager();
+        //em.
 
-        Query query = getActiveEntityManager().createQuery(jpql);
-        query.setParameter("orgId", organizationBean.getId());
-        query.executeUpdate();
+
     }
 
     private void deleteAllApiVersions(OrganizationBean organizationBean) throws StorageException {

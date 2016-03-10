@@ -15,10 +15,14 @@
  */
 package io.apiman.manager.api.beans.apis;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.apiman.manager.api.beans.orgs.OrganizationBasedCompositeId;
 import io.apiman.manager.api.beans.orgs.OrganizationBean;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -26,9 +30,10 @@ import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.io.Serializable;
-import java.util.Date;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Models an API.
@@ -63,6 +68,13 @@ public class ApiBean implements Serializable {
     @Column(name = "num_published", updatable=true, nullable=true)
     private Integer numPublished;
 
+
+//    // Is this bad?
+//    @JoinColumns({
+//        @JoinColumn(name="api_version_id", referencedColumnName="id"),
+//    })
+//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval=true)
+//    private Set<ApiVersionBean> apiVersionBeans;
 
     /**
      * Constructor.
@@ -178,4 +190,12 @@ public class ApiBean implements Serializable {
                 + ", description=" + description + ", createdBy=" + createdBy + ", createdOn=" + createdOn
                 + "]";
     }
+
+//    public Set<ApiVersionBean> getApiVersionBeans() {
+//        return apiVersionBeans;
+//    }
+//
+//    public void setApiVersionBeans(Set<ApiVersionBean> apiVersionBeans) {
+//        this.apiVersionBeans = apiVersionBeans;
+//    }
 }

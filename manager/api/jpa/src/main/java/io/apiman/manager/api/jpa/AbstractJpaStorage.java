@@ -117,6 +117,20 @@ public abstract class AbstractJpaStorage {
         }
     }
 
+    protected void rollbackTx(Exception e) {
+        e.printStackTrace();
+
+        if (activeEM.get() == null) {
+            throw new RuntimeException("Transaction not active."); //$NON-NLS-1$
+        }
+        try {
+            JpaUtil.rollbackQuietly(activeEM.get());
+        } finally {
+            activeEM.get().close();
+            activeEM.set(null);
+        }
+    }
+
     /**
      * @return the thread's entity manager
      * @throws StorageException if a storage problem occurs while storing a bean
