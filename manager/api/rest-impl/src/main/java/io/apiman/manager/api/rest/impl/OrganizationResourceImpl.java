@@ -293,32 +293,28 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             }
 
             // Any active app versions?
-//            Iterator<ClientVersionBean> clientAppsVers = storage.getAllActiveClientVersions(organizationBean, 5); // TODO don't use magic number
-//            if (clientAppsVers.hasNext()) {
-//                throw ExceptionFactory.entityStillActiveExceptionClientVersions(clientAppsVers);
-//            }
+            Iterator<ClientVersionBean> clientAppsVers = storage.getAllClientVersions(organizationBean, ClientStatus.Registered, 5);
+            if (clientAppsVers.hasNext()) {
+                throw ExceptionFactory.entityStillActiveExceptionClientVersions(clientAppsVers);
+            }
 
             // Any active API versions?
-//            Iterator<ApiVersionBean> apiVers = storage.getAllActiveApiVersions(organizationBean, 5); // TODO don't use magic number
-//            if (apiVers.hasNext()) {
-//                throw ExceptionFactory.entityStillActiveExceptionApiVersions(apiVers);
-//            }
+            Iterator<ApiVersionBean> apiVers = storage.getAllApiVersions(organizationBean, ApiStatus.Published, 5);
+            if (apiVers.hasNext()) {
+                throw ExceptionFactory.entityStillActiveExceptionApiVersions(apiVers);
+            }
 
             // Any unbroken contracts?
-            Iterator<ContractBean> contracts = storage.getAllActiveContracts(organizationBean, 5); // TODO don't use magic number
+            Iterator<ContractBean> contracts = storage.getAllActiveContracts(organizationBean, 5);
             if (contracts.hasNext()) {
                 throw ExceptionFactory.entityStillActiveExceptionContracts(contracts);
             }
 
             // Any active plans versions?
-//            Iterator<PlanVersionBean> planVers = storage.getAllActivePlanVersions(organizationBean, 5); // TODO don't use magic number
-//            if (planVers.hasNext()) {
-//                log.warn("There are locked plans(s): these will be deleted.");
-//                //throw ExceptionFactory.entityStillActiveExceptionPlanVersions(planVers);
-//            }
-
-            // If we're here, then we assume everything has gone OK so far...
-            // Could we replace this with a cascade setup?
+            Iterator<PlanVersionBean> planVers = storage.getAllPlanVersions(organizationBean, 5);
+            if (planVers.hasNext()) {
+                log.warn("There are locked plans(s): these will be deleted."); //$NON-NLS-1$
+            }
 
             // Remove memberships
             storage.deleteAllMemberships(organizationBean);
@@ -326,6 +322,8 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             storage.deleteAllAuditEntries(organizationBean);
             // Remove contracts
             storage.deleteAllContracts(organizationBean);
+            // Remove Policies
+            storage.deleteAllPolicies(organizationBean);
             // Remove Plans
             storage.deleteAllPlans(organizationBean);
             // Remove Clients and ClientVersions
@@ -337,11 +335,9 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             // Commit
             storage.commitTx();
         } catch (AbstractRestException e) {
-            e.printStackTrace(System.err);
             storage.rollbackTx();
             throw e;
         } catch (Exception e) {
-            e.printStackTrace(System.err);
             storage.rollbackTx();
             throw new SystemErrorException(e);
         }
