@@ -120,7 +120,12 @@ public interface IOrganizationResource {
      */
     @DELETE
     @Path("{organizationId}")
-    public OrganizationBean delete(@PathParam("organizationId") String organizationId) throws OrganizationNotFoundException,
+    public void delete(@PathParam("organizationId") String organizationId) throws OrganizationNotFoundException,
+            NotAuthorizedException, EntityStillActiveException;
+
+    @DELETE
+    @Path("{organizationId}/clients/{clientId}")
+    public void deleteClient(@PathParam("organizationId") String organizationId, @PathParam("clientId") String clientId) throws OrganizationNotFoundException,
             NotAuthorizedException, EntityStillActiveException;
 
     /**

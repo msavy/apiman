@@ -372,6 +372,21 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
      */
     @Override
     public void deleteOrganization(OrganizationBean organization) throws StorageException {
+        // Remove memberships
+        deleteAllMemberships(organization);
+        // Remove audit entries (as now orphaned)
+        deleteAllAuditEntries(organization);
+        // Remove contracts
+        deleteAllContracts(organization);
+        // Remove Policies
+        deleteAllPolicies(organization);
+        // Remove Plans
+        deleteAllPlans(organization);
+        // Remove Clients and ClientVersions
+        deleteAllClients(organization);
+        // Remove APIs and ApiVersions
+        deleteAllApis(organization);
+        // Delete org container
         super.delete(organization);
     }
 
@@ -2299,7 +2314,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         return super.getAll(PlanVersionBean.class, query);
     }
 
-    @Override
+    //@Override
     public void deleteAllPolicies(OrganizationBean organizationBean) throws StorageException {
         String jpql = "DELETE PolicyBean b "
                     + " WHERE b.organizationId = :orgId ";
@@ -2308,7 +2323,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.setParameter("orgId", organizationBean.getId());
     }
 
-    @Override
+    //@Override
     public void deleteAllMemberships(OrganizationBean organizationBean) throws StorageException {
         String jpql = "DELETE RoleMembershipBean b "
                     + " WHERE b.organizationId = :orgId ";
@@ -2318,7 +2333,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.executeUpdate();
     }
 
-    @Override
+    //@Override
     public void deleteAllAuditEntries(OrganizationBean organizationBean) throws StorageException {
         String jpql = "DELETE AuditEntryBean b "
                     + " WHERE b.organizationId = :orgId ";
@@ -2328,7 +2343,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.executeUpdate();
     }
 
-    @Override
+    //@Override
     public void deleteAllContracts(OrganizationBean organizationBean) throws StorageException {
         // ContractBean -> ClientVersion -> Client -> Org
         String jpql = "DELETE ContractBean deleteBean "
@@ -2351,26 +2366,29 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         em.remove(em.contains(entity) ? entity : em.merge(entity));
     }
 
-    @Override
+    //@Override
     public void deleteAllClients(OrganizationBean organizationBean) throws StorageException {
         for (Iterator<ClientVersionBean> iterator = getAllClientVersions(organizationBean, -1); iterator.hasNext();) {
             remove(iterator.next());
         }
 
-        for (Iterator<ClientVersionBean> iterator = getAllClients(organizationBean, -1); iterator.hasNext();) {
+        for (Iterator<ClientBean> iterator = getAllClients(organizationBean.getId()); iterator.hasNext();) {
             remove(iterator.next());
         }
-        //getAllClients(organizationBean.getId()).forEachRemaining(em::remove);
     }
 
-    @Override
+    //@Override
     public void deleteAllApis(OrganizationBean organizationBean) throws StorageException {
-        EntityManager em = getActiveEntityManager();
-        getAllApiVersions(organizationBean, -1).forEachRemaining(em::remove);
-        getAllApis(organizationBean.getId()).forEachRemaining(em::remove);
+        for (Iterator<ApiVersionBean> iterator = getAllApiVersions(organizationBean, -1); iterator.hasNext();) {
+            remove(iterator.next());
+        }
+
+        for (Iterator<ApiBean> iterator = getAllApis(organizationBean.getId()); iterator.hasNext();) {
+            remove(iterator.next());
+        }
     }
 
-    @Override
+    //@Override
     public void deleteAllPlans(OrganizationBean organizationBean) throws StorageException {
         deleteAllPlanVersions(organizationBean);
 

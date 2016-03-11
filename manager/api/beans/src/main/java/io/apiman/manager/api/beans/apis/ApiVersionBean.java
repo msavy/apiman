@@ -57,7 +57,7 @@ public class ApiVersionBean implements Serializable {
 
     @Id @GeneratedValue
     private Long id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = )
     @JoinColumns({
         @JoinColumn(name="api_id", referencedColumnName="id"),
         @JoinColumn(name="api_org_id", referencedColumnName="organization_id")

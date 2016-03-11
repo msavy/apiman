@@ -16,20 +16,15 @@
 package io.apiman.manager.api.rest.impl.util;
 
 import io.apiman.common.plugin.PluginCoordinates;
-import io.apiman.manager.api.beans.apis.ApiBean;
 import io.apiman.manager.api.beans.apis.ApiVersionBean;
-import io.apiman.manager.api.beans.clients.ClientBean;
 import io.apiman.manager.api.beans.clients.ClientVersionBean;
 import io.apiman.manager.api.beans.contracts.ContractBean;
 import io.apiman.manager.api.beans.plans.PlanVersionBean;
-import io.apiman.manager.api.beans.summary.ContractSummaryBean;
 import io.apiman.manager.api.rest.contract.exceptions.*;
 import io.apiman.manager.api.rest.impl.i18n.Messages;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Simple factory for creating REST exceptions.
@@ -395,26 +390,32 @@ public final class ExceptionFactory {
         return new InvalidVersionException(message);
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionContracts(Iterator<ContractBean> contracts) { // TODO error string
-        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveContracts", joinIterator(contracts))); //$NON-NLS-1$
+    public static EntityStillActiveException entityStillActiveExceptionContracts(List<ContractBean> contracts) { // TODO error string
+        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveContracts", joinList(contracts))); //$NON-NLS-1$
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionClientVersions(Iterator<ClientVersionBean> clientApps) { // TODO error string
-        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveClientApps", joinIterator(clientApps))); //$NON-NLS-1$
+    public static EntityStillActiveException entityStillActiveExceptionClientVersions(List<ClientVersionBean> clientApps) { // TODO error string
+        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveClientApps", joinList(clientApps))); //$NON-NLS-1$
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionApiVersions(Iterator<ApiVersionBean> apis) { // TODO error string
-        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinIterator(apis))); //$NON-NLS-1$
+    public static EntityStillActiveException entityStillActiveExceptionApiVersions(List<ApiVersionBean> apis) { // TODO error string
+        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinList(apis))); //$NON-NLS-1$
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionPlanVersions(Iterator<PlanVersionBean> plans) { // TODO error string
-        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinIterator(plans))); //$NON-NLS-1$
+    public static EntityStillActiveException entityStillActiveExceptionPlanVersions(List<PlanVersionBean> plans) { // TODO error string
+        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinList(plans))); //$NON-NLS-1$
     }
 
-    private static <T> String joinIterator(Iterator<T> iter) {
-        Iterable<T> iterable = () -> iter;
-        return StreamSupport.stream(iterable.spliterator(), false)
+    private static <T> String joinList(List<T> items) {
+        return items.stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(", "));
     }
+
+//    private static <T> String joinList(Iterator<T> iter) {
+//        Iterable<T> iterable = () -> iter;
+//        return StreamSupport.stream(iterable.spliterator(), false)
+//                .map(Object::toString)
+//                .collect(Collectors.joining(", "));
+//    }
 }

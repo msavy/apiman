@@ -163,6 +163,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -281,7 +283,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     }
 
     @Override
-    public OrganizationBean delete(@PathParam("organizationId") String organizationId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
+    public void delete(@PathParam("organizationId") String organizationId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
         try {
             storage.beginTx();
 
@@ -316,21 +318,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
                 log.warn("There are locked plans(s): these will be deleted."); //$NON-NLS-1$
             }
 
-            // Remove memberships
-            storage.deleteAllMemberships(organizationBean);
-            // Remove audit entries (as now orphaned)
-            storage.deleteAllAuditEntries(organizationBean);
-            // Remove contracts
-            storage.deleteAllContracts(organizationBean);
-            // Remove Policies
-            storage.deleteAllPolicies(organizationBean);
-            // Remove Plans
-            storage.deleteAllPlans(organizationBean);
-            // Remove Clients and ClientVersions
-            storage.deleteAllClients(organizationBean);
-            // Remove APIs and ApiVersions
-            storage.deleteAllApis(organizationBean);
-            // Delete Org container
+            // Delete org
             storage.deleteOrganization(organizationBean);
             // Commit
             storage.commitTx();
@@ -341,7 +329,34 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             storage.rollbackTx();
             throw new SystemErrorException(e);
         }
-        return null;
+    }
+
+    @Override
+    public void deleteClient(@PathParam("organizationId") String organizationId, @PathParam("clientId") String clientId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
+        try {
+            storage.beginTx();
+
+            ClientBean client = getClient(organizationId, clientId);
+            Iterator<ClientVersionBean> clientVersions = storage.getAllClientVersions(organizationId, clientId);
+            Iterable<ClientVersionBean> iterable = () -> clientVersions;
+
+            List<ClientVersionBean> registeredElems = StreamSupport.stream(iterable.spliterator(), false)
+                    .filter(clientVersion -> clientVersion.getStatus() == ClientStatus.Registered)
+                    .limit(5)
+                    .collect(Collectors.toList());
+
+            if (!registeredElems.isEmpty()) {
+                throw ExceptionFactory.entityStillActiveExceptionClientVersions(registeredElems);
+            }
+            
+            storage.deleteClient(client);
+        } catch (AbstractRestException e) {
+            storage.rollbackTx();
+            throw e;
+        } catch (Exception e) {
+            storage.rollbackTx();
+            throw new SystemErrorException(e);
+        }
     }
 
     /**
