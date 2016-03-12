@@ -157,7 +157,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -348,8 +347,36 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             if (!registeredElems.isEmpty()) {
                 throw ExceptionFactory.entityStillActiveExceptionClientVersions(registeredElems);
             }
-            
+
             storage.deleteClient(client);
+        } catch (AbstractRestException e) {
+            storage.rollbackTx();
+            throw e;
+        } catch (Exception e) {
+            storage.rollbackTx();
+            throw new SystemErrorException(e);
+        }
+    }
+
+    @Override
+    public void deleteApi(@PathParam("organizationId") String organizationId, @PathParam("apiId") String apiId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
+        try {
+            storage.beginTx();
+
+            ApiBean api = getApi(organizationId, apiId);
+            Iterator<ApiVersionBean> apiVersions = storage.getAllApiVersions(organizationId, apiId);
+            Iterable<ApiVersionBean> iterable = () -> apiVersions;
+
+            List<ApiVersionBean> registeredElems = StreamSupport.stream(iterable.spliterator(), false)
+                    .filter(clientVersion -> clientVersion.getStatus() == ApiStatus.Published)
+                    .limit(5)
+                    .collect(Collectors.toList());
+
+            if (!registeredElems.isEmpty()) {
+                throw ExceptionFactory.entityStillActiveExceptionApiVersions(registeredElems);
+            }
+
+            storage.deleteApi(api);
         } catch (AbstractRestException e) {
             storage.rollbackTx();
             throw e;
@@ -1492,57 +1519,6 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             throw e;
         } catch (Exception e) {
             storage.rollbackTx();
-            throw new SystemErrorException(e);
-        }
-    }
-
-    /**
-     * @see io.apiman.manager.api.rest.contract.IOrganizationResource#deleteApi(java.lang.String, java.lang.String)
-     */
-    @Override
-    public void deleteApi(String organizationId, String apiId)
-            throws ApiNotFoundException, NotAuthorizedException, InvalidApiStatusException {
-        ApiBean api;
-        Iterator<ApiVersionBean> apiVersions;
-
-        if (!securityContext.hasPermission(PermissionType.apiAdmin, organizationId))
-            throw ExceptionFactory.notAuthorizedException();
-
-        try {
-            storage.beginTx();
-
-            apiVersions = storage.getAllApiVersions(organizationId, apiId);
-            api = storage.getApi(organizationId, apiId);
-
-            if (api == null) {
-                throw ExceptionFactory.apiNotFoundException(apiId);
-            } else if (api.getNumPublished() != null && api.getNumPublished() > 0) {
-                // TODO: when an API is retired, we'll need to break all its contracts or else FK constraints will prevent us from deleting it
-                throw new InvalidApiStatusException(Messages.i18n.format("ApiPublished")); //$NON-NLS-1$
-            }
-
-            // Gather up all the versions
-            List<ApiVersionBean> allApiVersions = new LinkedList<>();
-            while (apiVersions.hasNext()) {
-                ApiVersionBean version = apiVersions.next();
-                allApiVersions.add(version);
-            }
-
-            // Delete each one - the storage is responsible for deleting everything associated with a version.
-            for (ApiVersionBean version : allApiVersions) {
-                storage.deleteApiVersion(version);
-            }
-
-            storage.deleteApi(api);
-
-            storage.commitTx();
-        } catch (AbstractRestException e) {
-            storage.rollbackTx();
-            log.error(e);
-            throw e;
-        } catch (Exception e) {
-            storage.rollbackTx();
-            log.error(e);
             throw new SystemErrorException(e);
         }
     }

@@ -232,6 +232,7 @@ public abstract class AbstractJpaStorage {
         return rval;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected <T> Iterator<T> getAll(Class<T> type, Query query) throws StorageException {
         return new EntityIterator(type, query);
     }
@@ -403,14 +404,14 @@ public abstract class AbstractJpaStorage {
         private Query query;
         private int pageIndex = 0;
         private int pageSize = 100;
-        
+
         private int resultIndex;
         private List<T> results;
 
         /**
          * Constructor.
-         * @param query
-         * @throws StorageException
+         * @param query the query
+         * @throws StorageException if a storage problem occurs while storing a bean.
          */
         public EntityIterator(Class<T> type, Query query) throws StorageException {
             this.query = query;
@@ -463,7 +464,7 @@ public abstract class AbstractJpaStorage {
                 throw new RuntimeException(e);
             }
         }
-        
+
         /**
          * @see java.util.Iterator#remove()
          */

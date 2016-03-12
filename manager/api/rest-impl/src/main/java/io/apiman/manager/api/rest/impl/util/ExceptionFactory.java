@@ -23,8 +23,10 @@ import io.apiman.manager.api.beans.plans.PlanVersionBean;
 import io.apiman.manager.api.rest.contract.exceptions.*;
 import io.apiman.manager.api.rest.impl.i18n.Messages;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * Simple factory for creating REST exceptions.
@@ -406,16 +408,32 @@ public final class ExceptionFactory {
         return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinList(plans))); //$NON-NLS-1$
     }
 
+    public static EntityStillActiveException entityStillActiveExceptionContracts(Iterator<ContractBean> contracts) { // TODO error string
+        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveContracts", joinIter(contracts))); //$NON-NLS-1$
+    }
+
+    public static EntityStillActiveException entityStillActiveExceptionClientVersions(Iterator<ClientVersionBean> clientApps) { // TODO error string
+        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveClientApps", joinIter(clientApps))); //$NON-NLS-1$
+    }
+
+    public static EntityStillActiveException entityStillActiveExceptionApiVersions(Iterator<ApiVersionBean> apis) { // TODO error string
+        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinIter(apis))); //$NON-NLS-1$
+    }
+
+    public static EntityStillActiveException entityStillActiveExceptionPlanVersions(Iterator<PlanVersionBean> plans) { // TODO error string
+        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinIter(plans))); //$NON-NLS-1$
+    }
+
     private static <T> String joinList(List<T> items) {
         return items.stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(", "));
     }
 
-//    private static <T> String joinList(Iterator<T> iter) {
-//        Iterable<T> iterable = () -> iter;
-//        return StreamSupport.stream(iterable.spliterator(), false)
-//                .map(Object::toString)
-//                .collect(Collectors.joining(", "));
-//    }
+    private static <T> String joinIter(Iterator<T> iter) {
+        Iterable<T> iterable = () -> iter;
+        return StreamSupport.stream(iterable.spliterator(), false)
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+    }
 }
