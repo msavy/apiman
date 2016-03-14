@@ -392,36 +392,28 @@ public final class ExceptionFactory {
         return new InvalidVersionException(message);
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionContracts(List<ContractBean> contracts) { // TODO error string
+    public static EntityStillActiveException entityStillActiveExceptionContracts(List<ContractBean> contracts) {
         return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveContracts", joinList(contracts))); //$NON-NLS-1$
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionClientVersions(List<ClientVersionBean> clientApps) { // TODO error string
+    public static EntityStillActiveException entityStillActiveExceptionClientVersions(List<ClientVersionBean> clientApps) {
         return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveClientApps", joinList(clientApps))); //$NON-NLS-1$
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionApiVersions(List<ApiVersionBean> apis) { // TODO error string
+    public static EntityStillActiveException entityStillActiveExceptionApiVersions(List<ApiVersionBean> apis) {
         return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinList(apis))); //$NON-NLS-1$
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionPlanVersions(List<PlanVersionBean> plans) { // TODO error string
-        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinList(plans))); //$NON-NLS-1$
-    }
-
-    public static EntityStillActiveException entityStillActiveExceptionContracts(Iterator<ContractBean> contracts) { // TODO error string
+    public static EntityStillActiveException entityStillActiveExceptionContracts(Iterator<ContractBean> contracts) {
         return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveContracts", joinIter(contracts))); //$NON-NLS-1$
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionClientVersions(Iterator<ClientVersionBean> clientApps) { // TODO error string
+    public static EntityStillActiveException entityStillActiveExceptionClientVersions(Iterator<ClientVersionBean> clientApps) {
         return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveClientApps", joinIter(clientApps))); //$NON-NLS-1$
     }
 
-    public static EntityStillActiveException entityStillActiveExceptionApiVersions(Iterator<ApiVersionBean> apis) { // TODO error string
+    public static EntityStillActiveException entityStillActiveExceptionApiVersions(Iterator<ApiVersionBean> apis) {
         return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinIter(apis))); //$NON-NLS-1$
-    }
-
-    public static EntityStillActiveException entityStillActiveExceptionPlanVersions(Iterator<PlanVersionBean> plans) { // TODO error string
-        return new EntityStillActiveException(Messages.i18n.format("EntityStillActiveApis", joinIter(plans))); //$NON-NLS-1$
     }
 
     private static <T> String joinList(List<T> items) {
