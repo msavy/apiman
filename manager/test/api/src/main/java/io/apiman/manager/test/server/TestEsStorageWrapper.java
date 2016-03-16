@@ -16,9 +16,11 @@
 package io.apiman.manager.test.server;
 
 import io.apiman.manager.api.beans.apis.ApiBean;
+import io.apiman.manager.api.beans.apis.ApiStatus;
 import io.apiman.manager.api.beans.apis.ApiVersionBean;
 import io.apiman.manager.api.beans.audit.AuditEntryBean;
 import io.apiman.manager.api.beans.clients.ClientBean;
+import io.apiman.manager.api.beans.clients.ClientStatus;
 import io.apiman.manager.api.beans.clients.ClientVersionBean;
 import io.apiman.manager.api.beans.contracts.ContractBean;
 import io.apiman.manager.api.beans.download.DownloadBean;
@@ -28,6 +30,7 @@ import io.apiman.manager.api.beans.idm.RoleMembershipBean;
 import io.apiman.manager.api.beans.idm.UserBean;
 import io.apiman.manager.api.beans.orgs.OrganizationBean;
 import io.apiman.manager.api.beans.plans.PlanBean;
+import io.apiman.manager.api.beans.plans.PlanStatus;
 import io.apiman.manager.api.beans.plans.PlanVersionBean;
 import io.apiman.manager.api.beans.plugins.PluginBean;
 import io.apiman.manager.api.beans.policies.PolicyBean;
@@ -688,48 +691,33 @@ public class TestEsStorageWrapper implements IStorage {
     }
 
     @Override
-    public Iterator<ClientVersionBean> getAllActiveClientVersions(OrganizationBean organizationBean, int lim) throws StorageException {
+    public Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, int lim) throws StorageException {
         return null;
     }
 
     @Override
-    public Iterator<ApiVersionBean> getAllActiveApiVersions(OrganizationBean organizationBean, int lim) throws StorageException {
+    public Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, ClientStatus status, int lim) throws StorageException {
         return null;
     }
 
     @Override
-    public Iterator<PlanVersionBean> getAllActivePlanVersions(OrganizationBean organizationBean, int lim) throws StorageException {
+    public Iterator<ApiVersionBean> getAllApiVersions(OrganizationBean organizationBean, int lim) throws StorageException {
         return null;
     }
 
     @Override
-    public void deleteAllMemberships(OrganizationBean organizationBean) throws StorageException {
-
+    public Iterator<ApiVersionBean> getAllApiVersions(OrganizationBean organizationBean, ApiStatus status, int lim) throws StorageException {
+        return null;
     }
 
     @Override
-    public void deleteAllAuditEntries(OrganizationBean organizationBean) throws StorageException {
-
+    public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, int lim) throws StorageException {
+        return null;
     }
 
     @Override
-    public void deleteAllContracts(OrganizationBean organizationBean) throws StorageException {
-
-    }
-
-    @Override
-    public void deleteAllClients(OrganizationBean organizationBean) throws StorageException {
-
-    }
-
-    @Override
-    public void deleteAllPlans(OrganizationBean organizationBean) throws StorageException {
-
-    }
-
-    @Override
-    public void deleteAllApis(OrganizationBean organizationBean) throws StorageException {
-
+    public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, PlanStatus status, int lim) throws StorageException {
+        return null;
     }
 
     /**
