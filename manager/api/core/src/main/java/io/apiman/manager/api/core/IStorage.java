@@ -189,6 +189,14 @@ public interface IStorage {
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, int lim) throws StorageException;
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, PlanStatus status, int lim) throws StorageException;
 
+    default <T> void remove(T entity) throws StorageException {
+
+    }
+
+    default <T> void flush() throws StorageException {
+
+    }
+
     //public void deleteAllPolicies(OrganizationBean organizationBean) throws StorageException;
     //public void deleteAllMemberships(OrganizationBean organizationBean) throws StorageException;
     //public void deleteAllAuditEntries(OrganizationBean organizationBean) throws StorageException;

@@ -15,19 +15,12 @@
  */
 package io.apiman.test.common.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import io.apiman.test.common.plan.TestGroupType;
 import io.apiman.test.common.plan.TestPlan;
 import io.apiman.test.common.plan.TestType;
 import io.apiman.test.common.resttest.RestTest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.ProtocolException;
@@ -59,6 +52,14 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -212,9 +213,16 @@ public class TestPlanRunner {
     private void assertResponse(RestTest restTest, Response response) {
         int actualStatusCode = response.code();
         try {
-            Assert.assertEquals("Unexpected REST response status code.  Status message: "
-                    + response.message(), restTest.getExpectedStatusCode(),
-                    actualStatusCode);
+//            Assert.assertEquals("Unexpected REST response status code.  Status message: "
+//                    + response.message(), restTest.getExpectedStatusCode(),
+//                    actualStatusCode);
+
+            if (restTest.getExpectedStatusCode() != actualStatusCode) {
+                System.err.println(response.body().string());
+                throw new RuntimeException("expected " + restTest.getExpectedStatusCode() + " got " + actualStatusCode);
+            }
+
+            //System.out.println(response.body().string());
         } catch (Error e) {
             if (actualStatusCode >= 400) {
                 InputStream content = null;
@@ -232,7 +240,11 @@ public class TestPlanRunner {
                 }
             }
             throw e;
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+
         for (Entry<String, String> entry : restTest.getExpectedResponseHeaders().entrySet()) {
             String expectedHeaderName = entry.getKey();
             if (expectedHeaderName.startsWith("X-RestTest-"))
@@ -285,7 +297,7 @@ public class TestPlanRunner {
             JsonNode actualJson = jacksonParser.readTree(inputStream);
             bindVariables(actualJson, restTest);
             String expectedPayload = TestUtil.doPropertyReplacement(restTest.getExpectedResponsePayload());
-            Assert.assertNotNull("REST Test missing expected JSON payload.", expectedPayload);
+            Assert.assertNotNull(String.format("REST Test missing expected JSON payload: '%s' got '%s'", expectedPayload, actualJson), expectedPayload);
             JsonNode expectedJson = jacksonParser.readTree(expectedPayload);
             try {
                 assertJson(restTest, expectedJson, actualJson);

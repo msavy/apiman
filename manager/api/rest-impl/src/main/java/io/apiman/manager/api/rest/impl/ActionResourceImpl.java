@@ -138,6 +138,8 @@ public class ActionResourceImpl implements IActionResource {
 
         // Validate that it's ok to perform this action - API must be Ready.
         if (!versionBean.isPublicAPI() && versionBean.getStatus() != ApiStatus.Ready) {
+            System.err.println(versionBean.getStatus());
+            System.err.println(versionBean);
             throw ExceptionFactory.actionException(Messages.i18n.format("InvalidApiStatus")); //$NON-NLS-1$
         }
         if (versionBean.isPublicAPI()) {
@@ -226,6 +228,7 @@ public class ActionResourceImpl implements IActionResource {
             throw ExceptionFactory.actionException(Messages.i18n.format("PublishError"), e); //$NON-NLS-1$
         } catch (Exception e) {
             storage.rollbackTx();
+            System.err.println(e);
             throw ExceptionFactory.actionException(Messages.i18n.format("PublishError"), e); //$NON-NLS-1$
         }
 
@@ -404,14 +407,14 @@ public class ActionResourceImpl implements IActionResource {
                     GatewayBean gbean = gateways.next();
                     if (!links.containsKey(gbean.getId())) {
                         IGatewayLink gatewayLink = createGatewayLink(gbean.getId());
-                        
+
                         try {
                             gatewayLink.unregisterClient(client);
                         } catch (Exception e) {
                             // We need to catch the error, but ignore it,
                             // in the event that the gateway is invalid.
                         }
-                        
+
                         gatewayLink.close();
                     }
                 }

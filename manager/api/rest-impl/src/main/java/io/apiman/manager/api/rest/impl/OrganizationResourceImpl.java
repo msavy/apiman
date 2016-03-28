@@ -285,9 +285,10 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     public void delete(@PathParam("organizationId") String organizationId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
         try {
             storage.beginTx();
+            OrganizationBean organizationBean = (OrganizationBean) storage.getOrganization(organizationId).clone();
+            storage.commitTx();
 
-            OrganizationBean organizationBean = storage.getOrganization(organizationId);
-
+            storage.beginTx();
             // If org bean not found.
             if (organizationBean == null) {
                 throw ExceptionFactory.organizationNotFoundException(organizationId);
@@ -320,7 +321,17 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             // Delete org
             storage.deleteOrganization(organizationBean);
             // Commit
+//            storage.commitTx();
+
+            //storage.beginTx();
+            storage.flush();
+
+            //storage.remove(organizationBean);
+
+
+
             storage.commitTx();
+
         } catch (AbstractRestException e) {
             storage.rollbackTx();
             throw e;
@@ -333,9 +344,8 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     @Override
     public void deleteClient(@PathParam("organizationId") String organizationId, @PathParam("clientId") String clientId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
         try {
-            storage.beginTx();
-
             ClientBean client = getClient(organizationId, clientId);
+            storage.beginTx();
             Iterator<ClientVersionBean> clientVersions = storage.getAllClientVersions(organizationId, clientId);
             Iterable<ClientVersionBean> iterable = () -> clientVersions;
 
@@ -361,9 +371,8 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     @Override
     public void deleteApi(@PathParam("organizationId") String organizationId, @PathParam("apiId") String apiId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
         try {
-            storage.beginTx();
-
             ApiBean api = getApi(organizationId, apiId);
+            storage.beginTx();
             Iterator<ApiVersionBean> apiVersions = storage.getAllApiVersions(organizationId, apiId);
             Iterable<ApiVersionBean> iterable = () -> apiVersions;
 
@@ -377,6 +386,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             }
 
             storage.deleteApi(api);
+            storage.commitTx();
         } catch (AbstractRestException e) {
             storage.rollbackTx();
             throw e;
@@ -2438,7 +2448,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     }
 
     /**
-     * @see io.apiman.manager.api.rest.contract.IOrganizationResource#getUsagePerClient(java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.util.Date)
+     * @see io.apiman.manager.api.rest.contract.IOrganizationResource#getUsagePerClient(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     public UsagePerClientBean getUsagePerClient(String organizationId, String apiId, String version,
