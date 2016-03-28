@@ -48,7 +48,8 @@
     <test name="Delete Organization (invalid, never existed)">test-plan-data/organizations/delete/007_delete_invalid.resttest</test>
     <test name="Get Org Activity (empty)">test-plan-data/organizations/delete/008_activity.resttest</test>
     <test name="Get API (should no longer exist)">test-plan-data/organizations/delete/009_get_api.resttest</test>
-    <!--<test name="Get Policies (should no longer exist)">test-plan-data/organizations/delete/010_get_policies.resttest</test>-->
+    <test name="Get Policies (should no longer exist)">test-plan-data/organizations/delete/010_get_policies.resttest</test>
+    <!-- Note that we can't test for other elements, as the attached org/client/api no longer exists and simply causes 404 -->
   </testGroup>
 
 </testPlan>
