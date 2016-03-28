@@ -95,6 +95,7 @@ public abstract class AbstractJpaStorage {
             throw new StorageException(e);
         } catch (RollbackException e) {
             logger.error(e.getMessage(), e);
+            e.printStackTrace(System.err);
             throw new StorageException(e);
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);

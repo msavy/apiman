@@ -34,6 +34,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
+import javax.persistence.PreRemove;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -398,6 +399,12 @@ public class ApiVersionBean implements Serializable {
         } else if (!id.equals(other.id))
             return false;
         return true;
+    }
+
+    @PreRemove
+    public void preRemove() {
+        System.err.println("AM I EVEN BEING RUN?!!?");
+        api = null;
     }
 
     /* (non-Javadoc)

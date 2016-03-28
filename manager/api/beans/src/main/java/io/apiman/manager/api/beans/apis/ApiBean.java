@@ -20,7 +20,6 @@ import io.apiman.manager.api.beans.orgs.OrganizationBean;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,7 +29,7 @@ import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.PreRemove;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -49,7 +48,7 @@ public class ApiBean implements Serializable {
     private static final long serialVersionUID = 1526742536153467539L;
 
     @Id
-    @ManyToOne
+    @ManyToOne(cascade=CascadeType.ALL)
     @JoinColumns({
         @JoinColumn(name="organization_id", referencedColumnName="id")
     })
@@ -189,6 +188,11 @@ public class ApiBean implements Serializable {
         return "APIBean [organization=" + organization + ", id=" + id + ", name=" + name
                 + ", description=" + description + ", createdBy=" + createdBy + ", createdOn=" + createdOn
                 + "]";
+    }
+
+    @PreRemove
+    public void preRemove() {
+        organization = null;
     }
 
 //    public Set<ApiVersionBean> getApiVersionBeans() {

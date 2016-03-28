@@ -284,16 +284,9 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     @Override
     public void delete(@PathParam("organizationId") String organizationId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
         try {
-            storage.beginTx();
-            OrganizationBean organizationBean = (OrganizationBean) storage.getOrganization(organizationId).clone();
-            storage.commitTx();
+            OrganizationBean organizationBean = get(organizationId);
 
             storage.beginTx();
-            // If org bean not found.
-            if (organizationBean == null) {
-                throw ExceptionFactory.organizationNotFoundException(organizationId);
-            }
-
             // Any active app versions?
             Iterator<ClientVersionBean> clientAppsVers = storage.getAllClientVersions(organizationBean, ClientStatus.Registered, 5);
             if (clientAppsVers.hasNext()) {
@@ -320,17 +313,12 @@ public class OrganizationResourceImpl implements IOrganizationResource {
 
             // Delete org
             storage.deleteOrganization(organizationBean);
-            // Commit
-//            storage.commitTx();
-
-            //storage.beginTx();
-            storage.flush();
-
-            //storage.remove(organizationBean);
-
-
 
             storage.commitTx();
+//
+//            storage.beginTx();
+//            storage.remove(organizationBean);
+//            storage.commitTx();
 
         } catch (AbstractRestException e) {
             storage.rollbackTx();
