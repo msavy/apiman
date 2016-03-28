@@ -319,11 +319,6 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             storage.deleteOrganization(organizationBean);
 
             storage.commitTx();
-//
-//            storage.beginTx();
-//            storage.remove(organizationBean);
-//            storage.commitTx();
-
         } catch (AbstractRestException e) {
             storage.rollbackTx();
             throw e;

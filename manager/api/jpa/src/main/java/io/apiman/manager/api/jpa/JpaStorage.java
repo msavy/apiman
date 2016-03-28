@@ -398,6 +398,13 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.executeUpdate();
     }
 
+    private void doDeleteApi(ApiBean api) throws StorageException {
+        String jpql = "DELETE ApiBean api WHERE api.id = :apiId";
+        Query query = getActiveEntityManager().createQuery(jpql);
+        query.setParameter("apiId", api.getId());
+        query.executeUpdate();
+    }
+
     /**
      * @see io.apiman.manager.api.core.IStorage#deleteClient(io.apiman.manager.api.beans.clients.ClientBean)
      */
@@ -448,8 +455,10 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         for (Iterator<ApiVersionBean> iterator = getAllApiVersions(api.getOrganization().getId(), api.getId()); iterator.hasNext();) {
            remove(iterator.next());
         }
+        flush();
+        getActiveEntityManager().clear();
         // Finally entity itself
-        remove(api);
+        doDeleteApi(api);
     }
 
     /**
