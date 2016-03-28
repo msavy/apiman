@@ -15,8 +15,6 @@
  */
 package io.apiman.manager.api.beans.orgs;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import java.io.Serializable;
 import java.util.Date;
 
@@ -24,6 +22,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * An APIMan Organization.  This is an important top level entity in the APIMan
@@ -53,6 +53,7 @@ public class OrganizationBean implements Serializable {
     private String modifiedBy;
     @Column(name = "modified_on", updatable=true, nullable=false)
     private Date modifiedOn;
+
 
     /**
      * Constructor.

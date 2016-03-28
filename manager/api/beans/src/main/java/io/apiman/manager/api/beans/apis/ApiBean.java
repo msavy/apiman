@@ -21,7 +21,6 @@ import io.apiman.manager.api.beans.orgs.OrganizationBean;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -48,7 +47,7 @@ public class ApiBean implements Serializable {
     private static final long serialVersionUID = 1526742536153467539L;
 
     @Id
-    @ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne
     @JoinColumns({
         @JoinColumn(name="organization_id", referencedColumnName="id")
     })

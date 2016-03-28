@@ -386,11 +386,12 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         deleteAllClients(organization);
         // Remove APIs and ApiVersions
         deleteAllApis(organization);
+        flush();
         // Delete org container
-        //doDeleteOrg(organization);
+        doDeleteOrg(organization);
     }
 
-    public void doDeleteOrg(OrganizationBean org) throws StorageException {
+    private void doDeleteOrg(OrganizationBean org) throws StorageException {
         String jpql = "DELETE OrganizationBean org WHERE org.id = :orgId";
         Query query = getActiveEntityManager().createQuery(jpql);
         query.setParameter("orgId", org.getId());
@@ -2457,7 +2458,6 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.executeUpdate();
     }
 
-    //@Override
     public void deleteAllContracts(OrganizationBean organizationBean) throws StorageException {
         String jpql = "DELETE ContractBean deleteBean "
                 + "WHERE deleteBean IN ( "
@@ -2473,22 +2473,15 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         query.executeUpdate();
     }
 
-    @Override
-    public <T> void remove(T entity) throws StorageException {
+    private <T> void remove(T entity) throws StorageException {
         EntityManager em = getActiveEntityManager();
         em.remove(em.contains(entity) ? entity : em.merge(entity));
     }
 
-    @Override
-    public <T> void flush() throws StorageException {
+    private <T> void flush() throws StorageException {
         getActiveEntityManager().flush();
     }
 
-//    private void deleteOrganization(OrganizationBean orgBean) {
-//
-//    }
-
-    //@Override
     public void deleteAllClients(OrganizationBean organizationBean) throws StorageException {
         for (Iterator<ClientVersionBean> iterator = getAllClientVersions(organizationBean, -1); iterator.hasNext();) {
             remove(iterator.next());

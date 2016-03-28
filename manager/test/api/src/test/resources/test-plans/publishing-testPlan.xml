@@ -45,8 +45,7 @@
   <testGroup name="Test Deletion">
     <test name="Delete Organization">test-plan-data/organizations/delete/005_delete.resttest</test>
     <test name="Delete Already Deleted Org (should no longer exist)">test-plan-data/organizations/delete/006_delete_already_deleted.resttest</test>
-    <test name="Delete Already Deleted Org 2 (should no longer exist)">test-plan-data/organizations/delete/006_delete_already_deleted.resttest</test>
-    <test name="Delete Organization (invalid)">test-plan-data/organizations/delete/007_delete_invalid.resttest</test>
+    <test name="Delete Organization (invalid, never existed)">test-plan-data/organizations/delete/007_delete_invalid.resttest</test>
     <test name="Get Org Activity (empty)">test-plan-data/organizations/delete/008_activity.resttest</test>
     <test name="Get API (should no longer exist)">test-plan-data/organizations/delete/009_get_api.resttest</test>
     <!--<test name="Get Policies (should no longer exist)">test-plan-data/organizations/delete/010_get_policies.resttest</test>-->
