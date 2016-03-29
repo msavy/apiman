@@ -452,13 +452,26 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         // Remove policies
         deleteAllPolicies(api);
         // Remove all API versions
-        for (Iterator<ApiVersionBean> iterator = getAllApiVersions(api.getOrganization().getId(), api.getId()); iterator.hasNext();) {
-           remove(iterator.next());
-        }
+        deleteAllApiVersions(api);
         flush();
-        getActiveEntityManager().clear();
         // Finally entity itself
         doDeleteApi(api);
+        Iterator<ApiVersionBean> bz = getAllApiVersions(api.getOrganization(), -1);
+
+        System.out.println("Remaining apiversions ::");
+        bz.forEachRemaining(apiVersion -> { System.err.println(apiVersion); });
+
+    }
+
+    private void deleteAllApiVersions(ApiBean api) throws StorageException {
+        EntityManager entityManager = getActiveEntityManager();
+        String jpql = "DELETE ApiVersionBean deleteBean WHERE deleteBean IN ( "
+                     +" SELECT avb from ApiVersionBean avb "
+                     +"  JOIN avb.api api "
+                     + "WHERE api.id = :apiId )";
+        Query query = entityManager.createQuery(jpql);
+        query.setParameter("apiId", api.getId());
+        query.executeUpdate();
     }
 
     /**
