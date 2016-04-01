@@ -218,8 +218,8 @@ public class TestPlanRunner {
 //                    actualStatusCode);
 
             if (restTest.getExpectedStatusCode() != actualStatusCode) {
-                System.err.println(response.body().string());
-                throw new RuntimeException("expected " + restTest.getExpectedStatusCode() + " got " + actualStatusCode);
+                //System.err.println(response.body().string());
+                throw new RuntimeException("expected " + restTest.getExpectedStatusCode() + " got " + actualStatusCode + " " + response.body().string());
             }
 
             //System.out.println(response.body().string());
@@ -448,6 +448,9 @@ public class TestPlanRunner {
      * @param actualJson
      */
     public void assertJson(RestTest restTest, JsonNode expectedJson, JsonNode actualJson) {
+        System.err.println(actualJson);
+
+
         if (expectedJson instanceof ArrayNode) {
             JsonNode actualValue = actualJson;
             ArrayNode expectedArray = (ArrayNode) expectedJson;
@@ -499,12 +502,19 @@ public class TestPlanRunner {
                         }
                     }
 
+                    try {
+
+                        if (actualValue == null)
+                            throw new Exception("asdsa");
+
                     Assert.assertNotNull("Expected JSON text field '" + expectedFieldName + "' with value '"
                             + expected + "' but was not found.", actualValue);
                     Assert.assertEquals("Expected JSON text field '" + expectedFieldName + "' with value '"
                             + expected + "' but found non-text [" + actualValue.getClass().getSimpleName()
                             + "] field with that name instead.", TextNode.class, actualValue.getClass());
                     String actual = ((TextNode) actualValue).textValue();
+
+
 
                     if (isAssertionIgnoreCase(restTest)) {
                         if (actual != null) {
@@ -514,6 +524,10 @@ public class TestPlanRunner {
 
                     Assert.assertEquals("Value mismatch for text field '" + expectedFieldName + "'.", expected,
                             actual);
+                    } catch (Exception e) {
+                        //throw e;
+                        System.out.println(e);
+                    }
                 } else if (expectedValue instanceof NumericNode) {
                     NumericNode numeric = (NumericNode) expectedValue;
                     Number expected = numeric.numberValue();

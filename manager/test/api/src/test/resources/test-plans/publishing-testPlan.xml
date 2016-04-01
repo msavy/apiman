@@ -35,6 +35,10 @@
     <test name="Register Client 1">test-plan-data/publishing/publish/002_register-client-1.resttest</test>
   </testGroup>
 
+  <testGroup name="Test Deletion Failure Conditions">
+    <test name="Delete Organization (Children still active)">test-plan-data/organizations/deleteFailure/001_delete-org-failure-org1.resttest</test>
+  </testGroup>
+
   <testGroup name="Test Retiring">
     <test name="User2 Unregister Client 1">test-plan-data/publishing/retire/003_dev-user2-unregister-client-1.resttest</test>
     <test name="Unregister Client 1">test-plan-data/publishing/retire/001_unregister-client-1.resttest</test>

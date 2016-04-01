@@ -20,7 +20,7 @@ package io.apiman.manager.api.rest.contract.exceptions;
  * Thrown when attempting to delete an org, but it still has active sub-elements
  * (such as still published APIs or Client Apps).
  */
-public class EntityStillActiveException extends AbstractNotFoundException {
+public class EntityStillActiveException extends AbstractUserException {
 
     private static final long serialVersionUID = -6377298317341796900L;
 
@@ -53,4 +53,9 @@ public class EntityStillActiveException extends AbstractNotFoundException {
     public String getMoreInfoUrl() {
         return ErrorCodes.ACTION_ERROR_INFO;
     } // TODO tailored errors
+
+    @Override
+    public int getHttpCode() {
+        return ErrorCodes.HTTP_STATUS_CODE_INVALID_STATE;
+    }
 }
