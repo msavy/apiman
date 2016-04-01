@@ -35,7 +35,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -57,7 +56,7 @@ public class ClientBean implements Serializable {
     @JoinColumns({
         @JoinColumn(name="organization_id", referencedColumnName="id")
     })
-    @JsonBackReference
+    //@JsonBackReference
     private OrganizationBean organization;
     @Id
     @Column(nullable=false)
