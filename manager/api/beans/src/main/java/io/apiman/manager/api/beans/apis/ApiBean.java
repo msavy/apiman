@@ -20,17 +20,22 @@ import io.apiman.manager.api.beans.orgs.OrganizationBean;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
-import javax.persistence.PreRemove;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -66,13 +71,9 @@ public class ApiBean implements Serializable {
     @Column(name = "num_published", updatable=true, nullable=true)
     private Integer numPublished;
 
-
-//    // Is this bad?
-//    @JoinColumns({
-//        @JoinColumn(name="api_version_id", referencedColumnName="id"),
-//    })
-//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval=true)
-//    private Set<ApiVersionBean> apiVersionBeans;
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval=true, fetch = FetchType.EAGER, mappedBy="api")
+    @JsonManagedReference
+    Set<ApiVersionBean> apiVersionBeans = new LinkedHashSet<>();
 
     /**
      * Constructor.
@@ -189,10 +190,10 @@ public class ApiBean implements Serializable {
                 + "]";
     }
 
-    @PreRemove
-    public void preRemove() {
-        organization = null;
-    }
+//    @PreRemove
+//    public void preRemove() {
+//        organization = null;
+//    }
 
 //    public Set<ApiVersionBean> getApiVersionBeans() {
 //        return apiVersionBeans;

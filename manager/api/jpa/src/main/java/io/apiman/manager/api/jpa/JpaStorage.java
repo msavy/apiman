@@ -445,21 +445,23 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
      */
     @Override
     public void deleteApi(ApiBean api) throws StorageException {
-        // Remove audit entries (as now orphaned)
-        deleteAllAuditEntries(api);
-        // Remove contracts
-        deleteAllContracts(api);
-        // Remove policies
-        deleteAllPolicies(api);
-        // Remove all API versions
-        deleteAllApiVersions(api);
-        flush();
-        // Finally entity itself
-        doDeleteApi(api);
-        Iterator<ApiVersionBean> bz = getAllApiVersions(api.getOrganization(), -1);
+//        // Remove audit entries (as now orphaned)
+//        deleteAllAuditEntries(api);
+//        // Remove contracts
+//        deleteAllContracts(api);
+//        // Remove policies
+//        deleteAllPolicies(api);
+//        // Remove all API versions
+//        deleteAllApiVersions(api);
+//        flush();
+//        // Finally entity itself
+//        doDeleteApi(api);
+//        Iterator<ApiVersionBean> bz = getAllApiVersions(api.getOrganization(), -1);
+//
+//        System.out.println("Remaining apiversions ::");
+//        bz.forEachRemaining(apiVersion -> { System.err.println(apiVersion); });
 
-        System.out.println("Remaining apiversions ::");
-        bz.forEachRemaining(apiVersion -> { System.err.println(apiVersion); });
+          remove(api);
 
     }
 

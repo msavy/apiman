@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -34,10 +35,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
-import javax.persistence.PreRemove;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -63,6 +65,7 @@ public class ApiVersionBean implements Serializable {
         @JoinColumn(name="api_id", referencedColumnName="id"),
         @JoinColumn(name="api_org_id", referencedColumnName="organization_id")
     })
+    @JsonBackReference
     private ApiBean api;
     @Column(updatable=true, nullable=false)
     @Enumerated(EnumType.STRING)
@@ -104,6 +107,9 @@ public class ApiVersionBean implements Serializable {
     @Column(name = "definition_type")
     @Enumerated(EnumType.STRING)
     private ApiDefinitionType definitionType;
+
+    @OneToOne(mappedBy="apiVersion", orphanRemoval=true, cascade={CascadeType.REMOVE})
+    ApiDefinitionBean apiDefinition;
 
     /**
      * Constructor.
@@ -401,11 +407,11 @@ public class ApiVersionBean implements Serializable {
         return true;
     }
 
-    @PreRemove
-    public void preRemove() {
-        System.err.println("AM I EVEN BEING RUN?!!?");
-        api = null;
-    }
+//    @PreRemove
+//    public void preRemove() {
+//        System.err.println("AM I EVEN BEING RUN?!!?");
+//        api = null;
+//    }
 
     /* (non-Javadoc)
      * @see java.lang.Object#toString()

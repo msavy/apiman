@@ -308,6 +308,7 @@ public class TestPlanRunner {
                 throw e;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Error(e);
         } finally {
             IOUtils.closeQuietly(inputStream);
