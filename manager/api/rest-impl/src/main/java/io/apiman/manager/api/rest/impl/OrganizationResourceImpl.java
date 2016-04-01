@@ -317,8 +317,8 @@ public class OrganizationResourceImpl implements IOrganizationResource {
 
             // Delete org
             storage.deleteOrganization(organizationBean);
-
             storage.commitTx();
+            log.debug("Deleted Organization: " + organizationBean.getName());
         } catch (AbstractRestException e) {
             storage.rollbackTx();
             throw e;
@@ -350,6 +350,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
 
             storage.deleteClient(client);
             storage.commitTx();
+            log.debug("Deleted ClientApp: " + client.getName());
         } catch (AbstractRestException e) {
             storage.rollbackTx();
             throw e;
@@ -380,9 +381,9 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             if (!registeredElems.isEmpty()) {
                 throw ExceptionFactory.entityStillActiveExceptionApiVersions(registeredElems);
             }
-
             storage.deleteApi(api);
             storage.commitTx();
+            log.debug("Deleted API: " + api.getName());
         } catch (AbstractRestException e) {
             storage.rollbackTx();
             throw e;
@@ -3087,7 +3088,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     protected PolicyBean doCreatePolicy(String organizationId, String entityId, String entityVersion,
             NewPolicyBean bean, PolicyType type) throws PolicyDefinitionNotFoundException {
         if (bean.getDefinitionId() == null) {
-            ExceptionFactory.policyDefNotFoundException("null"); //$NON-NLS-1$
+            throw ExceptionFactory.policyDefNotFoundException("null"); //$NON-NLS-1$
         }
         PolicyDefinitionBean def;
         try {
