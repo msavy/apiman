@@ -64,15 +64,12 @@ public class OrganizationBean implements Serializable {
     @Column(name = "modified_on", updatable=true, nullable=false)
     private Date modifiedOn;
     @OneToMany(fetch=FetchType.LAZY, orphanRemoval=true, cascade={CascadeType.REMOVE}, mappedBy="organization")
-    //@JsonManagedReference
     @JsonIgnore
     private Set<PlanBean> planSet = new LinkedHashSet<>();
     @OneToMany(fetch=FetchType.LAZY, orphanRemoval=true, cascade={CascadeType.REMOVE}, mappedBy="organization")
-    //@JsonManagedReference
     @JsonIgnore
     private Set<ApiBean> apiSet = new LinkedHashSet<>();
     @OneToMany(fetch=FetchType.LAZY, orphanRemoval=true, cascade={CascadeType.REMOVE}, mappedBy="organization")
-    //@JsonManagedReference
     @JsonIgnore
     private Set<ClientBean> clientSet = new LinkedHashSet<>();
 

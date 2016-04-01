@@ -56,7 +56,6 @@ public class PlanBean implements Serializable {
     @JoinColumns({
         @JoinColumn(name="organization_id", referencedColumnName="id")
     })
-    //@JsonBackReference
     private OrganizationBean organization;
     @Id
     @Column(nullable=false)
@@ -70,7 +69,6 @@ public class PlanBean implements Serializable {
     @Column(name = "created_on", updatable=false, nullable=false)
     private Date createdOn;
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval=true, fetch=FetchType.LAZY, mappedBy="plan")
-    //@JsonManagedReference
     @JsonIgnore
     private Set<PlanVersionBean> planVersionSet = new LinkedHashSet<>();
     /**

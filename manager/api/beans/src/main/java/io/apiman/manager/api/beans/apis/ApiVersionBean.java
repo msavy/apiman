@@ -64,7 +64,6 @@ public class ApiVersionBean implements Serializable {
         @JoinColumn(name="api_id", referencedColumnName="id"),
         @JoinColumn(name="api_org_id", referencedColumnName="organization_id")
     })
-    //@JsonBackReference
     private ApiBean api;
     @Column(updatable=true, nullable=false)
     @Enumerated(EnumType.STRING)

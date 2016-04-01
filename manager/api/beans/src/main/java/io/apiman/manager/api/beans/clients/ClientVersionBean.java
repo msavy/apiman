@@ -56,7 +56,6 @@ public class ClientVersionBean implements Serializable {
         @JoinColumn(name="client_id", referencedColumnName="id"),
         @JoinColumn(name="client_org_id", referencedColumnName="organization_id")
     })
-//    @JsonBackReference
     private ClientBean client;
     @Column(updatable=true, nullable=false)
     @Enumerated(EnumType.STRING)

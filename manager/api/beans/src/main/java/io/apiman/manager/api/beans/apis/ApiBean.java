@@ -56,7 +56,6 @@ public class ApiBean implements Serializable {
     @JoinColumns({
         @JoinColumn(name="organization_id", referencedColumnName="id")
     })
-    //@JsonBackReference
     private OrganizationBean organization;
     @Id
     @Column(nullable=false)
@@ -72,7 +71,6 @@ public class ApiBean implements Serializable {
     @Column(name = "num_published", updatable=true, nullable=true)
     private Integer numPublished;
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval=true, fetch=FetchType.LAZY, mappedBy="api")
-    //@JsonManagedReference
     @JsonIgnore
     private Set<ApiVersionBean> apiVersionSet = new LinkedHashSet<>();
 
