@@ -15,6 +15,7 @@
  */
 package io.apiman.manager.api.beans.apis;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.apiman.manager.api.beans.orgs.OrganizationBasedCompositeId;
 import io.apiman.manager.api.beans.orgs.OrganizationBean;
 
@@ -56,6 +57,7 @@ public class ApiBean implements Serializable {
     @JoinColumns({
         @JoinColumn(name="organization_id", referencedColumnName="id")
     })
+    @JsonBackReference
     private OrganizationBean organization;
     @Id
     @Column(nullable=false)
@@ -70,10 +72,9 @@ public class ApiBean implements Serializable {
     private Date createdOn;
     @Column(name = "num_published", updatable=true, nullable=true)
     private Integer numPublished;
-
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval=true, fetch = FetchType.EAGER, mappedBy="api")
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval=true, fetch=FetchType.LAZY, mappedBy="api")
     @JsonManagedReference
-    Set<ApiVersionBean> apiVersionBeans = new LinkedHashSet<>();
+    private Set<ApiVersionBean> apiVersionSet = new LinkedHashSet<>();
 
     /**
      * Constructor.

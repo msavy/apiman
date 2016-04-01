@@ -107,9 +107,8 @@ public class ApiVersionBean implements Serializable {
     @Column(name = "definition_type")
     @Enumerated(EnumType.STRING)
     private ApiDefinitionType definitionType;
-
-    @OneToOne(mappedBy="apiVersion", orphanRemoval=true, cascade={CascadeType.REMOVE})
-    ApiDefinitionBean apiDefinition;
+    @OneToOne(mappedBy="apiVersion", orphanRemoval=true, cascade={CascadeType.REMOVE}, fetch=FetchType.LAZY)
+    private ApiDefinitionBean apiDefinition;
 
     /**
      * Constructor.

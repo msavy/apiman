@@ -19,51 +19,51 @@
     <test name="Organization Activity">test-plan-data/organizations/auditing/001_activity.resttest</test>
   </testGroup>
 
-  <testGroup name="Setup Delete Org">
+  <!--<testGroup name="Setup Delete Org">-->
 
 
-      <!--<test name="Create Gateway">test-plan-data/all/creates/000_create-gateway.resttest</test>-->
-      <!--<test name="Create Organization">test-plan-data/all/creates/001_create_org.resttest</test>-->
-      <!--<test name="Create Plan">test-plan-data/all/creates/002_create-plan1.resttest</test>-->
-      <!--<test name="Create Plan Version">test-plan-data/all/creates/003_create-plan1-version-1.0.resttest</test>-->
-      <!--<test name="Lock Plan">test-plan-data/all/publish/003_lock-plan-1.resttest</test>-->
-      <!--<test name="Create Client">test-plan-data/all/creates/004_create-client1.resttest</test>-->
-      <!--<test name="Create Client Version">test-plan-data/all/creates/005_create-client1-version-1.0.resttest</test>-->
-      <!--<test name="Create API">test-plan-data/all/creates/006_create-api1.resttest</test>-->
-      <!--<test name="Create API Version">test-plan-data/all/creates/007_create-api1-version-1.0.resttest</test>-->
-      <!--<test name="Update API Version">test-plan-data/all/creates/007.5_update-api1-version-1.0.resttest</test>-->
-      <!--<test name="Publish API">test-plan-data/all/publish/001_publish-api-1.resttest</test>-->
-      <!--<test name="Create Contract">test-plan-data/all/creates/008_create-contract1.resttest</test>-->
-      <!--<test name="Register Client">test-plan-data/all/publish/002_register-client-1.resttest</test>-->
+      <!--&lt;!&ndash;<test name="Create Gateway">test-plan-data/all/creates/000_create-gateway.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Create Organization">test-plan-data/all/creates/001_create_org.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Create Plan">test-plan-data/all/creates/002_create-plan1.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Create Plan Version">test-plan-data/all/creates/003_create-plan1-version-1.0.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Lock Plan">test-plan-data/all/publish/003_lock-plan-1.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Create Client">test-plan-data/all/creates/004_create-client1.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Create Client Version">test-plan-data/all/creates/005_create-client1-version-1.0.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Create API">test-plan-data/all/creates/006_create-api1.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Create API Version">test-plan-data/all/creates/007_create-api1-version-1.0.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Update API Version">test-plan-data/all/creates/007.5_update-api1-version-1.0.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Publish API">test-plan-data/all/publish/001_publish-api-1.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Create Contract">test-plan-data/all/creates/008_create-contract1.resttest</test>&ndash;&gt;-->
+      <!--&lt;!&ndash;<test name="Register Client">test-plan-data/all/publish/002_register-client-1.resttest</test>&ndash;&gt;-->
 
-    <test name="Create Gateway">test-plan-data/all/creates/000_create-gateway.resttest</test>
-    <!-- Plan -->
-    <test name="Create Plan">test-plan-data/organizations/prepare/001_create_plan.resttest</test>
-    <test name="Create Plan Version">test-plan-data/organizations/prepare/002_create_plan_version.resttest</test>
-    <test name="Lock Plan">test-plan-data/organizations/prepare/003_lock_plan.resttest</test>
-    <!-- API -->
-    <test name="Create API">test-plan-data/organizations/prepare/004_create_api.resttest</test>
-    <test name="Create API Version">test-plan-data/organizations/prepare/005_create_api_version.resttest</test>
-    <test name="Add Plan to API">test-plan-data/organizations/prepare/006_add_plan_api.resttest</test>
-    <test name="Publish API Version">test-plan-data/organizations/prepare/006_publish_api_version.resttest</test>
-    <!-- ClientApp -->
-    <test name="Create ClientApp">test-plan-data/organizations/prepare/007_create_app.resttest</test>
-    <test name="Create ClientApp Version">test-plan-data/organizations/prepare/008_create_app_version.resttest</test>
-    <test name="Register ClientApp Version">test-plan-data/organizations/prepare/009_register_app_version.resttest</test>
-    <!-- Contract -->
-    <test name="Create Contract">test-plan-data/organizations/prepare/010_create_contract.resttest</test>
+    <!--<test name="Create Gateway">test-plan-data/all/creates/000_create-gateway.resttest</test>-->
+    <!--&lt;!&ndash; Plan &ndash;&gt;-->
+    <!--<test name="Create Plan">test-plan-data/organizations/prepare/001_create_plan.resttest</test>-->
+    <!--<test name="Create Plan Version">test-plan-data/organizations/prepare/002_create_plan_version.resttest</test>-->
+    <!--<test name="Lock Plan">test-plan-data/organizations/prepare/003_lock_plan.resttest</test>-->
+    <!--&lt;!&ndash; API &ndash;&gt;-->
+    <!--<test name="Create API">test-plan-data/organizations/prepare/004_create_api.resttest</test>-->
+    <!--<test name="Create API Version">test-plan-data/organizations/prepare/005_create_api_version.resttest</test>-->
+    <!--<test name="Add Plan to API">test-plan-data/organizations/prepare/006_add_plan_api.resttest</test>-->
+    <!--<test name="Publish API Version">test-plan-data/organizations/prepare/006_publish_api_version.resttest</test>-->
+    <!--&lt;!&ndash; ClientApp &ndash;&gt;-->
+    <!--<test name="Create ClientApp">test-plan-data/organizations/prepare/007_create_app.resttest</test>-->
+    <!--<test name="Create ClientApp Version">test-plan-data/organizations/prepare/008_create_app_version.resttest</test>-->
+    <!--<test name="Register ClientApp Version">test-plan-data/organizations/prepare/009_register_app_version.resttest</test>-->
+    <!--&lt;!&ndash; Contract &ndash;&gt;-->
+    <!--<test name="Create Contract">test-plan-data/organizations/prepare/010_create_contract.resttest</test>-->
 
-    <!-- Unpublish -->
-    <test name="Retire Contract">test-plan-data/organizations/delete/005_retire_contract.resttest</test>
-    <test name="Retire Client">test-plan-data/organizations/delete/005_retire_client.resttest</test>
-    <test name="Retire API">test-plan-data/organizations/delete/005_retire_api.resttest</test>
-  </testGroup>
+    <!--&lt;!&ndash; Unpublish &ndash;&gt;-->
+    <!--<test name="Retire Contract">test-plan-data/organizations/delete/005_retire_contract.resttest</test>-->
+    <!--<test name="Retire Client">test-plan-data/organizations/delete/005_retire_client.resttest</test>-->
+    <!--<test name="Retire API">test-plan-data/organizations/delete/005_retire_api.resttest</test>-->
+  <!--</testGroup>-->
 
-  <testGroup name="Delete Org">
-    <test name="Delete Organization">test-plan-data/organizations/delete/005_delete.resttest</test>
-    <test name="Delete Already Deleted Org (should no longer exist)">test-plan-data/organizations/delete/006_delete_already_deleted.resttest</test>
-    <test name="Delete Organization (invalid)">test-plan-data/organizations/delete/007_delete_invalid.resttest</test>
-    <test name="Get Org Activity (empty)">test-plan-data/organizations/delete/008_activity.resttest</test>
-    <test name="Get API (should no longer exist)">test-plan-data/organizations/delete/009_get_api.resttest</test>
-  </testGroup>
+  <!--<testGroup name="Delete Org">-->
+    <!--<test name="Delete Organization">test-plan-data/organizations/delete/005_delete.resttest</test>-->
+    <!--<test name="Delete Already Deleted Org (should no longer exist)">test-plan-data/organizations/delete/006_delete_already_deleted.resttest</test>-->
+    <!--<test name="Delete Organization (invalid)">test-plan-data/organizations/delete/007_delete_invalid.resttest</test>-->
+    <!--<test name="Get Org Activity (empty)">test-plan-data/organizations/delete/008_activity.resttest</test>-->
+    <!--<test name="Get API (should no longer exist)">test-plan-data/organizations/delete/009_get_api.resttest</test>-->
+  <!--</testGroup>-->
 </testPlan>

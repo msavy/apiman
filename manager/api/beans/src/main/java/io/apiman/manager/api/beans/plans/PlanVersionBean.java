@@ -15,6 +15,8 @@
  */
 package io.apiman.manager.api.beans.plans;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -53,6 +55,7 @@ public class PlanVersionBean implements Serializable {
         @JoinColumn(name="plan_id", referencedColumnName="id"),
         @JoinColumn(name="plan_org_id", referencedColumnName="organization_id")
     })
+    @JsonBackReference
     private PlanBean plan;
     @Column(nullable=false)
     @Enumerated(EnumType.STRING)

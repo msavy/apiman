@@ -358,7 +358,6 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     @Override
     public void deleteApi(@PathParam("organizationId") String organizationId, @PathParam("apiId") String apiId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
         try {
-           //ApiBean api = getApi(organizationId, apiId);
             storage.beginTx();
 
             ApiBean api = storage.getApi(organizationId, apiId);
@@ -366,19 +365,17 @@ public class OrganizationResourceImpl implements IOrganizationResource {
                 throw ExceptionFactory.apiNotFoundException(apiId);
             }
 
-//            Iterator<ApiVersionBean> apiVersions = storage.getAllApiVersions(organizationId, apiId);
-//            Iterable<ApiVersionBean> iterable = () -> apiVersions;
-//
-//            List<ApiVersionBean> registeredElems = StreamSupport.stream(iterable.spliterator(), false)
-//                    .filter(clientVersion -> clientVersion.getStatus() == ApiStatus.Published)
-//                    .limit(5)
-//                    .collect(Collectors.toList());
-//
-//            if (!registeredElems.isEmpty()) {
-//                throw ExceptionFactory.entityStillActiveExceptionApiVersions(registeredElems);
-//            }
+            Iterator<ApiVersionBean> apiVersions = storage.getAllApiVersions(organizationId, apiId);
+            Iterable<ApiVersionBean> iterable = () -> apiVersions;
 
+            List<ApiVersionBean> registeredElems = StreamSupport.stream(iterable.spliterator(), false)
+                    .filter(clientVersion -> clientVersion.getStatus() == ApiStatus.Published)
+                    .limit(5)
+                    .collect(Collectors.toList());
 
+            if (!registeredElems.isEmpty()) {
+                throw ExceptionFactory.entityStillActiveExceptionApiVersions(registeredElems);
+            }
 
             storage.deleteApi(api);
             storage.commitTx();

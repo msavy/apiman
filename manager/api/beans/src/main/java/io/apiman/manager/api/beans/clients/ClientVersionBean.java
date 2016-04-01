@@ -15,22 +15,14 @@
  */
 package io.apiman.manager.api.beans.clients;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.apiman.manager.api.beans.apis.ApiDefinitionBean;
 
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 
 /**
  * Models a single version of a client "impl".  Every client in
@@ -56,6 +48,7 @@ public class ClientVersionBean implements Serializable {
         @JoinColumn(name="client_id", referencedColumnName="id"),
         @JoinColumn(name="client_org_id", referencedColumnName="organization_id")
     })
+    @JsonBackReference
     private ClientBean client;
     @Column(updatable=true, nullable=false)
     @Enumerated(EnumType.STRING)

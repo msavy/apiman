@@ -380,29 +380,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         deleteAllContracts(organization);
         // Remove Policies
         deleteAllPolicies(organization);
-        // Remove Plans
-        deleteAllPlans(organization);
-        // Remove Clients and ClientVersions
-        deleteAllClients(organization);
-        // Remove APIs and ApiVersions
-        deleteAllApis(organization);
-        flush();
-        // Delete org container
-        doDeleteOrg(organization);
-    }
-
-    private void doDeleteOrg(OrganizationBean org) throws StorageException {
-        String jpql = "DELETE OrganizationBean org WHERE org.id = :orgId";
-        Query query = getActiveEntityManager().createQuery(jpql);
-        query.setParameter("orgId", org.getId());
-        query.executeUpdate();
-    }
-
-    private void doDeleteApi(ApiBean api) throws StorageException {
-        String jpql = "DELETE ApiBean api WHERE api.id = :apiId";
-        Query query = getActiveEntityManager().createQuery(jpql);
-        query.setParameter("apiId", api.getId());
-        query.executeUpdate();
+        remove(organization);
     }
 
     /**
@@ -445,35 +423,13 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
      */
     @Override
     public void deleteApi(ApiBean api) throws StorageException {
-//        // Remove audit entries (as now orphaned)
-//        deleteAllAuditEntries(api);
-//        // Remove contracts
-//        deleteAllContracts(api);
-//        // Remove policies
-//        deleteAllPolicies(api);
-//        // Remove all API versions
-//        deleteAllApiVersions(api);
-//        flush();
-//        // Finally entity itself
-//        doDeleteApi(api);
-//        Iterator<ApiVersionBean> bz = getAllApiVersions(api.getOrganization(), -1);
-//
-//        System.out.println("Remaining apiversions ::");
-//        bz.forEachRemaining(apiVersion -> { System.err.println(apiVersion); });
-
-          remove(api);
-
-    }
-
-    private void deleteAllApiVersions(ApiBean api) throws StorageException {
-        EntityManager entityManager = getActiveEntityManager();
-        String jpql = "DELETE ApiVersionBean deleteBean WHERE deleteBean IN ( "
-                     +" SELECT avb from ApiVersionBean avb "
-                     +"  JOIN avb.api api "
-                     + "WHERE api.id = :apiId )";
-        Query query = entityManager.createQuery(jpql);
-        query.setParameter("apiId", api.getId());
-        query.executeUpdate();
+        // Remove audit entries (as now orphaned)
+        deleteAllAuditEntries(api);
+        // Remove contracts
+        deleteAllContracts(api);
+        // Remove policies
+        deleteAllPolicies(api);
+        remove(api);
     }
 
     /**
@@ -481,7 +437,6 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
      */
     @Override
     public void deleteApiVersion(ApiVersionBean version) throws StorageException {
-        deleteApiDefinition(version);
         remove(version);
     }
 
