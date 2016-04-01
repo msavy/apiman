@@ -394,11 +394,6 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         deleteAllContracts(client);
         // Remove policies
         deleteAllPolicies(client);
-        // Remove all client versions
-        for (Iterator<ClientVersionBean> iterator = getAllClientVersions(client.getOrganization().getId(), client.getId()); iterator.hasNext();) {
-           remove(iterator.next());
-        }
-        // Finally entity itself
         remove(client);
     }
 

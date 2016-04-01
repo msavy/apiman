@@ -15,10 +15,6 @@
  */
 package io.apiman.manager.api.beans.plans;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import io.apiman.manager.api.beans.apis.ApiVersionBean;
 import io.apiman.manager.api.beans.orgs.OrganizationBasedCompositeId;
 import io.apiman.manager.api.beans.orgs.OrganizationBean;
 
@@ -27,7 +23,21 @@ import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Models a plan.
@@ -61,7 +71,8 @@ public class PlanBean implements Serializable {
     @Column(name = "created_on", updatable=false, nullable=false)
     private Date createdOn;
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval=true, fetch=FetchType.LAZY, mappedBy="plan")
-    @JsonManagedReference
+    //@JsonManagedReference
+    @JsonIgnore
     private Set<PlanVersionBean> planVersionSet = new LinkedHashSet<>();
     /**
      * @return the id

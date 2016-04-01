@@ -15,7 +15,6 @@
  */
 package io.apiman.manager.api.beans.apis;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.apiman.manager.api.beans.orgs.OrganizationBasedCompositeId;
 import io.apiman.manager.api.beans.orgs.OrganizationBean;
 
@@ -36,7 +35,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -73,7 +73,8 @@ public class ApiBean implements Serializable {
     @Column(name = "num_published", updatable=true, nullable=true)
     private Integer numPublished;
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval=true, fetch=FetchType.LAZY, mappedBy="api")
-    @JsonManagedReference
+    //@JsonManagedReference
+    @JsonIgnore
     private Set<ApiVersionBean> apiVersionSet = new LinkedHashSet<>();
 
     /**
