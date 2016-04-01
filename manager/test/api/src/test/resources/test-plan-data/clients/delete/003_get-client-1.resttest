@@ -1,14 +1,8 @@
 GET /organizations/Organization1/clients/Client1 admin/admin
 ----
-200
+404
 Content-Type: application/json
+X-Apiman-Error: true
 
-{
-  "organization" : {
-    "id" : "Organization1"
-  },
-  "id" : "Client1",
-  "name" : "Client 1",
-  "description" : "This is the description of Client 1.",
-  "createdBy" : "admin"
-}
+{"type":"ClientNotFoundException","errorCode":4002,"message":"Client does not exist: Client1","moreInfoUrl":null}
+

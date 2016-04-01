@@ -331,8 +331,11 @@ public class OrganizationResourceImpl implements IOrganizationResource {
     @Override
     public void deleteClient(@PathParam("organizationId") String organizationId, @PathParam("clientId") String clientId) throws OrganizationNotFoundException, NotAuthorizedException, EntityStillActiveException {
         try {
-            ClientBean client = getClient(organizationId, clientId);
             storage.beginTx();
+            ClientBean client = storage.getClient(organizationId, clientId);
+            if (client == null) {
+                throw ExceptionFactory.clientNotFoundException(clientId);
+            }
             Iterator<ClientVersionBean> clientVersions = storage.getAllClientVersions(organizationId, clientId);
             Iterable<ClientVersionBean> iterable = () -> clientVersions;
 
@@ -346,6 +349,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             }
 
             storage.deleteClient(client);
+            storage.commitTx();
         } catch (AbstractRestException e) {
             storage.rollbackTx();
             throw e;

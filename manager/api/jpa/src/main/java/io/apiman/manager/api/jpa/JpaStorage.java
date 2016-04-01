@@ -2293,28 +2293,6 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         return super.getAll(ApiVersionBean.class, query);
     }
 
-    private Iterator<ApiVersionBean> getAllApiVersions(ApiBean apiBean, ApiStatus status, int lim) throws StorageException  {
-        String jpql = "SELECT v "
-                + "  FROM ApiVersionBean v "
-                + "  JOIN v.api a"
-                + "  JOIN a.organization o "
-                + " WHERE o.id = :orgId "
-                + " AND   a.id = :apiId ";
-
-        if (status != null) {
-            jpql += String.format(" AND v.status = '%s' ", status.name());
-        }
-
-        Query query = getActiveEntityManager().createQuery(jpql);
-        query.setParameter("orgId", apiBean.getOrganization().getId());
-        query.setParameter("apiId", apiBean.getId());
-
-        if (lim > 0) {
-            query.setMaxResults(lim);
-        }
-        return super.getAll(ApiVersionBean.class, query);
-    }
-
     @Override
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, int lim) throws StorageException {
         return getAllPlanVersions(organizationBean, null, lim);
@@ -2420,9 +2398,9 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
                 + "WHERE deleteBean IN ( "
                 + "SELECT b "
                 + "  FROM ContractBean b "
-                + "  JOIN b.api apiVersion "
-                + "  JOIN apiVersion.api api "
-                + "  JOIN api.organization o "
+                + "  JOIN b.client clientVersion "
+                + "  JOIN clientVersion.client client "
+                + "  JOIN client.organization o "
                 + " WHERE o.id = :orgId "
                 + " AND client.id = :clientId ) ";
 
@@ -2452,34 +2430,11 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
         em.remove(em.contains(entity) ? entity : em.merge(entity));
     }
 
-    private <T> void flush() throws StorageException {
-        getActiveEntityManager().flush();
-    }
-
-    public void deleteAllClients(OrganizationBean organizationBean) throws StorageException {
-        for (Iterator<ClientVersionBean> iterator = getAllClientVersions(organizationBean, -1); iterator.hasNext();) {
-            remove(iterator.next());
-        }
-
-        for (Iterator<ClientBean> iterator = getAllClients(organizationBean.getId()); iterator.hasNext();) {
-            remove(iterator.next());
-        }
-    }
-
-    public void deleteAllApis(OrganizationBean organizationBean) throws StorageException {
-        for (Iterator<ApiVersionBean> iterator = getAllApiVersions(organizationBean, -1); iterator.hasNext();) {
-            remove(iterator.next());
-        }
-        for (Iterator<ApiBean> iterator = getAllApis(organizationBean.getId()); iterator.hasNext();) {
-            remove(iterator.next());
-        }
-    }
-
     public void deleteAllPlans(OrganizationBean organizationBean) throws StorageException {
         deleteAllPlanVersions(organizationBean);
 
         String jpql = "DELETE PlanBean p "
-                + " WHERE p.organization.id = :orgId ";
+                + "     WHERE p.organization.id = :orgId ";
 
         Query query = getActiveEntityManager().createQuery(jpql);
         query.setParameter("orgId", organizationBean.getId());
