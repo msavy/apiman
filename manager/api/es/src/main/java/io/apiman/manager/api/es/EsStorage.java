@@ -16,7 +16,11 @@
 package io.apiman.manager.api.es;
 
 import io.apiman.common.util.crypt.IDataEncrypter;
-import io.apiman.manager.api.beans.apis.*;
+import io.apiman.manager.api.beans.apis.ApiBean;
+import io.apiman.manager.api.beans.apis.ApiGatewayBean;
+import io.apiman.manager.api.beans.apis.ApiPlanBean;
+import io.apiman.manager.api.beans.apis.ApiStatus;
+import io.apiman.manager.api.beans.apis.ApiVersionBean;
 import io.apiman.manager.api.beans.audit.AuditEntityType;
 import io.apiman.manager.api.beans.audit.AuditEntryBean;
 import io.apiman.manager.api.beans.clients.ClientBean;
@@ -69,14 +73,8 @@ import io.searchbox.action.Action;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.cluster.Health;
-import io.searchbox.core.Delete;
-import io.searchbox.core.DeleteByQuery;
-import io.searchbox.core.Get;
-import io.searchbox.core.Index;
-import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
+import io.searchbox.core.*;
 import io.searchbox.core.SearchResult.Hit;
-import io.searchbox.core.SearchScroll;
 import io.searchbox.core.SearchScroll.Builder;
 import io.searchbox.indices.CreateIndex;
 import io.searchbox.indices.IndicesExists;
@@ -103,6 +101,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.io.IOUtils;
+import org.elasticsearch.Build;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.common.Base64;
@@ -140,7 +139,7 @@ public class EsStorage implements IStorage, IStorageQuery {
         // Kick the encrypter, causing it to be loaded/resolved in CDI
         encrypter.encrypt(""); //$NON-NLS-1$
     }
-    
+
     private String indexName = DEFAULT_INDEX_NAME;
 
     /**
@@ -572,7 +571,37 @@ public class EsStorage implements IStorage, IStorageQuery {
      */
     @Override
     public void deleteOrganization(OrganizationBean organization) throws StorageException {
+        deleteAllMemberships(organization);
+        deleteAllAuditEntries(organization, null);
+        deleteAllContracts(organization);
+        deleteAllPolicies(organization);
+        deleteAllApis(organization);
+        deleteAllClients(organization);
+        deleteAllPlans(organization);
         deleteEntity("organization", organization.getId()); //$NON-NLS-1$
+    }
+
+    private void deleteAllContracts(OrganizationBean organization) {
+
+    }
+
+    private void deleteAllAuditEntries(OrganizationBean organization, String entityId) {
+
+    }
+
+    private void deleteAllPlans(OrganizationBean organization) {
+    }
+
+    private void deleteAllClients(OrganizationBean organization) {
+    }
+
+    private void deleteAllApis(OrganizationBean organization) {
+    }
+
+    private void deleteAllPolicies(OrganizationBean organization) {
+    }
+
+    private void deleteAllMemberships(OrganizationBean organization) {
     }
 
     /**
@@ -580,7 +609,22 @@ public class EsStorage implements IStorage, IStorageQuery {
      */
     @Override
     public void deleteClient(ClientBean client) throws StorageException {
+        // Delete audit
+        deleteAllAuditEntries(client.getOrganization(), client.getId());
+        // Delete any contracts
+        deleteAllContracts(client);
+        // Delete versions and associated policies
+        deleteAllClientVersions(client);
+        // Finally, delete the entity itself
         deleteEntity("client", id(client.getOrganization().getId(), client.getId())); //$NON-NLS-1$
+    }
+
+    private void deleteAllContracts(ClientBean client) {
+
+    }
+
+    private void deleteAllClientVersions(ClientBean client) {
+
     }
 
     /**
@@ -605,7 +649,26 @@ public class EsStorage implements IStorage, IStorageQuery {
      */
     @Override
     public void deleteApi(ApiBean api) throws StorageException {
+        // Delete audit
+        deleteAllAuditEntries(api.getOrganization(), api.getId());
+        // Delete any contracts
+        deleteAllContracts(api);
+        // Delete versions and associated policies
+        deleteAllApiVersions(api);
+        // Finally, delete the entity itself
         deleteEntity("api", id(api.getOrganization().getId(), api.getId())); //$NON-NLS-1$
+    }
+
+    private void deleteAllContracts(ApiBean api) {
+
+    }
+
+    private void deleteAllAuditEntries(String org, String entityId) {
+
+    }
+
+    private void deleteAllApiVersions(ApiBean api) {
+
     }
 
     /**
@@ -1781,7 +1844,7 @@ public class EsStorage implements IStorage, IStorageQuery {
      * Indexes an entity.
      * @param type
      * @param id
-     * @param entitySource
+     * @param sourceEntity
      * @throws StorageException
      */
     private void indexEntity(String type, String id, XContentBuilder sourceEntity) throws StorageException {
@@ -1792,7 +1855,7 @@ public class EsStorage implements IStorage, IStorageQuery {
      * Indexes an entity.
      * @param type
      * @param id
-     * @param entitySource
+     * @param sourceEntity
      * @param refresh true if the operation should wait for a refresh before it returns
      * @throws StorageException
      */
@@ -2282,40 +2345,42 @@ public class EsStorage implements IStorage, IStorageQuery {
         });
     }
 
+    /// Add lim
     @Override
-    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) {
-        return null;
+    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) throws StorageException {
+        return getAll("contract", EsMarshalling::unmarshallContract, matchOrgQuery(organizationBean.getId())); //$NON-NLS-1$
     }
 
     @Override
     public Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, int lim) throws StorageException {
-        return null;
+        return getAll("clientVersion", EsMarshalling::unmarshallClientVersion, matchOrgQuery(organizationBean.getId())); //$NON-NLS-1$
     }
 
     @Override
     public Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, ClientStatus status, int lim) throws StorageException {
-        return null;
+        return getAll("clientVersion", EsMarshalling::unmarshallClientVersion, matchOrgAndStatusQuery(organizationBean.getId(), status.name())); //$NON-NLS-1$
     }
 
     @Override
     public Iterator<ApiVersionBean> getAllApiVersions(OrganizationBean organizationBean, int lim) throws StorageException {
-        return null;
+        return getAll("apiVersion", EsMarshalling::unmarshallApiVersion, matchOrgQuery(organizationBean.getId())); //$NON-NLS-1$
     }
 
     @Override
     public Iterator<ApiVersionBean> getAllApiVersions(OrganizationBean organizationBean, ApiStatus status, int lim) throws StorageException {
-        return null;
+        return getAll("apiVersion", EsMarshalling::unmarshallApiVersion, matchOrgAndStatusQuery(organizationBean.getId(), status.name())); //$NON-NLS-1$
     }
 
     @Override
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, int lim) throws StorageException {
-        return null;
+        return getAll("planVersion", EsMarshalling::unmarshallPlanVersion, matchOrgQuery(organizationBean.getId())); //$NON-NLS-1$
     }
 
     @Override
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, PlanStatus status, int lim) throws StorageException {
-        return null;
+        return getAll("planVersion", EsMarshalling::unmarshallPlanVersion, matchOrgAndStatusQuery(organizationBean.getId(), status.name())); //$NON-NLS-1$
     }
+    /////
 
     @Override
     public Iterator<RoleMembershipBean> getAllMemberships(String organizationId) throws StorageException {
@@ -2370,6 +2435,11 @@ public class EsStorage implements IStorage, IStorageQuery {
         String query = matchAllQuery();
         return getAll(entityType, unmarshaller, query);
     }
+
+    private void deleteAll(String entityType, String query) throws StorageException {
+        //Bulk bulk = new Build.Builder();
+    }
+
 
     /**
      * Returns an iterator over all instances of the given entity type.
@@ -2486,6 +2556,26 @@ public class EsStorage implements IStorage, IStorageQuery {
             }
         }
 
+    }
+
+    @SuppressWarnings("nls")
+    private String matchOrgAndStatusQuery(String organizationId, String status) {
+        return  "{" +
+                "  \"query\": {" +
+                "    \"filtered\": { " +
+                "      \"filter\": {" +
+                "        \"and\" : [" +
+                "          {" +
+                "            \"term\": { \"organizationId\": \"" + organizationId + "\" }" +
+                "          }," +
+                "          {" +
+                "            \"term\": { \"status\": \"" + status + "\" }" +
+                "          }" +
+                "      ]" +
+                "      }" +
+                "    }" +
+                "  }" +
+                "}";
     }
 
     /**
