@@ -686,8 +686,8 @@ public class TestEsStorageWrapper implements IStorage {
     }
 
     @Override
-    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) throws StorageException {
-        return this.delegate.getAllActiveContracts(organizationBean, lim);
+    public Iterator<ContractBean> getAllContracts(OrganizationBean organizationBean, int lim) throws StorageException {
+        return this.delegate.getAllContracts(organizationBean, lim);
     }
 
     @Override

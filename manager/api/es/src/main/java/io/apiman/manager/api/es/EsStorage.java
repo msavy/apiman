@@ -569,6 +569,7 @@ public class EsStorage implements IStorage, IStorageQuery {
      * @see io.apiman.manager.api.core.IStorage#deleteOrganization(io.apiman.manager.api.beans.orgs.OrganizationBean)
      */
     @Override
+    @SuppressWarnings("nls")
     public void deleteOrganization(OrganizationBean organization) throws StorageException {
         String orgId = organization.getId().replace('"', '_');
         String query = "{\n" +
@@ -628,6 +629,7 @@ public class EsStorage implements IStorage, IStorageQuery {
      * @see io.apiman.manager.api.core.IStorage#deleteClient(io.apiman.manager.api.beans.clients.ClientBean)
      */
     @Override
+    @SuppressWarnings("nls")
     public void deleteClient(ClientBean client) throws StorageException {
         String clientId = client.getId().replace('"', '_');
         String orgId = client.getOrganization().getId().replace('"', '_');
@@ -745,6 +747,7 @@ public class EsStorage implements IStorage, IStorageQuery {
      * @see io.apiman.manager.api.core.IStorage#deleteApi(io.apiman.manager.api.beans.apis.ApiBean)
      */
     @Override
+    @SuppressWarnings("nls")
     public void deleteApi(ApiBean api) throws StorageException {
         String apiId = api.getId().replace('"', '_');
         String orgId = api.getOrganization().getId().replace('"', '_');
@@ -2491,9 +2494,8 @@ public class EsStorage implements IStorage, IStorageQuery {
         });
     }
 
-    /// Add lim
     @Override
-    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) throws StorageException {
+    public Iterator<ContractBean> getAllContracts(OrganizationBean organizationBean, int lim) throws StorageException {
         return getAll("contract", EsMarshalling::unmarshallContract, matchOrgQuery(organizationBean.getId())); //$NON-NLS-1$
     }
 
@@ -2526,7 +2528,6 @@ public class EsStorage implements IStorage, IStorageQuery {
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, PlanStatus status, int lim) throws StorageException {
         return getAll("planVersion", EsMarshalling::unmarshallPlanVersion, matchOrgAndStatusQuery(organizationBean.getId(), status.name())); //$NON-NLS-1$
     }
-    /////
 
     @Override
     public Iterator<RoleMembershipBean> getAllMemberships(String organizationId) throws StorageException {
@@ -2581,11 +2582,6 @@ public class EsStorage implements IStorage, IStorageQuery {
         String query = matchAllQuery();
         return getAll(entityType, unmarshaller, query);
     }
-
-    private void deleteAll(String entityType, String query) throws StorageException {
-        //Bulk bulk = new Build.Builder();
-    }
-
 
     /**
      * Returns an iterator over all instances of the given entity type.
@@ -2749,6 +2745,7 @@ public class EsStorage implements IStorage, IStorageQuery {
                 "}";
     }
 
+    @SuppressWarnings("nls")
     private String matchEntityQuery(String entityId, String entityType) {
         return "{\n" +
                 "  \"query\": {\n" +

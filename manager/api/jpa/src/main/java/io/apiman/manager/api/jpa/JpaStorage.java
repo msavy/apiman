@@ -2246,7 +2246,7 @@ public class JpaStorage extends AbstractJpaStorage implements IStorage, IStorage
     }
 
     @Override
-    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) throws StorageException {
+    public Iterator<ContractBean> getAllContracts(OrganizationBean organizationBean, int lim) throws StorageException {
         String jpql =
                   " SELECT contractBean "
                 + " FROM ContractBean contractBean "

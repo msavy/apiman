@@ -307,7 +307,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
             }
 
             // Any unbroken contracts?
-            Iterator<ContractBean> contracts = storage.getAllActiveContracts(organizationBean, 5);
+            Iterator<ContractBean> contracts = storage.getAllContracts(organizationBean, 5);
             if (contracts.hasNext()) {
                 throw ExceptionFactory.entityStillActiveExceptionContracts(contracts);
             }

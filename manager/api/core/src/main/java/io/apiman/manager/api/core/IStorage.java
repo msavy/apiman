@@ -177,15 +177,15 @@ public interface IStorage {
     public Iterator<UserBean> getAllUsers() throws StorageException;
     public Iterator<RoleBean> getAllRoles() throws StorageException;
 
-    // Stuff for delete
-    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) throws StorageException;
+    /**
+     * Additional methods to verify state before delete.
+     */
 
-    Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, int lim) throws StorageException;
+    public Iterator<ContractBean> getAllContracts(OrganizationBean organizationBean, int lim) throws StorageException;
+    public Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, int lim) throws StorageException;
     public Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, ClientStatus status, int lim) throws StorageException;
-
     public Iterator<ApiVersionBean> getAllApiVersions(OrganizationBean organizationBean, int lim) throws StorageException;
     public Iterator<ApiVersionBean> getAllApiVersions(OrganizationBean organizationBean, ApiStatus status, int lim) throws StorageException;
-
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, int lim) throws StorageException;
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, PlanStatus status, int lim) throws StorageException;
 }
