@@ -293,6 +293,7 @@ public class OrganizationResourceImpl implements IOrganizationResource {
 
             // Any active app versions?
             Iterator<ClientVersionBean> clientAppsVers = storage.getAllClientVersions(organizationBean, ClientStatus.Registered, 5);
+
             if (clientAppsVers.hasNext()) {
                 throw ExceptionFactory.entityStillActiveExceptionClientVersions(clientAppsVers);
             }

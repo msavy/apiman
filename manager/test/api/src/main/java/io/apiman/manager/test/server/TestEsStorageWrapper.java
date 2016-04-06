@@ -686,38 +686,38 @@ public class TestEsStorageWrapper implements IStorage {
     }
 
     @Override
-    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) {
-        return null;
+    public Iterator<ContractBean> getAllActiveContracts(OrganizationBean organizationBean, int lim) throws StorageException {
+        return this.delegate.getAllActiveContracts(organizationBean, lim);
     }
 
     @Override
     public Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, int lim) throws StorageException {
-        return null;
+        return this.delegate.getAllClientVersions(organizationBean, lim);
     }
 
     @Override
     public Iterator<ClientVersionBean> getAllClientVersions(OrganizationBean organizationBean, ClientStatus status, int lim) throws StorageException {
-        return null;
+        return this.delegate.getAllClientVersions(organizationBean, status, lim);
     }
 
     @Override
     public Iterator<ApiVersionBean> getAllApiVersions(OrganizationBean organizationBean, int lim) throws StorageException {
-        return null;
+        return this.delegate.getAllApiVersions(organizationBean, lim);
     }
 
     @Override
     public Iterator<ApiVersionBean> getAllApiVersions(OrganizationBean organizationBean, ApiStatus status, int lim) throws StorageException {
-        return null;
+        return this.delegate.getAllApiVersions(organizationBean, status, lim);
     }
 
     @Override
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, int lim) throws StorageException {
-        return null;
+        return this.delegate.getAllPlanVersions(organizationBean, lim);
     }
 
     @Override
     public Iterator<PlanVersionBean> getAllPlanVersions(OrganizationBean organizationBean, PlanStatus status, int lim) throws StorageException {
-        return null;
+        return this.delegate.getAllPlanVersions(organizationBean, status, lim);
     }
 
     /**
