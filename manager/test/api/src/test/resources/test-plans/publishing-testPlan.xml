@@ -36,6 +36,7 @@
   </testGroup>
 
   <testGroup name="Test Deletion Failure Conditions">
+    <test name="Wait" delay="1000" />
     <test name="Delete Organization (Children still active)">test-plan-data/organizations/deleteFailure/001_delete-org-failure-org1.resttest</test>
     <test name="Delete API (ApiVersions still active)">test-plan-data/organizations/deleteFailure/002_delete-api-failure-org1.resttest</test>
     <test name="Delete Client (ClientVersions still active)">test-plan-data/organizations/deleteFailure/003_delete-client-failure-org1.resttest</test>
@@ -49,10 +50,11 @@
   </testGroup>
 
   <testGroup name="Test Deletion">
+    <test name="Wait" delay="1000" />
     <test name="Delete Organization">test-plan-data/organizations/delete/005_delete.resttest</test>
+    <test name="Wait" delay="500" />
     <test name="Delete Already Deleted Org (should no longer exist)">test-plan-data/organizations/delete/006_delete_already_deleted.resttest</test>
     <test name="Delete Organization (invalid, never existed)">test-plan-data/organizations/delete/007_delete_invalid.resttest</test>
-    <test name="Wait" delay="1000" />
     <test name="Get Org Activity (empty)">test-plan-data/organizations/delete/008_activity.resttest</test>
     <test name="Get API (should no longer exist)">test-plan-data/organizations/delete/009_get_api.resttest</test>
     <!-- Note that we can't test for other elements, as the attached org/client/api no longer exists and simply causes 404 -->

@@ -282,7 +282,6 @@ public class ManagerApiMicroServiceCdiFactory {
     private static EsStorage initES(ManagerApiMicroServiceConfig config, EsStorage esStorage) {
         if (sESStorage == null) {
             sESStorage = esStorage;
-            System.out.println(config);
             sESStorage.setIndexName(config.getStorageESIndexName());
             if (config.isInitializeStorageES()) {
                 sESStorage.initialize();

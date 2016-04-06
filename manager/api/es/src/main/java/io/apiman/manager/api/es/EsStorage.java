@@ -634,6 +634,9 @@ public class EsStorage implements IStorage, IStorageQuery {
         String query = "{\n" +
                 "  \"query\": {\n" +
                 "    \"filtered\": {\n" +
+                "      \"query\": {\n" +
+                "        \"match_all\": {}\n" +
+                "      },\n" +
                 "      \"filter\": {\n" +
                 "        \"bool\": {\n" +
                 "          \"must\": [\n" +
@@ -694,7 +697,6 @@ public class EsStorage implements IStorage, IStorageQuery {
                 .addType("clientPolicies")
                 .addType("contract")
                 .build();
-
         try {
             JestResult response = esClient.execute(deleteByQuery);
             if (!response.isSucceeded()) {
@@ -703,6 +705,7 @@ public class EsStorage implements IStorage, IStorageQuery {
         } catch (Exception e) {
             throw new StorageException(e);
         }
+        deleteEntity("client", id(orgId, clientId)); //$NON-NLS-1$
     }
 
     /**
@@ -748,6 +751,9 @@ public class EsStorage implements IStorage, IStorageQuery {
         String query = "{\n" +
                 "  \"query\": {\n" +
                 "    \"filtered\": {\n" +
+                "      \"query\": {\n" +
+                "        \"match_all\": {}\n" +
+                "      },\n" +
                 "      \"filter\": {\n" +
                 "        \"bool\": {\n" +
                 "          \"must\": [\n" +
@@ -808,7 +814,6 @@ public class EsStorage implements IStorage, IStorageQuery {
                 .addType("apiPolicies")
                 .addType("contract")
                 .build();
-
         try {
             JestResult response = esClient.execute(deleteByQuery);
             if (!response.isSucceeded()) {
@@ -817,6 +822,7 @@ public class EsStorage implements IStorage, IStorageQuery {
         } catch (Exception e) {
             throw new StorageException(e);
         }
+        deleteEntity("api", id(orgId, apiId)); //$NON-NLS-1$
     }
 
     /**
