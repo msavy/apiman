@@ -19,6 +19,8 @@ package io.apiman.manager.api.rest.contract.exceptions;
 /**
  * Thrown when attempting to delete an org, but it still has active sub-elements
  * (such as still published APIs or Client Apps).
+ *
+ * @author Marc Savy {@literal <msavy@redhat.com>}
  */
 public class EntityStillActiveException extends AbstractUserException {
 
@@ -44,7 +46,7 @@ public class EntityStillActiveException extends AbstractUserException {
     @Override
     public int getErrorCode() {
         return ErrorCodes.ACTION_ERROR;
-    } // TODO tailored errors
+    }
 
     /**
      * @see io.apiman.manager.api.rest.contract.exceptions.AbstractRestException#getMoreInfoUrl()
@@ -52,7 +54,7 @@ public class EntityStillActiveException extends AbstractUserException {
     @Override
     public String getMoreInfoUrl() {
         return ErrorCodes.ACTION_ERROR_INFO;
-    } // TODO tailored errors
+    }
 
     @Override
     public int getHttpCode() {

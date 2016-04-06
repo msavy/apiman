@@ -114,8 +114,8 @@ public interface IOrganizationResource {
      * @summary Delete an organization
      * @param organizationId The Organization ID to delete
      * @statuscode 204 If the Organization was successfully deleted
-     * @statuscode 428 If the delete preconditions have not been met (i.e. sub-elements are still active, such as still-published APIs).
-     * @throws OrganizationNotFoundException when trying to get, update, or delete an organization that does not exist
+     * @statuscode 409 If the delete preconditions have not been met (i.e. sub-elements are still active, such as still-published APIs).
+     * @throws OrganizationNotFoundException when the specified organization does not exist.
      * @throws NotAuthorizedException when the user attempts to do or see something that they are not authorized (do not have permission) to
      * @throws EntityStillActiveException when user attempts to delete an organization which still has active sub-elements
      */
@@ -124,6 +124,17 @@ public interface IOrganizationResource {
     public void delete(@PathParam("organizationId") String organizationId) throws OrganizationNotFoundException,
             NotAuthorizedException, EntityStillActiveException;
 
+    /**
+     * Delete a ClientApp
+     * @summary Delete a client
+     * @param organizationId The Organization ID the client exists within
+     * @param clientId The ClientApp ID to dlete
+     * @statuscode 204 If the Organization was successfully deleted
+     * @statuscode 409 If the delete preconditions have not been met (i.e. sub-elements are still active, such as still-registered ClientVersions).
+     * @throws OrganizationNotFoundException when the specified organization does not exist.
+     * @throws NotAuthorizedException when the user attempts to do or see something that they are not authorized (do not have permission) to
+     * @throws EntityStillActiveException when user attempts to delete a Client which still has active sub-elements
+     */
     @DELETE
     @Path("{organizationId}/clients/{clientId}")
     public void deleteClient(@PathParam("organizationId") String organizationId, @PathParam("clientId") String clientId) throws OrganizationNotFoundException,
