@@ -100,7 +100,7 @@ public abstract class DefaultEngineFactory extends AbstractEngineFactory {
     protected IMetrics createMetrics(IPluginRegistry pluginRegistry) {
         return new InMemoryMetrics();
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.impl.AbstractEngineFactory#createInitializers(io.apiman.gateway.engine.IPluginRegistry)
      */
@@ -110,7 +110,7 @@ public abstract class DefaultEngineFactory extends AbstractEngineFactory {
     }
 
     @Override
-    protected IDelegateFactory createLoggerFactory() {
+    protected IDelegateFactory createLoggerFactory(IPluginRegistry pluginRegistry) {
         return new DefaultDelegateFactory();
     }
 }

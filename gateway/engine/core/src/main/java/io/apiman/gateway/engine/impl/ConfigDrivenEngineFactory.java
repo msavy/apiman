@@ -146,8 +146,8 @@ public class ConfigDrivenEngineFactory extends AbstractEngineFactory {
     }
 
     @Override
-    protected IDelegateFactory createLoggerFactory() {
-        Class<? extends IDelegateFactory> c = engineConfig.getLoggerFactoryClass();
+    protected IDelegateFactory createLoggerFactory(IPluginRegistry pluginRegistry) {
+        Class<? extends IDelegateFactory> c = engineConfig.getLoggerFactoryClass(pluginRegistry);
         Map<String, String> config = engineConfig.getLoggerFactoryConfig();
         return create(c, config);
     }

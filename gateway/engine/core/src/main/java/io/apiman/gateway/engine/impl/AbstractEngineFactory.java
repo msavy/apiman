@@ -57,7 +57,7 @@ public abstract class AbstractEngineFactory implements IEngineFactory {
         IConnectorFactory cfactory = createConnectorFactory(pluginRegistry);
         IPolicyFactory pfactory = createPolicyFactory(pluginRegistry);
         IMetrics metrics = createMetrics(pluginRegistry);
-        IDelegateFactory logFactory = createLoggerFactory();
+        IDelegateFactory logFactory = createLoggerFactory(pluginRegistry);
 
         List<IGatewayInitializer> initializers = createInitializers(pluginRegistry);
         for (IGatewayInitializer initializer : initializers) {
@@ -126,6 +126,6 @@ public abstract class AbstractEngineFactory implements IEngineFactory {
      * Creates the logger factory
      * @return anew log factory
      */
-    protected abstract IDelegateFactory createLoggerFactory();
+    protected abstract IDelegateFactory createLoggerFactory(IPluginRegistry pluginRegistry);
 
 }

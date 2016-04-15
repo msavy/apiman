@@ -31,6 +31,7 @@ import java.util.Map;
 public interface IEngineConfig {
 
     /**
+     * @param pluginRegistry the plugin registry
      * @return the class to use as the {@link IRegistry}
      */
     public Class<? extends IRegistry> getRegistryClass(IPluginRegistry pluginRegistry);
@@ -41,6 +42,7 @@ public interface IEngineConfig {
     public Map<String, String> getRegistryConfig();
 
     /**
+     * @param pluginRegistry the plugin registry
      * @return the class to use as the {@link IDataEncrypter}
      */
     public Class<? extends IDataEncrypter> getDataEncrypterClass(IPluginRegistry pluginRegistry);
@@ -61,6 +63,7 @@ public interface IEngineConfig {
     public Map<String, String> getPluginRegistryConfig();
 
     /**
+     * @param pluginRegistry the plugin registry
      * @return the class to use as the {@link IConnectorFactory}
      */
     public Class<? extends IConnectorFactory> getConnectorFactoryClass(IPluginRegistry pluginRegistry);
@@ -71,6 +74,7 @@ public interface IEngineConfig {
     public Map<String, String> getConnectorFactoryConfig();
 
     /**
+     * @param pluginRegistry the plugin registry
      * @return the class to use as the {@link IPolicyFactory}
      */
     public Class<? extends IPolicyFactory> getPolicyFactoryClass(IPluginRegistry pluginRegistry);
@@ -82,6 +86,7 @@ public interface IEngineConfig {
 
     /**
      * @param componentType the component type
+     * @param pluginRegistry the plugin registry
      * @return the class to use for the given component
      */
     public <T extends IComponent> Class<T> getComponentClass(Class<T> componentType, IPluginRegistry pluginRegistry);
@@ -93,6 +98,7 @@ public interface IEngineConfig {
     public <T extends IComponent> Map<String, String> getComponentConfig(Class<T> componentType);
 
     /**
+     * @param pluginRegistry the plugin registry
      * @return the class to use as the {@link IMetrics}
      */
     public Class<? extends IMetrics> getMetricsClass(IPluginRegistry pluginRegistry);
@@ -103,15 +109,17 @@ public interface IEngineConfig {
     public Map<String, String> getMetricsConfig();
 
     /**
+     * @param pluginRegistry the plugin registry
      * @return the class to use as the {@link IGatewayInitializer}
      */
     public List<EngineConfigTuple<? extends IGatewayInitializer>> getGatewayInitializers(IPluginRegistry pluginRegistry);
 
 
     /**
+     * @param pluginRegistry the plugin registry
      * @return the factory used to create instances of {@link ILogger}.
      */
-    public Class<? extends IDelegateFactory> getLoggerFactoryClass();
+    public Class<? extends IDelegateFactory> getLoggerFactoryClass(IPluginRegistry pluginRegistry);
 
     /**
      * @return all properties to be passed to the factory
