@@ -15,6 +15,8 @@
  */
 package io.apiman.gateway.engine.impl;
 
+import io.apiman.common.logging.DefaultDelegateFactory;
+import io.apiman.common.logging.IDelegateFactory;
 import io.apiman.common.util.crypt.IDataEncrypter;
 import io.apiman.gateway.engine.IComponentRegistry;
 import io.apiman.gateway.engine.IGatewayInitializer;
@@ -104,7 +106,11 @@ public abstract class DefaultEngineFactory extends AbstractEngineFactory {
      */
     @Override
     protected List<IGatewayInitializer> createInitializers(IPluginRegistry pluginRegistry) {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
+    @Override
+    protected IDelegateFactory createLoggerFactory() {
+        return new DefaultDelegateFactory();
+    }
 }

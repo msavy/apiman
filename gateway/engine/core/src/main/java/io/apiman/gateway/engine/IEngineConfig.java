@@ -15,7 +15,9 @@
  */
 package io.apiman.gateway.engine;
 
+import io.apiman.common.logging.IDelegateFactory;
 import io.apiman.common.util.crypt.IDataEncrypter;
+import io.apiman.gateway.engine.logging.ILogger;
 import io.apiman.gateway.engine.policy.IPolicyFactory;
 
 import java.util.List;
@@ -104,5 +106,16 @@ public interface IEngineConfig {
      * @return the class to use as the {@link IGatewayInitializer}
      */
     public List<EngineConfigTuple<? extends IGatewayInitializer>> getGatewayInitializers(IPluginRegistry pluginRegistry);
+
+
+    /**
+     * @return the factory used to create instances of {@link ILogger}.
+     */
+    public Class<? extends IDelegateFactory> getLoggerFactoryClass();
+
+    /**
+     * @return all properties to be passed to the factory
+     */
+    public Map<String, String> getLoggerFactoryConfig();
 
 }
