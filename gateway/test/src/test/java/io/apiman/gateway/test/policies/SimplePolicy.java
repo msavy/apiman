@@ -15,6 +15,7 @@
  */
 package io.apiman.gateway.test.policies;
 
+import io.apiman.common.logging.IApimanLogger;
 import io.apiman.gateway.engine.beans.ApiRequest;
 import io.apiman.gateway.engine.beans.ApiResponse;
 import io.apiman.gateway.engine.policy.IPolicy;
@@ -57,6 +58,12 @@ public class SimplePolicy implements IPolicy {
             final IPolicyChain<ApiRequest> chain) {
         inboundCallCounter++;
         request.getHeaders().put("X-Test-InboundCallCounter", String.valueOf(inboundCallCounter)); //$NON-NLS-1$
+        IApimanLogger logger = context.getLogger(getClass());
+        logger.info("Hello, I am an info message");
+        logger.debug("Hello, I am a debug message");
+        logger.warn("Hello, I am a warn message");
+        logger.trace("Hello, I am a trace message");
+        logger.error("Hello, I am an error message", new RuntimeException("An example of an error"));
         chain.doApply(request);
     }
 
