@@ -50,6 +50,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     private static final float MAX_LOAD_FACTOR = 0.75f;
     private Element[] hashArray;
     private int elemCount = 0;
+    //private Element links;
 
     private static final class ElemIterator implements Iterator<Entry<String, String>> {
         Element[] hashTable;
@@ -73,7 +74,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             return selected;
         }
 
-        void setNext() {
+        private void setNext() {
             // If already have a selected element, then select next value with same key
             if (selected != null && selected.getNext() != null) {
                 next = selected.getNext();
@@ -105,12 +106,9 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public IStringMultiMap put(String key, String value) {
-        doPut(key, new Element(key, value));
+        long keyHash = getHash(key);
+        hashArray[getIndex(keyHash)] = new Element(key, value, keyHash);
         return this;
-    }
-
-    private void doPut(String k, Element elem) {
-        hashArray[getIndex(k)] = elem;
     }
 
     private static final Access<String> LOWER_CASE_ACCESS_INSTANCE = new LowerCaseAccess();
@@ -132,9 +130,17 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     }
 
+    private int getIndex(long hash) {
+        return (int) hash % hashArray.length;
+    }
+
     private int getIndex(String text) {
-        return (int) (LongHashFunction.xx_r39().hash(text,
-                LOWER_CASE_ACCESS_INSTANCE, 0, text.length()) % hashArray.length);
+        return (int) (getHash(text) % hashArray.length);
+    }
+
+    private long getHash(String text) {
+        return LongHashFunction.xx_r39().hash(text,
+                LOWER_CASE_ACCESS_INSTANCE, 0, text.length());
     }
 
     @Override
@@ -146,18 +152,20 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public IStringMultiMap add(String key, String value) {
-        int idx = getIndex(key);
+        long hash = getHash(key);
+        int idx = getIndex(hash);
         Element elem = hashArray[idx];
         if (elem == null) {
-            hashArray[idx] = new Element(key, value);
-        } else {
-            elem.add(key, value);
+            hashArray[idx] = new Element(key, value, hash);
+        } else { // Last element appears first in list.
+            elem.next = new Element(key, value, hash);
         }
         return this;
     }
 
     private Element getElement(String key) {
-        return hashArray[getIndex(key)];
+        long hash = getHash(key);
+        return hashArray[getIndex(hash)].getByHash(hash);
     }
 
     @Override
@@ -176,13 +184,13 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public IStringMultiMap remove(String key) {
-        hashArray[getIndex(key)] = null;
+        hashArray[getIndex(key)].removeByHash(key);
         return this;
     }
 
     @Override
     public String get(String key) {
-        return getElement(key).getValue(); // Just return the FIRST value, ignore all others
+        return getElement(key).getValue(); // Just return the first value, ignore all others (i.e. most recently added one)
     }
 
     @Override
@@ -244,18 +252,16 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public Set<String> keySet() {
-        return elemMap.keySet();
+        //return elemMap.keySet();
+        return null; // TODO implement
     }
 
     @Override
     public IStringMultiMap clear() {
-        elemMap.clear();
+        hashArray = new Element[hashArray.length];
+        elemCount = 0;
         return this;
     }
-
-//    private String lower(String in) {
-//        return in.toLowerCase();
-//    }
 
     @Override
     @SuppressWarnings("nls")
@@ -274,10 +280,33 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     private static final class Element implements Iterable<Entry<String, String>>, Entry<String, String> {
         private final AbstractMap.SimpleImmutableEntry<String, String> entry;
+        private final long keyHash;
         private Element next = null;
 
-        public Element(String key, String value) {
+        /**
+         * The hashCode is stored because we may have duplicate entries for a
+         * given hash bucket for two reasons:
+         *
+         * 1. Multiple value insertions for the same key (standard multimap behaviour)
+         * 2. Hash collision. The key is different, but maps to the same bucket.
+         *
+         * We can use the stored hash to rapidly differentiate between these scenarios
+         * and various operations such as delete.
+         * @param key the key
+         * @param value the value
+         * @param keyHash the hash (nb: full hash, not just bucket index!)
+         */
+        public Element(String key, String value, long keyHash) {
             entry = new AbstractMap.SimpleImmutableEntry<>(key, value);
+            this.keyHash = keyHash;
+        }
+
+        public void removeByHash(long hashCode) {
+            // TODO Must preserve hash collisions.
+        }
+
+        public Element getByHash(long hashCode) {
+            return getKeyHash() == hashCode ? this : getNext(hashCode);
         }
 
         @Override
@@ -292,6 +321,10 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             }
             return allElems;
         }
+
+        public long getKeyHash() {
+            return keyHash;
+        }
 //
         public List<String> getAllValues() {
             List<String> allElems = new ArrayList<>();
@@ -301,18 +334,19 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             return allElems;
         }
 //
-        public void add(String key, String value) {
-            Element oldLastElem = getLast();
-            oldLastElem.next = new Element(key, value);
-        }
+//        public void add(String key, String value) {
+//            //Element oldLastElem = getLast();
+//            Element newElem = new Element(key, value);
+//            newElem.next = this;
+//        }
 //
-        public Element getLast() {
-            Element elem = this;
-            while (elem.next != null) {
-                elem = elem.next;
-            }
-            return elem;
-        }
+//        public Element getLast() {
+//            Element elem = this;
+//            while (elem.next != null) {
+//                elem = elem.next;
+//            }
+//            return elem;
+//        }
 
         public boolean hasNext() {
             return next == null;
@@ -320,6 +354,26 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
         public Element getNext() {
             return next;
+        }
+
+        public Element getNext(long hash) {
+          Element elem = this;
+          while (elem.next != null) {
+              elem = elem.next;
+              if (elem.getKeyHash() == hash)
+                  return elem;
+          }
+          return null;
+        }
+
+        public Element getNext(String key) {
+            Element elem = this;
+            while (elem.next != null) {
+                elem = elem.next;
+                if (elem.getKey().equalsIgnoreCase(key))
+                    return elem;
+            }
+            return null;
         }
 
         @Override
