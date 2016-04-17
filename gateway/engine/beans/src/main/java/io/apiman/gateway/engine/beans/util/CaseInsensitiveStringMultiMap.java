@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.nio.ByteOrder;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +48,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     private static final long serialVersionUID = -2052530527825235543L;
     private static final float MAX_LOAD_FACTOR = 0.75f;
     private Element[] hashArray;
-    private int elemCount = 0;
+    private int elemCount = 20;
     //private Element links;
 
     private static final class ElemIterator implements Iterator<Entry<String, String>> {
@@ -259,7 +258,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             if (oElem != null) { // Add any non-null elements
                 // If there are multiple values, will also add those
                 for (Element iElem = oElem; iElem != null; iElem = iElem.getNext()) {
-                    entryList.add(oElem);
+                    entryList.add(iElem);
                 }
             }
         }
@@ -280,7 +279,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
                 }
             }
         }
-        return Collections.unmodifiableMap(map);
+        return map;
     }
 
     @Override
