@@ -64,6 +64,9 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
         @Override
         public boolean hasNext() {
+            if (next == null)
+                setNext();
+
             return next != null;
         }
 
@@ -87,6 +90,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
                     }
                     idx++;
                 }
+                next = null;
             }
         }
     }
@@ -127,15 +131,41 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         public ByteOrder byteOrder(String input) {
             return ByteOrder.nativeOrder();
         }
+    }
 
+    private static boolean insensitiveEquals(String a, String b) {
+        if (a.length() != b.length())
+            return false;
+
+        for (int i = 0; i < a.length(); i++) {
+            char charA = a.charAt(i);
+            char charB = b.charAt(i);
+
+            // If characters match, just continue
+            if (charA == charB)
+                continue;
+
+            // If charA is upper and we didn't already match above
+            // then charB may be lower (and possibly still not match).
+            if (charA >= 'A' && charA <= 'Z' && (charA + 32 != charB))
+                return false;
+
+            // If charB is upper and we didn't already match above
+            // then charA may be lower (and possibly still not match).
+            if (charB >= 'A' && charB <= 'Z' && (charB + 32 != charA))
+                return false;
+
+            // Otherwise matches
+        }
+        return true;
     }
 
     private int getIndex(long hash) {
-        return (int) hash % hashArray.length;
+        return Math.abs((int) (hash % hashArray.length));
     }
 
     private int getIndex(String text) {
-        return (int) (getHash(text) % hashArray.length);
+        return Math.abs((int) (getHash(text) % hashArray.length));
     }
 
     private long getHash(String text) {
@@ -154,18 +184,20 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     public IStringMultiMap add(String key, String value) {
         long hash = getHash(key);
         int idx = getIndex(hash);
-        Element elem = hashArray[idx];
-        if (elem == null) {
+        Element existingHead = hashArray[idx];
+        if (existingHead == null) {
             hashArray[idx] = new Element(key, value, hash);
         } else { // Last element appears first in list.
-            elem.next = new Element(key, value, hash);
+            Element newHead = new Element(key, value, hash);
+            newHead.previous = existingHead;
+            hashArray[idx] = newHead;
         }
         return this;
     }
 
     private Element getElement(String key) {
         long hash = getHash(key);
-        return hashArray[getIndex(hash)].getByHash(hash);
+        return hashArray[getIndex(hash)].getByHash(hash, key);
     }
 
     @Override
@@ -183,8 +215,8 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     }
 
     @Override
-    public IStringMultiMap remove(String key) {
-        hashArray[getIndex(key)].removeByHash(key);
+    public IStringMultiMap remove(String key) { // TODO implement
+        //hashArray[getIndex(key)].removeByHash(key);
         return this;
     }
 
@@ -195,10 +227,10 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public List<Entry<String, String>> getAllEntries(String key) { // TODO ensure elemCount is accurate
-        if (elemCount > 0) {
+        //if (elemCount > 0) { TODO
            return getElement(key).getAllEntries();
-        }
-        return Collections.emptyList();
+        //}
+        //return Collections.emptyList();
     }
 
     @Override
@@ -218,14 +250,11 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     public List<Entry<String, String>> getEntries() {
         List<Entry<String, String>> entryList = new ArrayList<>(elemCount);
         // Look at all top-level elements
-        for (Element elem : hashArray) {
-            if (elem != null) {
-                // Add any non-null ones
-                entryList.add(elem);
-                // If there are multiple values, also add those
-                while (elem.hasNext()) {
-                    Element innerElem = elem.getNext();
-                    entryList.add(innerElem);
+        for (Element oElem : hashArray) {
+            if (oElem != null) { // Add any non-null elements
+                // If there are multiple values, will also add those
+                for (Element iElem = oElem; iElem != null; iElem = iElem.getNext()) {
+                    entryList.add(oElem);
                 }
             }
         }
@@ -278,10 +307,11 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         return pairs.stream().map(Entry::getValue).collect(Collectors.joining(", "));
     }
 
-    private static final class Element implements Iterable<Entry<String, String>>, Entry<String, String> {
-        private final AbstractMap.SimpleImmutableEntry<String, String> entry;
+    private static final class Element extends AbstractMap.SimpleImmutableEntry<String, String> implements Iterable<Entry<String, String>> {
+        private static final long serialVersionUID = 4505963331324890429L;
+        //private final AbstractMap.SimpleImmutableEntry<String, String> entry;
         private final long keyHash;
-        private Element next = null;
+        private Element previous = null;
 
         /**
          * The hashCode is stored because we may have duplicate entries for a
@@ -297,16 +327,17 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
          * @param keyHash the hash (nb: full hash, not just bucket index!)
          */
         public Element(String key, String value, long keyHash) {
-            entry = new AbstractMap.SimpleImmutableEntry<>(key, value);
+            super(key, value);
             this.keyHash = keyHash;
         }
 
-        public void removeByHash(long hashCode) {
+        public void removeByHash(long hashCode, String key) {
             // TODO Must preserve hash collisions.
         }
 
-        public Element getByHash(long hashCode) {
-            return getKeyHash() == hashCode ? this : getNext(hashCode);
+        // NB: Even if hashes match, tiny chance of collision - so also check key.
+        public Element getByHash(long hashCode, String key) {
+            return getKeyHash() == hashCode && insensitiveEquals(key, getKey()) ? this : getNext(hashCode, key);
         }
 
         @Override
@@ -349,48 +380,21 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 //        }
 
         public boolean hasNext() {
-            return next == null;
+            return previous == null;
         }
 
         public Element getNext() {
-            return next;
+            return previous;
         }
 
-        public Element getNext(long hash) {
+        public Element getNext(long hash, String key) {
           Element elem = this;
-          while (elem.next != null) {
-              elem = elem.next;
-              if (elem.getKeyHash() == hash)
+          while (elem.previous != null) {
+              elem = elem.previous;
+              if (elem.getKeyHash() == hash && insensitiveEquals(elem.getKey(), key))
                   return elem;
           }
           return null;
         }
-
-        public Element getNext(String key) {
-            Element elem = this;
-            while (elem.next != null) {
-                elem = elem.next;
-                if (elem.getKey().equalsIgnoreCase(key))
-                    return elem;
-            }
-            return null;
-        }
-
-        @Override
-        public String getValue() {
-            return entry.getValue();
-        }
-
-        @Override
-        public String getKey() {
-            return entry.getKey();
-        }
-
-        @Override
-        public String setValue(String value) {
-            return entry.setValue(value);
-        }
     }
-
-
 }
