@@ -66,7 +66,6 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         public boolean hasNext() {
             if (next == null)
                 setNext();
-
             return next != null;
         }
 
@@ -197,7 +196,8 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     private Element getElement(String key) {
         long hash = getHash(key);
-        return hashArray[getIndex(hash)].getByHash(hash, key);
+        Element head = hashArray[getIndex(hash)];
+        return head == null ? null : head.getByHash(hash, key);
     }
 
     @Override
@@ -222,7 +222,8 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public String get(String key) {
-        return getElement(key).getValue(); // Just return the first value, ignore all others (i.e. most recently added one)
+        Element elem = getElement(key); // Just return the first value, ignore all others (i.e. most recently added one)
+        return elem == null ? null : elem.getValue();
     }
 
     @Override
@@ -276,13 +277,16 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public boolean containsKey(String key) {
-        return hashArray[getIndex(key)] != null;
+        long hash = getHash(key);
+        int idx = getIndex(hash);
+        // Check if there's an entry the idx, *and* check that the key is not just a collision
+        return hashArray[idx] != null && hashArray[idx].getByHash(hash, key) != null;
     }
 
     @Override
     public Set<String> keySet() {
-        //return elemMap.keySet();
-        return null; // TODO implement
+        // Remember, may be multiple keys in the same bucket
+        return null;
     }
 
     @Override
@@ -331,10 +335,6 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             this.keyHash = keyHash;
         }
 
-        public void removeByHash(long hashCode, String key) {
-            // TODO Must preserve hash collisions.
-        }
-
         // NB: Even if hashes match, tiny chance of collision - so also check key.
         public Element getByHash(long hashCode, String key) {
             return getKeyHash() == hashCode && insensitiveEquals(key, getKey()) ? this : getNext(hashCode, key);
@@ -380,7 +380,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 //        }
 
         public boolean hasNext() {
-            return previous == null;
+            return previous != null;
         }
 
         public Element getNext() {
