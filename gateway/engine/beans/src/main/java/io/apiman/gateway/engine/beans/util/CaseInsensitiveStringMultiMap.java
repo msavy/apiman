@@ -78,7 +78,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
         private void setNext() {
             // If already have a selected element, then select next value with same key
-            if (selected != null && selected.getNext() != null) {
+            if (selected != null && selected.hasNext()) {
                 next = selected.getNext();
             } else { // Otherwise, look through table until next non-null element found
                 while (idx < hashTable.length) {
@@ -350,41 +350,18 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             Element link = null;
             int ctr = 0;
             while (current != null) {
-                System.out.println("current " + current);
-
                 ctr ++;
                 // If matches hash and key, should discard.
                 if (current.eq(hash, key)) {
-                    System.out.println("Drop "  + current);
                     Element prev = current.previous;
                     current.previous = null;
                     current = prev;
                 } else if (newHead == null) {
-                    System.out.println("Set new head " + current.getKey());
                     newHead = link = current;
                     current = newHead.previous;
                 } else {
-                    System.out.println("linking " + link + " to " + current );
-
-                    link.previous = current;
-                    link = current;
-
+                    link.previous = link = current;
                     current = current.previous;
-
-                    if (ctr > 15)
-                        System.exit(-1);
-                    //System.exit(-1);
-
-                    //current = current.previous;
-                    //current.previous = null;
-                    //current = prev;
-
-                    //current = current.previous;
-//                    link.previous = current;
-//                    current = current.previous;
-                    //link = current;
-                    //current = link.previous;
-                    //current = current.previous;
                 }
             }
             return newHead;
