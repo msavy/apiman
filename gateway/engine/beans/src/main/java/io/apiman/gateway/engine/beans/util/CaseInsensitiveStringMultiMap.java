@@ -21,12 +21,12 @@ import java.nio.ByteOrder;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import net.openhft.hashing.Access;
@@ -268,13 +268,15 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public Map<String, String> toMap() {
-        Map<String, String> map = new HashMap<>(hashArray.length);
+        Map<String, String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         // Look at all top-level elements
         for (Element oElem : hashArray) {
             if (oElem != null) {
+                // Must check all bucket entries as can be hash collision TODO separate collision link?
                 for (Entry<String, String> iElem : oElem.getAllEntries()) {
-                    // Add any non-null ones
-                    map.put(iElem.getKey(), iElem.getValue());
+                    // Add any non-null ones that aren't already in (NB: LIFO)
+                    if (!map.containsKey(iElem.getKey()))
+                        map.put(iElem.getKey(), iElem.getValue());
                 }
             }
         }
@@ -341,7 +343,6 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             this.keyHash = keyHash;
         }
 
-        // mmap.add("b", "b").add("aa", "x").add("a", "x").add("a", "y").add("A", "z").add("a", "XX").add("C", "X_X");
         public Element removeByHash(long hash, String key) {
             Element current = this;
             //Element oldElem = null;
