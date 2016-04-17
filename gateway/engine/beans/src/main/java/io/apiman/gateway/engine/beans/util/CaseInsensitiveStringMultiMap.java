@@ -270,10 +270,12 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     public Map<String, String> toMap() {
         Map<String, String> map = new HashMap<>(hashArray.length);
         // Look at all top-level elements
-        for (Element elem : hashArray) {
-            if (elem != null) {
-                // Add any non-null ones
-                map.put(elem.getKey(), elem.getValue());
+        for (Element oElem : hashArray) {
+            if (oElem != null) {
+                for (Entry<String, String> iElem : oElem.getAllEntries()) {
+                    // Add any non-null ones
+                    map.put(iElem.getKey(), iElem.getValue());
+                }
             }
         }
         return Collections.unmodifiableMap(map);
