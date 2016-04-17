@@ -20,7 +20,12 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * A map of query parameters to associated values. It is possible to
@@ -53,8 +58,10 @@ public class QueryMap extends CaseInsensitiveStringMultiMap implements Serializa
     }
 
     @SuppressWarnings("nls")
-    public String toQueryString() {
-        return getEntries().stream()
+    public String toQueryString() { // TODO optimise
+        List<Entry<String, String>> elems = getEntries();
+        Collections.reverse(elems);
+        return elems.stream()
                 .map(pair -> URLEnc(pair.getKey()) + "=" + URLEnc(pair.getValue()))
                 .collect(Collectors.joining("&"));
     }
@@ -68,4 +75,8 @@ public class QueryMap extends CaseInsensitiveStringMultiMap implements Serializa
         }
     }
 
+    public static <T> Stream<T> streamInReverse(T[] input) {
+        return IntStream.range(1, input.length + 1).mapToObj(
+          i -> input[input.length - i]);
+    }
 }
