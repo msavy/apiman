@@ -216,7 +216,11 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public IStringMultiMap remove(String key) { // TODO implement
-        //hashArray[getIndex(key)].removeByHash(key);
+        long hash = getHash(key);
+        int idx = getIndex(hash);
+        Element headElem = hashArray[idx];
+        if (headElem != null)
+            hashArray[idx] = headElem.removeByHash(hash, key);
         return this;
     }
 
@@ -236,10 +240,10 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public List<String> getAll(String key) {
-        if (elemCount > 0) {
+        //if (elemCount > 0) {
             return getElement(key).getAllValues();
-         }
-        return Collections.emptyList();
+         //}
+        //return Collections.emptyList();
     }
 
     @Override
@@ -335,6 +339,62 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             this.keyHash = keyHash;
         }
 
+        // mmap.add("b", "b").add("aa", "x").add("a", "x").add("a", "y").add("A", "z").add("a", "XX").add("C", "X_X");
+        public Element removeByHash(long hash, String key) {
+            Element current = this;
+            //Element oldElem = null;
+            Element newHead = null;
+            Element link = null;
+            int ctr = 0;
+            while (current != null) {
+                System.out.println("current " + current);
+
+                ctr ++;
+                // If matches hash and key, should discard.
+                if (current.eq(hash, key)) {
+                    System.out.println("Drop "  + current);
+                    Element prev = current.previous;
+                    current.previous = null;
+                    current = prev;
+                } else if (newHead == null) {
+                    System.out.println("Set new head " + current.getKey());
+                    newHead = link = current;
+                    current = newHead.previous;
+                } else {
+                    System.out.println("linking " + link + " to " + current );
+
+                    link.previous = current;
+                    link = current;
+
+                    current = current.previous;
+
+                    if (ctr > 15)
+                        System.exit(-1);
+                    //System.exit(-1);
+
+                    //current = current.previous;
+                    //current.previous = null;
+                    //current = prev;
+
+                    //current = current.previous;
+//                    link.previous = current;
+//                    current = current.previous;
+                    //link = current;
+                    //current = link.previous;
+                    //current = current.previous;
+                }
+            }
+            return newHead;
+        }
+
+        private boolean eq(Element other) {
+            return getKeyHash() == other.getKeyHash() && insensitiveEquals(other.getKey(), getKey());
+        }
+
+        private boolean eq(long hashCode, String key) {
+            return getKeyHash() == hashCode && insensitiveEquals(key, getKey());
+        }
+
         // NB: Even if hashes match, tiny chance of collision - so also check key.
         public Element getByHash(long hashCode, String key) {
             return getKeyHash() == hashCode && insensitiveEquals(key, getKey()) ? this : getNext(hashCode, key);
@@ -364,20 +424,6 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             }
             return allElems;
         }
-//
-//        public void add(String key, String value) {
-//            //Element oldLastElem = getLast();
-//            Element newElem = new Element(key, value);
-//            newElem.next = this;
-//        }
-//
-//        public Element getLast() {
-//            Element elem = this;
-//            while (elem.next != null) {
-//                elem = elem.next;
-//            }
-//            return elem;
-//        }
 
         public boolean hasNext() {
             return previous != null;

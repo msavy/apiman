@@ -38,11 +38,11 @@ import org.junit.Test;
 public class MultimapTest {
 
     @SafeVarargs
-    private final static Set<Entry<String, String>> expected(Entry<String, String>... entries) {
+    private final static <T> Set<T> expected(T... entries) {
         return new HashSet<>(Arrays.asList(entries));
     }
 
-    private static Set<Entry<String,String>> toSet(List<Entry<String,String>> list) {
+    private static <T> Set<T> toSet(List<T> list) {
         return new HashSet<>(list);
     }
 
@@ -82,12 +82,12 @@ public class MultimapTest {
 
     @Test
     public void shouldGetAllValuesForKey() {
-        List<String> expected = Arrays.asList("foo", "goodbye", "justvalue");
+        Set<String> expected = expected("foo", "goodbye", "justvalue");
 
         CaseInsensitiveStringMultiMap mmap = new CaseInsensitiveStringMultiMap();
         mmap.add("x", "foo").add("x", "goodbye").add("X", "justvalue");
 
-        Assert.assertEquals(expected, mmap.getAll("x"));
+        Assert.assertEquals(expected, toSet(mmap.getAll("x")));
     }
 
     @Test
@@ -138,6 +138,22 @@ public class MultimapTest {
         CaseInsensitiveStringMultiMap mmap = new CaseInsensitiveStringMultiMap();
         // Additional entries should be ignored
         mmap.add("a", "x").add("a", "y").add("A", "z").add("a", "XX").add("C", "X_X");
+        mmap.remove("a");
+        Map<String, String> actual = mmap.toMap();
+
+        Assert.assertEquals(expected, actual);
+    }
+
+    @Test // A and C will have same bucket by virtue of size 1 array
+    public void removeEntriesWithCollision() {
+        Map<String, String> expected = new LinkedHashMap<>(); // Expect empty
+        expected.put("C", "X_X");
+        expected.put("b", "b");
+        expected.put("aa", "x");
+
+        CaseInsensitiveStringMultiMap mmap = new CaseInsensitiveStringMultiMap(1);
+        // Additional entries should be ignored
+        mmap.add("b", "b").add("aa", "x").add("a", "x").add("a", "y").add("A", "z").add("a", "XX").add("C", "X_X");
         mmap.remove("a");
         Map<String, String> actual = mmap.toMap();
 
