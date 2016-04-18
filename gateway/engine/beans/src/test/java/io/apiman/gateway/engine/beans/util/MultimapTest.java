@@ -168,6 +168,35 @@ public class MultimapTest {
         Assert.assertEquals("X_X", mmap.get("c"));
     }
 
+    @Test
+    public void getKeyCount() {
+        CaseInsensitiveStringMultiMap mmap = new CaseInsensitiveStringMultiMap();
+        // Additional entries should be ignored
+        mmap.add("a", "x").add("b", "y").add("c", "z").add("c", "XX").add("C", "X_X");
+        Assert.assertEquals(3, mmap.size());
+    }
+
+    @Test
+    public void getKeyCountAfterRemove() {
+        CaseInsensitiveStringMultiMap mmap = new CaseInsensitiveStringMultiMap();
+        // Additional entries should be ignored
+        mmap.add("a", "x").add("b", "y").add("c", "z").add("c", "XX").add("C", "X_X");
+        Assert.assertEquals(3, mmap.size());
+        mmap.remove("c");
+        Assert.assertEquals(2, mmap.size());
+        mmap.remove("a");
+        Assert.assertEquals(1, mmap.size());
+        mmap.add("a", "x").add("c", "c");
+        Assert.assertEquals(3, mmap.size());
+        mmap.add("d", "d").add("d", "f");
+        Assert.assertEquals(4, mmap.size());
+        mmap.remove("c");
+        Assert.assertEquals(3, mmap.size());
+        // No such key
+        mmap.remove("XXXXXXX");
+        Assert.assertEquals(3, mmap.size());
+    }
+
     private Entry<String, String> ent(String k, String v) {
         return new AbstractMap.SimpleImmutableEntry<>(k, v);
     }
