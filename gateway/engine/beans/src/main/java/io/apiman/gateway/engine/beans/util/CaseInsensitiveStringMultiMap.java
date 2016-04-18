@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.nio.ByteOrder;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -46,52 +47,10 @@ import net.openhft.hashing.LongHashFunction;
  */
 public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializable {
     private static final long serialVersionUID = -2052530527825235543L;
-    private static final float MAX_LOAD_FACTOR = 0.75f;
+    private static final Access<String> LOWER_CASE_ACCESS_INSTANCE = new LowerCaseAccess();
+    //private static final float MAX_LOAD_FACTOR = 0.75f;
     private Element[] hashArray;
-    private int elemCount = 20;
-    //private Element links;
-
-    private static final class ElemIterator implements Iterator<Entry<String, String>> {
-        Element[] hashTable;
-        Element next;
-        Element selected;
-        int idx = 0;
-
-        public ElemIterator(Element[] hashTable) {
-            this.hashTable = hashTable;
-        }
-
-        @Override
-        public boolean hasNext() {
-            if (next == null)
-                setNext();
-            return next != null;
-        }
-
-        @Override
-        public Entry<String, String> next() {
-            selected = next;
-            setNext();
-            return selected;
-        }
-
-        private void setNext() {
-            // If already have a selected element, then select next value with same key
-            if (selected != null && selected.hasNext()) {
-                next = selected.getNext();
-            } else { // Otherwise, look through table until next non-null element found
-                while (idx < hashTable.length) {
-                    if (hashTable[idx] != null) { // Found non-null element
-                        next = hashTable[idx]; // Set it as next
-                        idx++; // Increment index so we'll look at the following element next
-                        return;
-                    }
-                    idx++;
-                }
-                next = null;
-            }
-        }
-    }
+    private int elemCount = 0;
 
     public CaseInsensitiveStringMultiMap() {
         this(32);
@@ -113,24 +72,6 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         return this;
     }
 
-    private static final Access<String> LOWER_CASE_ACCESS_INSTANCE = new LowerCaseAccess();
-
-    private static final class LowerCaseAccess extends Access<String> {
-        @Override
-        public int getByte(String input, long offset) {
-          char c = input.charAt((int)offset);
-          if (c >= 'A' && c <= 'Z') {
-              return c += 32; // toLower
-          }
-          return c;
-        }
-
-        @Override
-        public ByteOrder byteOrder(String input) {
-            return ByteOrder.nativeOrder();
-        }
-    }
-
     private static boolean insensitiveEquals(String a, String b) {
         if (a.length() != b.length())
             return false;
@@ -138,21 +79,17 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         for (int i = 0; i < a.length(); i++) {
             char charA = a.charAt(i);
             char charB = b.charAt(i);
-
             // If characters match, just continue
             if (charA == charB)
                 continue;
-
             // If charA is upper and we didn't already match above
             // then charB may be lower (and possibly still not match).
             if (charA >= 'A' && charA <= 'Z' && (charA + 32 != charB))
                 return false;
-
             // If charB is upper and we didn't already match above
             // then charA may be lower (and possibly still not match).
             if (charB >= 'A' && charB <= 'Z' && (charB + 32 != charA))
                 return false;
-
             // Otherwise matches
         }
         return true;
@@ -160,10 +97,6 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     private int getIndex(long hash) {
         return Math.abs((int) (hash % hashArray.length));
-    }
-
-    private int getIndex(String text) {
-        return Math.abs((int) (getHash(text) % hashArray.length));
     }
 
     private long getHash(String text) {
@@ -214,7 +147,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     }
 
     @Override
-    public IStringMultiMap remove(String key) { // TODO implement
+    public IStringMultiMap remove(String key) {
         long hash = getHash(key);
         int idx = getIndex(hash);
         Element headElem = hashArray[idx];
@@ -230,24 +163,24 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     }
 
     @Override
-    public List<Entry<String, String>> getAllEntries(String key) { // TODO ensure elemCount is accurate
-        //if (elemCount > 0) { TODO
+    public List<Entry<String, String>> getAllEntries(String key) {
+        if (elemCount > 0) {
            return getElement(key).getAllEntries();
-        //}
-        //return Collections.emptyList();
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public List<String> getAll(String key) {
-        //if (elemCount > 0) {
+        if (elemCount > 0) {
             return getElement(key).getAllValues();
-         //}
-        //return Collections.emptyList();
+         }
+        return Collections.emptyList();
     }
 
     @Override
     public int size() {
-        return hashArray.length;
+        return elemCount;
     }
 
     @Override
@@ -320,7 +253,6 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     private static final class Element extends AbstractMap.SimpleImmutableEntry<String, String> implements Iterable<Entry<String, String>> {
         private static final long serialVersionUID = 4505963331324890429L;
-        //private final AbstractMap.SimpleImmutableEntry<String, String> entry;
         private final long keyHash;
         private Element previous = null;
 
@@ -333,9 +265,10 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
          *
          * We can use the stored hash to rapidly differentiate between these scenarios
          * and various operations such as delete.
+         *
          * @param key the key
          * @param value the value
-         * @param keyHash the hash (nb: full hash, not just bucket index!)
+         * @param keyHash the hash (NB: full hash, not just bucket index!)
          */
         public Element(String key, String value, long keyHash) {
             super(key, value);
@@ -344,12 +277,10 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
         public Element removeByHash(long hash, String key) {
             Element current = this;
-            //Element oldElem = null;
             Element newHead = null;
             Element link = null;
-            int ctr = 0;
+
             while (current != null) {
-                ctr ++;
                 // If matches hash and key, should discard.
                 if (current.eq(hash, key)) {
                     Element prev = current.previous;
@@ -364,10 +295,6 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
                 }
             }
             return newHead;
-        }
-
-        private boolean eq(Element other) {
-            return getKeyHash() == other.getKeyHash() && insensitiveEquals(other.getKey(), getKey());
         }
 
         private boolean eq(long hashCode, String key) {
@@ -395,7 +322,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         public long getKeyHash() {
             return keyHash;
         }
-//
+
         public List<String> getAllValues() {
             List<String> allElems = new ArrayList<>();
             for (Element elem = this; elem != null; elem = elem.getNext()) {
@@ -420,6 +347,65 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
                   return elem;
           }
           return null;
+        }
+    }
+
+
+    private static final class ElemIterator implements Iterator<Entry<String, String>> {
+        Element[] hashTable;
+        Element next;
+        Element selected;
+        int idx = 0;
+
+        public ElemIterator(Element[] hashTable) {
+            this.hashTable = hashTable;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (next == null)
+                setNext();
+            return next != null;
+        }
+
+        @Override
+        public Entry<String, String> next() {
+            selected = next;
+            setNext();
+            return selected;
+        }
+
+        private void setNext() {
+            // If already have a selected element, then select next value with same key
+            if (selected != null && selected.hasNext()) {
+                next = selected.getNext();
+            } else { // Otherwise, look through table until next non-null element found
+                while (idx < hashTable.length) {
+                    if (hashTable[idx] != null) { // Found non-null element
+                        next = hashTable[idx]; // Set it as next
+                        idx++; // Increment index so we'll look at the following element next
+                        return;
+                    }
+                    idx++;
+                }
+                next = null;
+            }
+        }
+    }
+
+    private static final class LowerCaseAccess extends Access<String> {
+        @Override
+        public int getByte(String input, long offset) {
+          char c = input.charAt((int)offset);
+          if (c >= 'A' && c <= 'Z') {
+              return c += 32; // toLower
+          }
+          return c;
+        }
+
+        @Override
+        public ByteOrder byteOrder(String input) {
+            return ByteOrder.nativeOrder();
         }
     }
 }
