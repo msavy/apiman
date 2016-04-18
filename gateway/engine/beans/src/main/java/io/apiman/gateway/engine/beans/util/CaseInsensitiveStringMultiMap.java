@@ -50,7 +50,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     private static final Access<String> LOWER_CASE_ACCESS_INSTANCE = new LowerCaseAccess();
     //private static final float MAX_LOAD_FACTOR = 0.75f;
     private Element[] hashArray;
-    private int elemCount = 0;
+    private int keyCount = 0;
 
     public CaseInsensitiveStringMultiMap() {
         this(32);
@@ -68,31 +68,12 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     @Override
     public IStringMultiMap put(String key, String value) {
         long keyHash = getHash(key);
-        hashArray[getIndex(keyHash)] = new Element(key, value, keyHash);
+        int idx = getIndex(keyHash);
+        if (hashArray[idx] == null)
+            keyCount++;
+
+        hashArray[idx] = new Element(key, value, keyHash);
         return this;
-    }
-
-    private static boolean insensitiveEquals(String a, String b) {
-        if (a.length() != b.length())
-            return false;
-
-        for (int i = 0; i < a.length(); i++) {
-            char charA = a.charAt(i);
-            char charB = b.charAt(i);
-            // If characters match, just continue
-            if (charA == charB)
-                continue;
-            // If charA is upper and we didn't already match above
-            // then charB may be lower (and possibly still not match).
-            if (charA >= 'A' && charA <= 'Z' && (charA + 32 != charB))
-                return false;
-            // If charB is upper and we didn't already match above
-            // then charA may be lower (and possibly still not match).
-            if (charB >= 'A' && charB <= 'Z' && (charB + 32 != charA))
-                return false;
-            // Otherwise matches
-        }
-        return true;
     }
 
     private int getIndex(long hash) {
@@ -118,6 +99,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         Element existingHead = hashArray[idx];
         if (existingHead == null) {
             hashArray[idx] = new Element(key, value, hash);
+            keyCount++;
         } else { // Last element appears first in list.
             Element newHead = new Element(key, value, hash);
             newHead.previous = existingHead;
@@ -164,7 +146,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public List<Entry<String, String>> getAllEntries(String key) {
-        if (elemCount > 0) {
+        if (keyCount > 0) {
            return getElement(key).getAllEntries();
         }
         return Collections.emptyList();
@@ -172,7 +154,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public List<String> getAll(String key) {
-        if (elemCount > 0) {
+        if (keyCount > 0) {
             return getElement(key).getAllValues();
          }
         return Collections.emptyList();
@@ -180,12 +162,12 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
 
     @Override
     public int size() {
-        return elemCount;
+        return keyCount;
     }
 
     @Override
     public List<Entry<String, String>> getEntries() {
-        List<Entry<String, String>> entryList = new ArrayList<>(elemCount);
+        List<Entry<String, String>> entryList = new ArrayList<>(keyCount);
         // Look at all top-level elements
         for (Element oElem : hashArray) {
             if (oElem != null) { // Add any non-null elements
@@ -232,7 +214,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     @Override
     public IStringMultiMap clear() {
         hashArray = new Element[hashArray.length];
-        elemCount = 0;
+        keyCount = 0;
         return this;
     }
 
@@ -251,7 +233,30 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         return pairs.stream().map(Entry::getValue).collect(Collectors.joining(", "));
     }
 
-    private static final class Element extends AbstractMap.SimpleImmutableEntry<String, String> implements Iterable<Entry<String, String>> {
+    private static boolean insensitiveEquals(String a, String b) {
+        if (a.length() != b.length())
+            return false;
+
+        for (int i = 0; i < a.length(); i++) {
+            char charA = a.charAt(i);
+            char charB = b.charAt(i);
+            // If characters match, just continue
+            if (charA == charB)
+                continue;
+            // If charA is upper and we didn't already match above
+            // then charB may be lower (and possibly still not match).
+            if (charA >= 'A' && charA <= 'Z' && (charA + 32 != charB))
+                return false;
+            // If charB is upper and we didn't already match above
+            // then charA may be lower (and possibly still not match).
+            if (charB >= 'A' && charB <= 'Z' && (charB + 32 != charA))
+                return false;
+            // Otherwise matches
+        }
+        return true;
+    }
+
+    private final class Element extends AbstractMap.SimpleImmutableEntry<String, String> implements Iterable<Entry<String, String>> {
         private static final long serialVersionUID = 4505963331324890429L;
         private final long keyHash;
         private Element previous = null;
@@ -279,6 +284,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
             Element current = this;
             Element newHead = null;
             Element link = null;
+            boolean removedAny = false;
 
             while (current != null) {
                 // If matches hash and key, should discard.
@@ -286,6 +292,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
                     Element prev = current.previous;
                     current.previous = null;
                     current = prev;
+                    removedAny = true;
                 } else if (newHead == null) {
                     newHead = link = current;
                     current = newHead.previous;
@@ -294,6 +301,8 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
                     current = current.previous;
                 }
             }
+            if (removedAny)
+                keyCount--;
             return newHead;
         }
 
