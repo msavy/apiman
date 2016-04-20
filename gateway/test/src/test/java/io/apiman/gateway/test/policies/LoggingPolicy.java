@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 JBoss Inc
+ * Copyright 2016 JBoss Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,25 +20,22 @@ import io.apiman.gateway.engine.beans.ApiResponse;
 import io.apiman.gateway.engine.policy.IPolicy;
 import io.apiman.gateway.engine.policy.IPolicyChain;
 import io.apiman.gateway.engine.policy.IPolicyContext;
+import io.apiman.gateway.test.logging.TestLogger;
 
 /**
  * A simple policy used for testing.
  *
- * @author eric.wittmann@redhat.com
+ * @author Marc Savy {@literal <msavy@redhat.com>}
  */
-public class SimplePolicy implements IPolicy {
+public class LoggingPolicy implements IPolicy {
 
-    public static int inboundCallCounter = 0;
-    public static int outboundCallCounter = 0;
     public static void reset() {
-        inboundCallCounter = 0;
-        outboundCallCounter = 0;
     }
 
     /**
      * Constructor.
      */
-    public SimplePolicy() {
+    public LoggingPolicy() {
     }
 
     /**
@@ -53,10 +50,18 @@ public class SimplePolicy implements IPolicy {
      * @see io.apiman.gateway.engine.policy.IPolicy#apply(io.apiman.gateway.engine.beans.ApiRequest, io.apiman.gateway.engine.policy.IPolicyContext, java.lang.Object, io.apiman.gateway.engine.policy.IPolicyChain)
      */
     @Override
+    @SuppressWarnings("nls")
     public void apply(final ApiRequest request, final IPolicyContext context, final Object config,
             final IPolicyChain<ApiRequest> chain) {
-        inboundCallCounter++;
-        request.getHeaders().put("X-Test-InboundCallCounter", String.valueOf(inboundCallCounter)); //$NON-NLS-1$
+        // This is just for testing, don't do this at home, kids.
+        TestLogger logger = (TestLogger) context.getLogger(getClass());
+        logger.setHeaders(request.getHeaders());
+        logger.info("Hello, I am an info message");
+        logger.debug("Hello, I am a debug message");
+        logger.warn("Hello, I am a warn message");
+        logger.trace("Hello, I am a trace message");
+        logger.error("Hello, I am an error message", new RuntimeException("An example of an error"));
+        logger.error(new RuntimeException("Just the exception"));
         chain.doApply(request);
     }
 
@@ -66,8 +71,6 @@ public class SimplePolicy implements IPolicy {
     @Override
     public void apply(ApiResponse response, IPolicyContext context, Object config,
             IPolicyChain<ApiResponse> chain) {
-        outboundCallCounter++;
-        response.getHeaders().put("X-Test-OutboundCallCounter", String.valueOf(outboundCallCounter)); //$NON-NLS-1$
         chain.doApply(response);
     }
 
