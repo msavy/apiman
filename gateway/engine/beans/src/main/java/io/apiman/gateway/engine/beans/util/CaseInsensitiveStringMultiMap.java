@@ -57,7 +57,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     }
 
     public CaseInsensitiveStringMultiMap(int sizeHint) {
-        hashArray = new Element[sizeHint];
+        hashArray = new Element[(int) (sizeHint*1.25)];
     }
 
     @Override
