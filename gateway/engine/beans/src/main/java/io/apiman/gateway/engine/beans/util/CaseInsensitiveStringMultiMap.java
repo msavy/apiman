@@ -33,15 +33,25 @@ import net.openhft.hashing.Access;
 import net.openhft.hashing.LongHashFunction;
 
 /**
- * A simple multimap able to accept multiple values for given key.
- *
+ * A simple multimap able to accept multiple values for a given key.
+ * <p>
  * The implementation is specifically tuned for headers (such as HTTP), where
- * the number of entries tends to be moderate, but are often very heavily accessed.
- *
- * This map expects ASCII for key values only.
- *
- * Case is ignored (avoiding {@link String#toLowerCase()} before being hashed. FarmHash
- * is used as a fast,
+ * the number of entries tends to be moderate, but are frequently accessed.
+ * </p>
+ * <p>
+ * This map expects ASCII for key strings.
+ * </p>
+ * <p>
+ * Case is ignored (avoiding {@link String#toLowerCase()} <code>String</code> allocation)
+ * before being hashed (<code>xxHash</code>).
+ * </p>
+ * <p>
+ *     Constraints:
+ * <ul>
+ *   <li><strong>Not thread-safe.</strong></li>
+ *   <li><tt>Null</tt> is <strong>not</strong> a valid key.</li>
+ * </ul>
+ * </p>
  *
  * @author Marc Savy {@literal <msavy@redhat.com>}
  */
@@ -53,7 +63,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     private int keyCount = 0;
 
     public CaseInsensitiveStringMultiMap() {
-        this(32);
+        hashArray = new Element[32];
     }
 
     public CaseInsensitiveStringMultiMap(int sizeHint) {
@@ -147,7 +157,8 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     @Override
     public List<Entry<String, String>> getAllEntries(String key) {
         if (keyCount > 0) {
-           return getElement(key).getAllEntries();
+            Element elem = getElement(key);
+            return elem == null ? Collections.emptyList() : elem.getAllEntries();
         }
         return Collections.emptyList();
     }
@@ -155,7 +166,8 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     @Override
     public List<String> getAll(String key) {
         if (keyCount > 0) {
-            return getElement(key).getAllValues();
+            Element elem = getElement(key);
+            return elem == null ? Collections.emptyList() : elem.getAllValues();
          }
         return Collections.emptyList();
     }
@@ -186,7 +198,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         // Look at all top-level elements
         for (Element oElem : hashArray) {
             if (oElem != null) {
-                // Must check all bucket entries as can be hash collision TODO separate collision link?
+                // Must check all bucket entries as can be hash collision
                 for (Entry<String, String> iElem : oElem.getAllEntries()) {
                     // Add any non-null ones that aren't already in (NB: LIFO)
                     if (!map.containsKey(iElem.getKey()))
@@ -206,9 +218,8 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     }
 
     @Override
-    public Set<String> keySet() {
-        // Remember, may be multiple keys in the same bucket
-        return null;
+    public Set<String> keySet() { // TODO
+        return toMap().keySet();
     }
 
     @Override
@@ -262,18 +273,20 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         private Element previous = null;
 
         /**
-         * The hashCode is stored because we may have duplicate entries for a
+         * The <tt>keyHash</tt> is stored because we may have duplicate entries for a
          * given hash bucket for two reasons:
          *
-         * 1. Multiple value insertions for the same key (standard multimap behaviour)
-         * 2. Hash collision. The key is different, but maps to the same bucket.
+         * <ol>
+         *   <li> Multiple value insertions for the same key (standard multimap behaviour)
+         *   <li> Hash collision. The key is different, but maps to the same bucket.
+         * </ol>
          *
          * We can use the stored hash to rapidly differentiate between these scenarios
-         * and various operations such as delete.
+         * and in various operations such as delete.
          *
          * @param key the key
          * @param value the value
-         * @param keyHash the hash (NB: full hash, not just bucket index!)
+         * @param keyHash the hash <strong>(NB: full hash, not just bucket index!)</strong>
          */
         public Element(String key, String value, long keyHash) {
             super(key, value);
@@ -359,9 +372,8 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         }
     }
 
-
     private static final class ElemIterator implements Iterator<Entry<String, String>> {
-        Element[] hashTable;
+        final Element[] hashTable;
         Element next;
         Element selected;
         int idx = 0;
@@ -407,7 +419,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         public int getByte(String input, long offset) {
           char c = input.charAt((int)offset);
           if (c >= 'A' && c <= 'Z') {
-              return c += 32; // toLower
+              return c + 32; // toLower
           }
           return c;
         }
