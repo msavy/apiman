@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * A map of query parameters to associated values. It is possible to
@@ -73,10 +71,5 @@ public class QueryMap extends CaseInsensitiveStringMultiMap implements Serializa
             System.err.println("Unable to URLEncode" + str); //$NON-NLS-1$
             return str;
         }
-    }
-
-    public static <T> Stream<T> streamInReverse(T[] input) {
-        return IntStream.range(1, input.length + 1).mapToObj(
-          i -> input[input.length - i]);
     }
 }
