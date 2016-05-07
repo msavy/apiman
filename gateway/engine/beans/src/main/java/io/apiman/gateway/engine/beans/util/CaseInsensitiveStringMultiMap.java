@@ -62,6 +62,17 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     private Element[] hashArray;
     private int keyCount = 0;
 
+    public int filledElems() {
+        int n = 0;
+
+        for (Element aHashArray : hashArray) {
+            if (aHashArray != null) {
+                n += 1;
+            }
+        }
+        return n;
+    }
+
     public CaseInsensitiveStringMultiMap() {
         hashArray = new Element[32];
     }
@@ -93,7 +104,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
         return Math.abs((int) (hash % hashArray.length));
     }
 
-    private long getHash(String text) {
+    protected long getHash(String text) {
         return LongHashFunction.xx_r39().hash(text,
                 LOWER_CASE_ACCESS_INSTANCE, 0, text.length());
     }

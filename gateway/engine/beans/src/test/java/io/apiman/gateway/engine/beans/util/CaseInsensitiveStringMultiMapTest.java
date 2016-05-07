@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -295,6 +296,16 @@ public class CaseInsensitiveStringMultiMapTest {
         mmap.clear();
         mmap.add("a", "x");
         Assert.assertEquals(1, mmap.size());
+    }
+
+    @Test
+    public void stuff() {
+        CaseInsensitiveStringMultiMap mmap = new CaseInsensitiveStringMultiMap(100);
+        // Additional entries should be ignored
+        for (int i=0; i<100; i++) {
+            mmap.add(UUID.randomUUID().toString(), Integer.toString(i));
+        }
+        System.out.print(mmap.filledElems());
     }
 
     private Entry<String, String> ent(String k, String v) {
