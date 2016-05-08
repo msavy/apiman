@@ -57,7 +57,7 @@ import net.openhft.hashing.LongHashFunction;
  */
 public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializable {
     private static final long serialVersionUID = -2052530527825235543L;
-    private static final Access<String> LOWER_CASE_ACCESS_INSTANCE = new LowerCaseAccess();
+    protected static final Access<String> LOWER_CASE_ACCESS_INSTANCE = new LowerCaseAccess();
     //private static final float MAX_LOAD_FACTOR = 0.75f;
     private Element[] hashArray;
     private int keyCount = 0;
@@ -101,7 +101,7 @@ public class CaseInsensitiveStringMultiMap implements IStringMultiMap, Serializa
     }
 
     private int getIndex(long hash) {
-        return Math.abs((int) (hash % hashArray.length));
+        return (int) (Math.abs(hash) % hashArray.length);
     }
 
     protected long getHash(String text) {

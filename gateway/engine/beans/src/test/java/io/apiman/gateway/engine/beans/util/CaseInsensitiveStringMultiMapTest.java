@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +33,8 @@ import java.util.stream.StreamSupport;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import net.openhft.hashing.LongHashFunction;
 
 /**
  * @author Marc Savy {@literal <msavy@redhat.com>}
@@ -298,14 +301,78 @@ public class CaseInsensitiveStringMultiMapTest {
         Assert.assertEquals(1, mmap.size());
     }
 
-    @Test
-    public void stuff() {
-        CaseInsensitiveStringMultiMap mmap = new CaseInsensitiveStringMultiMap(100);
+    //@Test
+    @SuppressWarnings("serial")
+    public int[] stuff() {
+        int size = 100;
+        CaseInsensitiveStringMultiMap xxhash = new CaseInsensitiveStringMultiMap(size);
+        CaseInsensitiveStringMultiMap farmhash = new CaseInsensitiveStringMultiMap(size) {
+            @Override
+            protected long getHash(String text) {
+                return LongHashFunction.farmNa().hash(text,
+                        LOWER_CASE_ACCESS_INSTANCE, 0, text.length());
+            }
+        };
+        CaseInsensitiveStringMultiMap dj2bhash = new CaseInsensitiveStringMultiMap(size) {
+            @Override
+            protected long getHash(String text) {
+                long hash = 5381;
+
+                for (int i=0; i<text.length(); i++)
+                    hash = ((hash << 5) + hash) + text.charAt(i); /* hash * 33 + c */
+
+                return hash;
+            }
+        };
+
+        CaseInsensitiveStringMultiMap murmurhash = new CaseInsensitiveStringMultiMap(size) {
+            @Override
+            protected long getHash(String text) {
+                return LongHashFunction.murmur_3().hash(text,
+                        LOWER_CASE_ACCESS_INSTANCE, 0, text.length());
+            }
+        };
+
+        LinkedHashSet<String> entries = new LinkedHashSet<>(100);
+        //SessionIdentifierGenerator randomStrings = new SessionIdentifierGenerator();
         // Additional entries should be ignored
         for (int i=0; i<100; i++) {
-            mmap.add(UUID.randomUUID().toString(), Integer.toString(i));
+            String uuid = UUID.randomUUID().toString();
+            entries.add(uuid);
         }
-        System.out.print(mmap.filledElems());
+
+        // Additional entries should be ignored
+        for (String e : entries) {
+            int i = 0;
+            xxhash.add(e, Integer.toString(i));
+            farmhash.add(e, Integer.toString(i));
+            dj2bhash.add(e, Integer.toString(i));
+            murmurhash.add(e, Integer.toString(i));
+            i++;
+        }
+
+        int[] res = { xxhash.filledElems(), farmhash.filledElems(), dj2bhash.filledElems(), murmurhash.filledElems() };
+        return res;
+    }
+
+    @Test
+    public void stuff2() {
+        int[] res = new int[5];
+        int count = 2000;
+
+        for (int i=0; i<count; i++) {
+            int[] mid = stuff();
+            res[0] += mid[0];
+            res[1] += mid[1];
+            res[2] += mid[2];
+            res[3] += mid[3];
+        }
+
+        System.out.println("\nMeans::");
+        System.out.println("xxHash farmNa dj2bhash murmur3");
+
+        System.out.println(res[0]/count + "     " + res[1]/count
+        + "     " + res[2]/count + "       " + res[3]/count);
     }
 
     private Entry<String, String> ent(String k, String v) {
