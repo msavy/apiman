@@ -17,6 +17,7 @@ package io.apiman.gateway.platforms.vertx3.verticles;
 
 import java.util.UUID;
 
+import io.apiman.common.logging.IApimanLogger;
 import io.apiman.common.util.SimpleStringUtils;
 import io.apiman.gateway.platforms.vertx3.common.config.VertxEngineConfig;
 import io.apiman.gateway.platforms.vertx3.common.verticles.VerticleType;
