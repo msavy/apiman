@@ -106,7 +106,8 @@
       "port": 8443,
       "count": 1
     },
-    "api": { "port": 8081, "count": 1 },
+    "api": { "port": 8081, "count": 1 }
+  },
 
 // SSL configuration to the gateway's *front end* (i.e. client <-> gateway).
 //  "ssl": {
