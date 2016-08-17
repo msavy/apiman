@@ -15,9 +15,6 @@
  */
 package io.apiman.gateway.platforms.vertx3.services;
 
-import io.apiman.gateway.platforms.vertx3.io.VertxApiResponse;
-import io.apiman.gateway.platforms.vertx3.io.VertxPolicyFailure;
-import io.apiman.gateway.platforms.vertx3.services.impl.PolicyToIngestorServiceImpl;
 import io.vertx.codegen.annotations.ProxyClose;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;

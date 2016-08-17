@@ -18,7 +18,6 @@ package io.apiman.gateway.platforms.vertx3.verticles;
 import io.apiman.gateway.platforms.vertx3.common.config.VertxEngineConfig;
 import io.apiman.gateway.platforms.vertx3.common.verticles.VerticleType;
 import io.apiman.gateway.platforms.vertx3.services.InitializeIngestorService;
-import io.apiman.gateway.platforms.vertx3.services.impl.InitializeIngestorServiceImpl;
 import io.vertx.serviceproxy.ProxyHelper;
 
 /**
