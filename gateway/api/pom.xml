@@ -12,5 +12,6 @@
   <modules>
     <module>rest</module>
     <module>rest-impl</module>
+    <module>standalone</module>
   </modules>
 </project>
