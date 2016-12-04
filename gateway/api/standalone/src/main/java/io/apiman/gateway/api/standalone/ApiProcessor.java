@@ -17,12 +17,13 @@
 package io.apiman.gateway.api.standalone;
 
 import io.apiman.gateway.engine.beans.Api;
+import io.vertx.core.AsyncResultHandler;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,15 +47,19 @@ public class ApiProcessor {
 
     public void handle(JsonObject config) {
         Set<WrappedApi> apisFile = getApis(config);
-
         if (first) {
-            wrappedApis = getRemote();
-            apis = wrappedApis.stream()
-                    .map(WrappedApi::getApi)
-                    .collect(Collectors.toSet());
             first = false;
+            getRemote(result -> {
+                apis = wrappedApis.stream()
+                        .map(WrappedApi::getApi)
+                        .collect(Collectors.toSet());
+            });
+        } else {
+            doStuff(apisFile);
         }
+    }
 
+    private void doStuff(Set<WrappedApi> apisFile) {
         SetView<WrappedApi> addedOrModified = Sets.difference(apisFile, wrappedApis);
         SetView<WrappedApi> removedOrModified = Sets.difference(wrappedApis, apisFile);
 
@@ -68,10 +73,8 @@ public class ApiProcessor {
                 .map(WrappedApi::getApi)
                 .filter(apis::contains)
                 .collect(Collectors.toSet());
-
-        // retire, then publish
-        retire(modified);
-        publish(modified);
+        // Retire, then publish
+        retire(modified, afterCompletion -> publish(modified));
     }
 
     private void remove(SetView<WrappedApi> removedOrModified) {
@@ -79,9 +82,8 @@ public class ApiProcessor {
                 .map(WrappedApi::getApi)
                 .filter(api -> !apis.contains(api))
                 .collect(Collectors.toSet());
-
         // Remove
-        retire(removed);
+        retire(removed, null);
     }
 
     private void add(SetView<WrappedApi> addedOrModified) {
@@ -93,34 +95,24 @@ public class ApiProcessor {
         publish(added);
     }
 
+    private void retire(Set<Api> modified, Handler<Void> completed) {
 
-    private void retire(Set<Api> modified) {
-//        httpClient.delete(8080, "http://localhost", "/apiman-gateway-api", result -> {
-//        });
 
-//        @SuppressWarnings("rawtypes")
-//        List<Future> futures = new ArrayList<>(modified.size());
-//
-//        for (int i = 0; i < modified.size(); i++) {
-//            futures.add(Future.future());
-//        }
-//
-//        httpClient.delete(8080, "http://localhost", "/apiman-gateway-api", null);
-//
-//        CompositeFuture.all(futures);
 
-          HttpClientRequest deleteReq = httpClient.delete(8080, "http://localhost", "/apiman-gateway-api", result -> {
 
-          });
+        HttpClientRequest deleteReq = httpClient.delete(8080, "http://localhost", "/apiman-gateway-api", res -> {
 
+        });
+
+        deleteReq.end();
     }
 
     private void publish(Set<Api> modified) {
 
     }
 
-    private Set<WrappedApi> getRemote() {
-        return Collections.EMPTY_SET;
+    private void getRemote(AsyncResultHandler<Set<WrappedApi>> result) {
+        // FIXME
     }
 
     private Set<WrappedApi> getApis(JsonObject config) {
@@ -148,6 +140,7 @@ public class ApiProcessor {
 
         @Override
         public int hashCode() {
+            // Includes *all* fields of api - rather than the default hashcode
             return HashCodeBuilder.reflectionHashCode(api, true);
         }
 
