@@ -18,13 +18,18 @@ package io.apiman.gateway.api.standalone;
 
 import io.apiman.gateway.engine.beans.Api;
 import io.vertx.core.AsyncResultHandler;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,9 +45,13 @@ public class ApiProcessor {
     private Set<Api> apis = null;
     private boolean first = true;
     private HttpClient httpClient;
+    private JsonObject globalConfig;
+    private URI endpoint;
 
-    public ApiProcessor(HttpClient httpClient) {
+    public ApiProcessor(HttpClient httpClient, JsonObject globalConfig) {
         this.httpClient = httpClient;
+        this.globalConfig = globalConfig;
+        this.endpoint = URI.create(globalConfig.getString("api"));
     }
 
     public void handle(JsonObject config) {
@@ -95,16 +104,24 @@ public class ApiProcessor {
         publish(added);
     }
 
-    private void retire(Set<Api> modified, Handler<Void> completed) {
+    private void retire(Set<Api> apis, Handler<Void> completed) {
+
+        // @Path("{organizationId}/{apiId}/{version}")
+
+        List<Future> futures = new ArrayList<>();
 
 
+        for (Api api : apis) {
+            String path = String.format("/%s/%s/%s", api.getOrganizationId(), api.getApiId(), api.getVersion());
+            Future future = Future.future();
+            HttpClientRequest deleteReq = httpClient.delete(8080, "http://localhost", );
+            deleteReq.endHandler(future.completer());
+            futures.add(future);
+        }
 
-
-        HttpClientRequest deleteReq = httpClient.delete(8080, "http://localhost", "/apiman-gateway-api", res -> {
-
+        CompositeFuture.join(futures).setHandler(result -> {
+            completed.handle((Void) null);
         });
-
-        deleteReq.end();
     }
 
     private void publish(Set<Api> modified) {
