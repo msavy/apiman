@@ -104,24 +104,48 @@ public class ApiProcessor {
         publish(added);
     }
 
+//    public static void main(String... args) {
+//        ApiProcessor proc = new ApiProcessor(Vertx.vertx().createHttpClient(), new JsonObject("{\n" +
+//                "    \"api\": \"http://localhost:8080/apiman-gateway-api\",\n" +
+//                "    \"username\": \"?? ENV VARS? and should support other methods ??\",\n" +
+//                "    \"password\": \"?? ENV VARS? and should support other methods ??\",\n" +
+//                "    \"file\": {\n" +
+//                "        \"path\": \"/Users/msavy/tmp/apiman-gateway-api.json\",\n" +
+//                "        \"checkInterval\": 5\n" +
+//                "    }\n" +
+//                "}\n" +
+//                ""));
+//
+//        proc.retire(apis, completed);
+//    }
+
     private void retire(Set<Api> apis, Handler<Void> completed) {
-
         // @Path("{organizationId}/{apiId}/{version}")
-
         List<Future> futures = new ArrayList<>();
 
-
         for (Api api : apis) {
-            String path = String.format("/%s/%s/%s", api.getOrganizationId(), api.getApiId(), api.getVersion());
-            Future future = Future.future();
-            HttpClientRequest deleteReq = httpClient.delete(8080, "http://localhost", );
-            deleteReq.endHandler(future.completer());
-            futures.add(future);
+            futures.add(doDelete(api));
         }
 
         CompositeFuture.join(futures).setHandler(result -> {
-            completed.handle((Void) null);
+            completed.handle((Void) null); // TODO add retry mechanism? Must cope sensibly with situation where something fails.
         });
+    }
+
+    private Future doDelete(Api api) {
+        String path = String.format("/%s/apis/%s/%s/%s", endpoint.getPath(), api.getOrganizationId(), api.getApiId(), api.getVersion());
+        Future future = Future.future();
+
+        HttpClientRequest deleteReq = httpClient.delete(endpoint.getPort(), endpoint.getHost(), path, response -> {
+            if ((response.statusCode() / 100) == 2) {
+                future.succeeded();
+            } else {
+                future.fail("failureMessage"); // TODO do something
+            }
+        }).exceptionHandler(future::fail);
+
+        deleteReq.end();
+        return future;
     }
 
     private void publish(Set<Api> modified) {
