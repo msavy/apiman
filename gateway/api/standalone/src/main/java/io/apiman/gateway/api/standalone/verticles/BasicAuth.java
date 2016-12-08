@@ -21,6 +21,11 @@ import io.apiman.gateway.api.standalone.Auth;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
+
+/**
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 public class BasicAuth implements Auth {
 
     private String basicValue;
@@ -28,6 +33,8 @@ public class BasicAuth implements Auth {
     public BasicAuth(JsonObject json) {
         String username = json.getString("username");
         String password = json.getString("password");
+        Objects.requireNonNull(username, "Must provide username for BASIC");
+        Objects.requireNonNull(password, "Must provide password for BASIC");
         basicValue = Basic.encode(username, password);
     }
 

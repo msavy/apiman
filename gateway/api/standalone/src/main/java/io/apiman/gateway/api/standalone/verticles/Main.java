@@ -21,6 +21,9 @@ import io.apiman.gateway.api.standalone.Auth;
 import io.apiman.gateway.api.standalone.FileWatcher;
 import io.vertx.core.AbstractVerticle;
 
+/**
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 public class Main extends AbstractVerticle {
 
     @Override

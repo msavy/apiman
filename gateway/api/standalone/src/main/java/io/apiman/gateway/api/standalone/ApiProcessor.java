@@ -39,6 +39,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
+/**
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 @SuppressWarnings("nls")
 public class ApiProcessor implements Handler<JsonObject> {
     private Set<WrappedApi> wrappedApis = new LinkedHashSet<>();
@@ -62,18 +65,18 @@ public class ApiProcessor implements Handler<JsonObject> {
         System.out.println("File was modified (or startup)");
 
         Set<WrappedApi> apisFile = parseApisFromConfig(config);
-       // if (first) {
-            first = false;
-            // For now assume that local is canonical.
-            if (localCanonical) {
-                wrappedApis = apisFile;
-                apis = wrappedApis.stream()
-                        .map(WrappedApi::getApi)
-                        .collect(Collectors.toSet());
-            } else {
-                // TODO Otherwise write remote to apisFile. Probably use handler?
-            }
-       // }
+        // if (first) {
+        first = false;
+        // For now assume that local is canonical.
+        if (localCanonical) {
+            wrappedApis = apisFile;
+            apis = wrappedApis.stream()
+                    .map(WrappedApi::getApi)
+                    .collect(Collectors.toSet());
+        } else {
+            // TODO Otherwise write remote to apisFile. Probably use handler?
+        }
+        // }
 
         // Compare with remote
         getRemote(remoteApis -> {

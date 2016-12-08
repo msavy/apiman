@@ -18,6 +18,9 @@ package io.apiman.gateway.api.standalone;
 
 import io.vertx.core.http.HttpClientRequest;
 
+/**
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 public interface Auth {
     void setAuth(HttpClientRequest request);
 }

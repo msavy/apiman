@@ -34,6 +34,9 @@ import java.util.Objects;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+/**
+ * @author Marc Savy {@literal <msavy@redhat.com>}
+ */
 @SuppressWarnings("nls")
 public class FileWatcher {
     private Path path;
