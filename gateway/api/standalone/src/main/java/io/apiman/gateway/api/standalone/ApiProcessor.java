@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,13 +46,13 @@ public class ApiProcessor {
     private Set<Api> apis = null;
     private boolean first = true;
     private HttpClient httpClient;
-    private JsonObject globalConfig;
     private URI endpoint;
 
     public ApiProcessor(HttpClient httpClient, JsonObject globalConfig) {
         this.httpClient = httpClient;
-        this.globalConfig = globalConfig;
-        this.endpoint = URI.create(globalConfig.getString("api"));
+        String api = globalConfig.getString("api");
+        Objects.requireNonNull("Must provide 'api' URL", api);
+        this.endpoint = URI.create(api);
     }
 
     public void handle(JsonObject config) {
@@ -104,21 +105,6 @@ public class ApiProcessor {
         publish(added);
     }
 
-//    public static void main(String... args) {
-//        ApiProcessor proc = new ApiProcessor(Vertx.vertx().createHttpClient(), new JsonObject("{\n" +
-//                "    \"api\": \"http://localhost:8080/apiman-gateway-api\",\n" +
-//                "    \"username\": \"?? ENV VARS? and should support other methods ??\",\n" +
-//                "    \"password\": \"?? ENV VARS? and should support other methods ??\",\n" +
-//                "    \"file\": {\n" +
-//                "        \"path\": \"/Users/msavy/tmp/apiman-gateway-api.json\",\n" +
-//                "        \"checkInterval\": 5\n" +
-//                "    }\n" +
-//                "}\n" +
-//                ""));
-//
-//        proc.retire(apis, completed);
-//    }
-
     private void retire(Set<Api> apis, Handler<Void> completed) {
         // @Path("{organizationId}/{apiId}/{version}")
         List<Future> futures = new ArrayList<>();
@@ -140,7 +126,7 @@ public class ApiProcessor {
             if ((response.statusCode() / 100) == 2) {
                 future.succeeded();
             } else {
-                future.fail("failureMessage"); // TODO do something
+                future.fail(response.statusMessage()); // TODO do something more interesting
             }
         }).exceptionHandler(future::fail);
 
@@ -149,7 +135,26 @@ public class ApiProcessor {
     }
 
     private void publish(Set<Api> modified) {
+        for (Api api : apis) {
+            doPut(api);
+        }
+    }
 
+    private void doPut(Api api) {
+        // @PUT
+        String path = String.format("/%s/apis", endpoint.getPath());
+
+        HttpClientRequest putReq = httpClient.put(endpoint.getPort(), endpoint.getHost(), path, response -> {
+            if ((response.statusCode() / 100) == 2) {
+                //future.succeeded();
+                System.out.println("OK put");
+            } else {
+                System.out.println("Delete fail");
+                //future.fail(response.statusMessage()); // TODO do something more interesting
+            }
+        });//.exceptionHandler(future::fail);
+        putReq.write(Json.encode(api));
+        putReq.end();
     }
 
     private void getRemote(AsyncResultHandler<Set<WrappedApi>> result) {
