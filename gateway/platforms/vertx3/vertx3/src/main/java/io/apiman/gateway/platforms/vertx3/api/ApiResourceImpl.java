@@ -86,7 +86,6 @@ public class ApiResourceImpl implements IApiResource, IRouteBuilder {
                 }
             } else {
                 writeBody(routingContext, result.getResult());
-                end(routingContext, HttpResponseStatus.OK);
             }
         });
     }

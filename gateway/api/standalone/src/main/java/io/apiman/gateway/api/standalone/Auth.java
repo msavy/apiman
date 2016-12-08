@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package io.apiman.gateway.api.standalone.verticles;
+package io.apiman.gateway.api.standalone;
 
-import io.apiman.gateway.api.standalone.ApiProcessor;
-import io.apiman.gateway.api.standalone.Auth;
-import io.apiman.gateway.api.standalone.FileWatcher;
-import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpClientRequest;
 
-public class Main extends AbstractVerticle {
-
-    @Override
-    public void start() {
-        Auth auth = new BasicAuth(config());
-        ApiProcessor apiProcessor = new ApiProcessor(vertx.createHttpClient(), config(), auth);
-        new FileWatcher(vertx, config())
-                .setChangeHandler(apiProcessor);
-    }
+public interface Auth {
+    void setAuth(HttpClientRequest request);
 }

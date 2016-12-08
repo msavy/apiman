@@ -56,12 +56,12 @@ public class EBInMemoryRegistry extends InMemoryRegistry implements EBRegistryPr
         listenProxyHandler();
         this.proxy = new EBRegistryProxy(vertx, address(), registryUuid);
     }
-    
+
     @Override
     public void getClient(String apiKey, IAsyncResultHandler<Client> handler) {
         super.getClient(apiKey, handler);
     }
-    
+
     @Override
     public void getContract(String apiOrganizationId, String apiId, String apiVersion, String apiKey,
             IAsyncResultHandler<ApiContract> handler) {
@@ -72,7 +72,7 @@ public class EBInMemoryRegistry extends InMemoryRegistry implements EBRegistryPr
     public void publishApi(Api api, IAsyncResultHandler<Void> handler) {
         super.publishApi(api, handler);
         proxy.publishApi(api);
-        System.out.println("Published a api");
+        System.out.println("Published an api " + api);
     }
 
     @Override

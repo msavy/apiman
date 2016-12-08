@@ -16,18 +16,24 @@
 
 package io.apiman.gateway.api.standalone.verticles;
 
-import io.apiman.gateway.api.standalone.ApiProcessor;
+import io.apiman.common.util.Basic;
 import io.apiman.gateway.api.standalone.Auth;
-import io.apiman.gateway.api.standalone.FileWatcher;
-import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.json.JsonObject;
 
-public class Main extends AbstractVerticle {
+public class BasicAuth implements Auth {
+
+    private String basicValue;
+
+    public BasicAuth(JsonObject json) {
+        String username = json.getString("username");
+        String password = json.getString("password");
+        basicValue = Basic.encode(username, password);
+    }
 
     @Override
-    public void start() {
-        Auth auth = new BasicAuth(config());
-        ApiProcessor apiProcessor = new ApiProcessor(vertx.createHttpClient(), config(), auth);
-        new FileWatcher(vertx, config())
-                .setChangeHandler(apiProcessor);
+    public void setAuth(HttpClientRequest request) {
+        request.putHeader("Authorization", basicValue);
     }
+
 }

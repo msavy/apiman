@@ -29,6 +29,7 @@ import io.apiman.gateway.engine.i18n.Messages;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -219,6 +220,7 @@ public class InMemoryRegistry implements IRegistry {
     private List<Api> getApisInternal() {
         synchronized (mutex) { // TODO could separate out the types into different maps if we feel O(n) performance is terrible.
             return map.entrySet().parallelStream()
+                    .map(Entry::getValue)
                     .filter(obj -> obj instanceof Api)
                     .map(api -> (Api) api)
                     .collect(Collectors.toList());

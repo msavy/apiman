@@ -22,12 +22,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -36,93 +34,115 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
 @SuppressWarnings("nls")
-public class ApiProcessor {
+public class ApiProcessor implements Handler<JsonObject> {
     private Set<WrappedApi> wrappedApis = new LinkedHashSet<>();
     private Set<Api> apis = null;
     private boolean first = true;
     private boolean localCanonical = true;
     private HttpClient httpClient;
     private URI endpoint;
+    private Auth auth;
 
-    public ApiProcessor(HttpClient httpClient, JsonObject globalConfig) {
+    public ApiProcessor(HttpClient httpClient, JsonObject globalConfig, Auth authInfo) {
         this.httpClient = httpClient;
         String api = globalConfig.getString("api");
         Objects.requireNonNull("Must provide 'api' URL", api);
         this.endpoint = URI.create(api);
+        this.auth = authInfo;
     }
 
+    @Override
     public void handle(JsonObject config) {
-        Set<WrappedApi> apisFile = parseApisFromConfig(config);
-        if (first) {
-            first = false;
+        System.out.println("File was modified (or startup)");
 
+        Set<WrappedApi> apisFile = parseApisFromConfig(config);
+       // if (first) {
+            first = false;
             // For now assume that local is canonical.
             if (localCanonical) {
+                wrappedApis = apisFile;
                 apis = wrappedApis.stream()
                         .map(WrappedApi::getApi)
                         .collect(Collectors.toSet());
             } else {
-                // TODO Otherwise write apisFile. Probably use handler?
+                // TODO Otherwise write remote to apisFile. Probably use handler?
             }
+       // }
 
-            // Compare with remote
-            getRemote(remoteApis -> {
+        // Compare with remote
+        getRemote(remoteApis -> {
+            System.out.println("Got remote apis");
+            try {
                 Set<WrappedApi> wrappedRemote = remoteApis.stream()
                         .map(WrappedApi::new)
                         .collect(Collectors.toSet());
-                executeDiff(wrappedRemote);
-            });
-        } else {
-            executeDiff(apisFile);
-        }
+                System.out.println("Execute diff");
+                executeDiff(remoteApis, wrappedRemote);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    private void executeDiff(Set<WrappedApi> apisFile) {
-        SetView<WrappedApi> addedOrModified = Sets.difference(apisFile, wrappedApis);
-        SetView<WrappedApi> removedOrModified = Sets.difference(wrappedApis, apisFile);
-
-        add(addedOrModified);
-        remove(removedOrModified);
-        modifiy(addedOrModified, removedOrModified);
+    private void executeDiff(Set<Api> remoteSet, Set<WrappedApi> remoteSetWrapped) {
+        SetView<WrappedApi> addedOrModified = Sets.difference(wrappedApis, remoteSetWrapped);
+        SetView<WrappedApi> removedOrModified = Sets.difference(remoteSetWrapped, wrappedApis);
+        add(addedOrModified, remoteSet);
+        remove(removedOrModified, remoteSet);
+        modifiy(addedOrModified, removedOrModified, remoteSet);
     }
 
-    private void modifiy(SetView<WrappedApi> a, SetView<WrappedApi> b) {
-        Set<Api> modified = Sets.union(a, b).stream()
-                .map(WrappedApi::getApi)
-                .filter(apis::contains)
-                .collect(Collectors.toSet());
-        // Retire, then publish
-        retire(modified, afterCompletion -> publish(modified));
-    }
+    private void add(SetView<WrappedApi> addedOrModified, Set<Api> remote) {
+        if (addedOrModified.isEmpty())
+            return;
 
-    private void remove(SetView<WrappedApi> removedOrModified) {
-        Set<Api> removed = removedOrModified.stream()
-                .map(WrappedApi::getApi)
-                .filter(api -> !apis.contains(api))
-                .collect(Collectors.toSet());
-        // Remove
-        retire(removed, null);
-    }
+        System.out.println("add");
 
-    private void add(SetView<WrappedApi> addedOrModified) {
         Set<Api> added = addedOrModified.stream()
+                .filter(api -> !remote.contains(api.getApi()))
                 .map(WrappedApi::getApi)
-                .filter(api -> !apis.contains(api))
                 .collect(Collectors.toSet());
         // Add
         publish(added);
     }
 
-    private void retire(Set<Api> apis, Handler<Void> completed) {
+    private void modifiy(SetView<WrappedApi> a, SetView<WrappedApi> b, Set<Api> remote) {
+        if (a.isEmpty() && b.isEmpty())
+            return;
+
+        Set<Api> modified = Sets.intersection(a, b).stream()
+                .filter(api -> remote.contains(api.getApi()))
+                .map(WrappedApi::getApi)
+                .collect(Collectors.toSet());
+        // Retire, then publish
+        retire(modified, afterCompletion -> publish(modified));
+    }
+
+    private void remove(SetView<WrappedApi> removedOrModified, Set<Api> remote) {
+        if (removedOrModified.isEmpty())
+            return;
+
+        Set<Api> removed = removedOrModified.stream()
+                //.map(WrappedApi::getApi)
+                .filter(api -> !remote.contains(api))
+                .map(WrappedApi::getApi)
+                .collect(Collectors.toSet());
+        // Remove
+        retire(removed, completed -> { System.err.println("Removed..."); });
+    }
+
+    private void retire(Set<Api> retireApis, Handler<Void> completed) {
         // @Path("{organizationId}/{apiId}/{version}")
         List<Future> futures = new ArrayList<>();
 
-        for (Api api : apis) {
+        for (Api api : retireApis) {
+            System.out.println("Retiring " + api);
             futures.add(doDelete(api));
         }
 
@@ -143,12 +163,14 @@ public class ApiProcessor {
             }
         }).exceptionHandler(future::fail);
 
+        auth.setAuth(deleteReq);
         deleteReq.end();
         return future;
     }
 
-    private void publish(Set<Api> modified) {
-        for (Api api : apis) {
+    private void publish(Set<Api> publishApis) {
+        for (Api api : publishApis) {
+            System.out.println("Publishing " + api);
             doPut(api);
         }
     }
@@ -156,33 +178,37 @@ public class ApiProcessor {
     private void doPut(Api api) {
         // @PUT
         String path = String.format("/%s/apis", endpoint.getPath());
-
         HttpClientRequest putReq = httpClient.put(endpoint.getPort(), endpoint.getHost(), path, response -> {
             if ((response.statusCode() / 100) == 2) {
                 System.out.println("OK put");
             } else {
-                System.out.println("Delete fail"); // TODO do something more interesting
+                System.out.println("Put fail"); // TODO do something more interesting
             }
-        });//.exceptionHandler(future::fail);
+        }).exceptionHandler(System.err::println);
+        auth.setAuth(putReq);
+        putReq.setChunked(true);
         putReq.write(Json.encode(api));
         putReq.end();
     }
 
+    @SuppressWarnings("unchecked")
     private void getRemote(Handler<Set<Api>> result) {
         // @GET
         String path = String.format("/%s/apis", endpoint.getPath());
-
-        HttpClientRequest putReq = httpClient.put(endpoint.getPort(), endpoint.getHost(), path, response -> {
+        HttpClientRequest get = httpClient.get(endpoint.getPort(), endpoint.getHost(), path, response -> {
             if ((response.statusCode() / 100) == 2) {
                 System.out.println("OK get");
                 response.bodyHandler(body -> {
-                   result.handle(new HashSet<>(Json.decodeValue(body.toString(), List.class))); // TODO change remote interface to set?
+                   System.out.println(body.toString());
+                   result.handle(Json.decodeValue(body.toString(), Set.class, Api.class)); // TODO change remote interface to set?
                 });
             } else {
+                System.out.println(ToStringBuilder.reflectionToString(response));
                 System.out.println("get fail");
             }
-        });//.exceptionHandler(future::fail);
-        putReq.end();
+        }).exceptionHandler(System.err::println);
+        auth.setAuth(get);
+        get.end();
     }
 
     private Set<WrappedApi> parseApisFromConfig(JsonObject config) {
@@ -197,7 +223,7 @@ public class ApiProcessor {
         return new WrappedApi(Json.decodeValue(json, Api.class));
     }
 
-    private static class WrappedApi {
+    private static final class WrappedApi {
         private Api api;
 
         WrappedApi(Api api) {
@@ -219,7 +245,7 @@ public class ApiProcessor {
             if (b instanceof WrappedApi) {
                 return EqualsBuilder.reflectionEquals(api, ((WrappedApi) b).getApi(), true);
             }
-            return false;
+            throw new RuntimeException("InvalidComparison");
         }
     }
 }

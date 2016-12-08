@@ -141,7 +141,8 @@ public class FileWatcher {
     /**
      * @param changeHandler the changeHandler to set
      */
-    public void setChangeHandler(Handler<JsonObject> changeHandler) {
+    public FileWatcher setChangeHandler(Handler<JsonObject> changeHandler) {
         this.changeHandler = changeHandler;
+        return this;
     }
 }
