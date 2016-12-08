@@ -33,31 +33,33 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * A JDBC implementation of the gateway registry.  Only suitable for a 
- * synchronous environment - should not be used when running an async 
+ * A JDBC implementation of the gateway registry.  Only suitable for a
+ * synchronous environment - should not be used when running an async
  * Gateway (e.g. vert.x).
- * 
+ *
  * Must be configured with the JNDI location of the datasource to use.
  * Example:
- * 
+ *
  *     apiman-gateway.registry=io.apiman.gateway.engine.jdbc.JdbcRegistry
  *     apiman-gateway.registry.datasource.jndi-location=java:jboss/datasources/apiman-gateway
- * 
+ *
  * @author ewittman
  */
 public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
-    
+
     protected static final ObjectMapper mapper = new ObjectMapper();
 
     /**
@@ -67,7 +69,7 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
     public JdbcRegistry(Map<String, String> config) {
         super(config);
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#publishApi(io.apiman.gateway.engine.beans.Api, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -94,7 +96,7 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
             handler.handle(AsyncResultImpl.create(e));
         }
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#registerClient(io.apiman.gateway.engine.beans.Client, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -116,7 +118,7 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
             String bean = mapper.writeValueAsString(client);
             run.update(conn, "INSERT INTO gw_clients (api_key, org_id, id, version, bean) VALUES (?, ?, ?, ?, ?)",  //$NON-NLS-1$
                     client.getApiKey(), client.getOrganizationId(), client.getClientId(), client.getVersion(), bean);
-            
+
             DbUtils.commitAndClose(conn);
             handler.handle(AsyncResultImpl.create((Void) null));
         } catch (Exception re) {
@@ -128,7 +130,7 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
     /**
      * Removes all of the api contracts from the database.
      * @param client
-     * @param connection 
+     * @param connection
      * @throws SQLException
      */
     protected void unregisterApiContracts(Client client, Connection connection) throws SQLException {
@@ -188,7 +190,7 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
             handler.handle(AsyncResultImpl.create(e));
         }
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#unregisterClient(io.apiman.gateway.engine.beans.Client, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -203,7 +205,22 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
             handler.handle(AsyncResultImpl.create(new PublishingException(Messages.i18n.format("JdbcRegistry.ErrorUnregisteringApp"), e), Void.class)); //$NON-NLS-1$
         }
     }
-    
+
+    @Override
+    public void getApis(IAsyncResultHandler<List<Api>> handler) {
+        try {
+            List<Api> api = getApisInternal();
+            handler.handle(AsyncResultImpl.create(api));
+        } catch (SQLException e) {
+            handler.handle(AsyncResultImpl.create(e));
+        }
+    }
+
+    protected List<Api> getApisInternal() throws SQLException {
+        QueryRunner run = new QueryRunner(ds);
+        return run.query("SELECT bean FROM gw_apis", new BeanListHandler<>(Api.class)); //$NON-NLS-1$
+    }
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#getApi(java.lang.String, java.lang.String, java.lang.String, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -254,7 +271,7 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
         return run.query("SELECT bean FROM gw_clients WHERE api_key = ?", //$NON-NLS-1$
                 Handlers.CLIENT_HANDLER, apiKey);
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#getContract(java.lang.String, java.lang.String, java.lang.String, java.lang.String, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -276,7 +293,7 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
                 handler.handle(AsyncResultImpl.create(error, ApiContract.class));
                 return;
             }
-            
+
             Contract matchedContract = null;
             for (Contract contract : client.getContracts()) {
                 if (contract.matches(apiOrganizationId, apiId, apiVersion)) {
@@ -284,14 +301,14 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
                     break;
                 }
             }
-            
+
             if (matchedContract == null) {
                 Exception error = new InvalidContractException(Messages.i18n.format("JdbcRegistry.NoContractFound", //$NON-NLS-1$
                         client.getClientId(), api.getApiId()));
                 handler.handle(AsyncResultImpl.create(error, ApiContract.class));
                 return;
             }
-            
+
             ApiContract contract = new ApiContract(api, client, matchedContract.getPlan(), matchedContract.getPolicies());
             handler.handle(AsyncResultImpl.create(contract));
         } catch (Exception e) {
@@ -342,5 +359,5 @@ public class JdbcRegistry extends AbstractJdbcComponent implements IRegistry {
             }
         };
     }
-    
+
 }

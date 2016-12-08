@@ -29,6 +29,8 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -56,4 +58,8 @@ public interface IApiResource {
     public ApiEndpoint getApiEndpoint(@PathParam("organizationId") String organizationId,
             @PathParam("apiId") String apiId, @PathParam("version") String version)
             throws NotAuthorizedException;
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public void listApis(@Suspended final AsyncResponse response) throws NotAuthorizedException;
 }

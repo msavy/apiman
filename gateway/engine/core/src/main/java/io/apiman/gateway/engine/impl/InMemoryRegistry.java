@@ -27,8 +27,10 @@ import io.apiman.gateway.engine.beans.exceptions.PublishingException;
 import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
 import io.apiman.gateway.engine.i18n.Messages;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * An in-memory implementation of the registry.
@@ -122,7 +124,7 @@ public class InMemoryRegistry implements IRegistry {
             handler.handle(AsyncResultImpl.create(e, Void.class));
         }
     }
-    
+
     /**
      * @param client
      * @param silent
@@ -140,7 +142,7 @@ public class InMemoryRegistry implements IRegistry {
             }
         }
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#getClient(java.lang.String, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -161,7 +163,7 @@ public class InMemoryRegistry implements IRegistry {
         }
         return client;
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#getContract(java.lang.String, java.lang.String, java.lang.String, java.lang.String, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -170,7 +172,7 @@ public class InMemoryRegistry implements IRegistry {
             IAsyncResultHandler<ApiContract> handler) {
         Client client = null;
         Api api = null;
-        
+
         String apiIdx = getApiIndex(apiOrganizationId, apiId, apiVersion);
         synchronized (mutex) {
             client = (Client) getMap().get(apiKey);
@@ -187,7 +189,7 @@ public class InMemoryRegistry implements IRegistry {
             handler.handle(AsyncResultImpl.create(error, ApiContract.class));
             return;
         }
-        
+
         Contract matchedContract = null;
         for (Contract contract : client.getContracts()) {
             if (contract.matches(apiOrganizationId, apiId, apiVersion)) {
@@ -195,16 +197,32 @@ public class InMemoryRegistry implements IRegistry {
                 break;
             }
         }
-        
+
         if (matchedContract == null) {
             Exception error = new InvalidContractException(Messages.i18n.format("InMemoryRegistry.NoContractFound", //$NON-NLS-1$
                     client.getClientId(), api.getApiId()));
             handler.handle(AsyncResultImpl.create(error, ApiContract.class));
             return;
         }
-        
+
         ApiContract contract = new ApiContract(api, client, matchedContract.getPlan(), matchedContract.getPolicies());
         handler.handle(AsyncResultImpl.create(contract));
+    }
+
+
+    @Override
+    public void getApis(IAsyncResultHandler<List<Api>> handler) {
+        List<Api> apis = getApisInternal();
+        handler.handle(AsyncResultImpl.create(apis));
+    }
+
+    private List<Api> getApisInternal() {
+        synchronized (mutex) { // TODO could separate out the types into different maps if we feel O(n) performance is terrible.
+            return map.entrySet().parallelStream()
+                    .filter(obj -> obj instanceof Api)
+                    .map(api -> (Api) api)
+                    .collect(Collectors.toList());
+        }
     }
 
     /**
@@ -227,7 +245,7 @@ public class InMemoryRegistry implements IRegistry {
     private Api getApiInternal(String apiOrgId, String apiId, String apiVersion) {
         String key = getApiIndex(apiOrgId, apiId, apiVersion);
         Api api;
-        synchronized (mutex) {
+        synchronized (mutex) { // Why do you need a mutex on top of a Concurrent HashMap?
             api = (Api) getMap().get(key);
         }
         return api;

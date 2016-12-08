@@ -16,6 +16,7 @@
 
 package io.apiman.gateway.api.rest.impl;
 
+import io.apiman.common.util.MediaType;
 import io.apiman.gateway.api.rest.contract.IApiResource;
 import io.apiman.gateway.api.rest.contract.exceptions.NotAuthorizedException;
 import io.apiman.gateway.engine.beans.Api;
@@ -26,6 +27,11 @@ import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Implementation of the API API :).
@@ -76,6 +82,19 @@ public class ApiResourceImpl extends AbstractResourceImpl implements IApiResourc
     public ApiEndpoint getApiEndpoint(String organizationId, String apiId, String version)
             throws NotAuthorizedException {
         return getPlatform().getApiEndpoint(organizationId, apiId, version);
+    }
+
+    @Override
+    public void listApis(@Suspended final AsyncResponse response) throws NotAuthorizedException {
+        getEngine().getRegistry().getApis(apiList -> {
+            Response asyncResponse = null;
+            if (apiList.isSuccess()) {
+                Response.ok(apiList).type(MediaType.APPLICATION_JSON).build();
+            } else {
+                Response.serverError().entity(apiList.getError()).status(Status.INTERNAL_SERVER_ERROR).build();
+            }
+            response.resume(asyncResponse);
+        });
     }
 
 }

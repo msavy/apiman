@@ -36,6 +36,8 @@ import io.vertx.ext.web.RoutingContext;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.ws.rs.container.AsyncResponse;
+
 /**
  * API Resource route builder
  *
@@ -66,6 +68,27 @@ public class ApiResourceImpl implements IApiResource, IRouteBuilder {
         this.registry = engine.getRegistry();
         this.engine = engine;
         this.routingContext = routingContext;
+    }
+
+    @Override
+    public void listApis(AsyncResponse response) throws NotAuthorizedException {
+        // Don't want to touch JaxRS object.
+    }
+
+    private void listApis() {
+        registry.getApis(result -> {
+            if (result.isError()) {
+                Throwable e = result.getError();
+                if (e instanceof NotAuthorizedException) {
+                    error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
+                } else {
+                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+                }
+            } else {
+                writeBody(routingContext, result.getResult());
+                end(routingContext, HttpResponseStatus.OK);
+            }
+        });
     }
 
     @Override
@@ -173,6 +196,9 @@ public class ApiResourceImpl implements IApiResource, IRouteBuilder {
 
     @Override
     public void buildRoutes(Router router) {
+        router.get(buildPath("")).handler(routingContext -> {
+           new ApiResourceImpl(apimanConfig, engine, routingContext).listApis();
+        });
         router.put(buildPath("")).handler(routingContext -> {
             new ApiResourceImpl(apimanConfig, engine, routingContext).publish();
         });

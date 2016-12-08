@@ -36,6 +36,7 @@ import io.searchbox.core.SearchResult.Hit;
 import io.searchbox.params.Parameters;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -106,7 +107,7 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
         try {
             // Validate the client and populate the api map with apis found during validation.
             validateClient(client);
-            
+
             String id = getClientId(client);
             Index index = new Index.Builder(client)
                     .refresh(false).index(getIndexName())
@@ -115,7 +116,7 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
             JestResult result = getClient().execute(index);
             if (!result.isSucceeded()) {
                 throw new IOException(result.getErrorMessage());
-            } 
+            }
             handler.handle(AsyncResultImpl.create((Void) null));
         } catch (IOException e) {
             handler.handle(AsyncResultImpl.create(
@@ -191,24 +192,24 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
      * @param version
      */
     private Client lookupClient(String orgId, String clientId, String version) {
-        String query = "{" + 
-                "  \"query\": {" + 
-                "    \"filtered\": { " + 
-                "      \"filter\": {" + 
-                "        \"and\" : [" + 
-                "          {" + 
-                "            \"term\": { \"organizationId\": \"" + orgId + "\" }" + 
-                "          }," + 
-                "          {" + 
-                "            \"term\": { \"clientId\": \"" + clientId + "\" }" + 
-                "          }," + 
-                "          {" + 
-                "            \"term\": { \"version\": \"" + version + "\" }" + 
-                "          }" + 
-                "        ]" + 
-                "      }" + 
-                "    }" + 
-                "  }" + 
+        String query = "{" +
+                "  \"query\": {" +
+                "    \"filtered\": { " +
+                "      \"filter\": {" +
+                "        \"and\" : [" +
+                "          {" +
+                "            \"term\": { \"organizationId\": \"" + orgId + "\" }" +
+                "          }," +
+                "          {" +
+                "            \"term\": { \"clientId\": \"" + clientId + "\" }" +
+                "          }," +
+                "          {" +
+                "            \"term\": { \"version\": \"" + version + "\" }" +
+                "          }" +
+                "        ]" +
+                "      }" +
+                "    }" +
+                "  }" +
                 "}";
         try {
             Search search = new Search.Builder(query).addIndex(getIndexName())
@@ -221,6 +222,27 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
             return hit.source;
         } catch (IOException e) {
             throw new RegistrationException(Messages.i18n.format("ESRegistry.ClientNotFound"), e);  //$NON-NLS-1$
+        }
+    }
+
+    @Override
+    public void getApis(IAsyncResultHandler<List<Api>> handler) {
+        try {
+            List<Api> api = getApis();
+            handler.handle(AsyncResultImpl.create(api));
+        } catch (IOException e) {
+            handler.handle(AsyncResultImpl.create(e));
+        }
+    }
+
+    protected List<Api> getApis() throws IOException {
+        Get get = new Get.Builder(getIndexName(), "").type("api").build(); //$NON-NLS-1$ TODO - FIXME What should this be for "any id"?
+        JestResult result = getClient().execute(get);
+        if (result.isSucceeded()) {
+            List<Api> api = result.getSourceAsObjectList(Api.class);
+            return api;
+        } else {
+            return null;
         }
     }
 
@@ -284,7 +306,7 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
             return null;
         }
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#getContract(java.lang.String, java.lang.String, java.lang.String, java.lang.String, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -307,7 +329,7 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
                 handler.handle(AsyncResultImpl.create(error, ApiContract.class));
                 return;
             }
-            
+
             Contract matchedContract = null;
             for (Contract contract : client.getContracts()) {
                 if (contract.matches(apiOrganizationId, apiId, apiVersion)) {
@@ -315,14 +337,14 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
                     break;
                 }
             }
-            
+
             if (matchedContract == null) {
                 Exception error = new InvalidContractException(Messages.i18n.format("ESRegistry.NoContractFound", //$NON-NLS-1$
                         client.getClientId(), api.getApiId()));
                 handler.handle(AsyncResultImpl.create(error, ApiContract.class));
                 return;
             }
-            
+
             ApiContract contract = new ApiContract(api, client, matchedContract.getPlan(), matchedContract.getPolicies());
             handler.handle(AsyncResultImpl.create(contract));
         } catch (Exception e) {
@@ -359,7 +381,7 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
     protected String getApiId(String orgId, String apiId, String version) {
         return orgId + ":" + apiId + ":" + version; //$NON-NLS-1$ //$NON-NLS-2$
     }
-    
+
     /**
      * Generates a valid document ID for the client - used to index the client in ES.
      * @param client
@@ -376,5 +398,4 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
     protected String getDefaultIndexName() {
         return ESConstants.GATEWAY_INDEX_NAME;
     }
-
 }

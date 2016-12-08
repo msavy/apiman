@@ -37,6 +37,10 @@ public class DataEncryptionContext {
         this(null, null, null, null);
     }
 
+    public DataEncryptionContext(EntityType entityType) {
+        this(null, null, null, entityType);
+    }
+
     /**
      * Constructor.
      * @param organizationId

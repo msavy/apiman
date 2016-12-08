@@ -17,7 +17,6 @@
 package io.apiman.gateway.api.standalone;
 
 import io.apiman.gateway.engine.beans.Api;
-import io.vertx.core.AsyncResultHandler;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -28,6 +27,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +45,7 @@ public class ApiProcessor {
     private Set<WrappedApi> wrappedApis = new LinkedHashSet<>();
     private Set<Api> apis = null;
     private boolean first = true;
+    private boolean localCanonical = true;
     private HttpClient httpClient;
     private URI endpoint;
 
@@ -56,20 +57,32 @@ public class ApiProcessor {
     }
 
     public void handle(JsonObject config) {
-        Set<WrappedApi> apisFile = getApis(config);
+        Set<WrappedApi> apisFile = parseApisFromConfig(config);
         if (first) {
             first = false;
-            getRemote(result -> {
+
+            // For now assume that local is canonical.
+            if (localCanonical) {
                 apis = wrappedApis.stream()
                         .map(WrappedApi::getApi)
                         .collect(Collectors.toSet());
+            } else {
+                // TODO Otherwise write apisFile. Probably use handler?
+            }
+
+            // Compare with remote
+            getRemote(remoteApis -> {
+                Set<WrappedApi> wrappedRemote = remoteApis.stream()
+                        .map(WrappedApi::new)
+                        .collect(Collectors.toSet());
+                executeDiff(wrappedRemote);
             });
         } else {
-            doStuff(apisFile);
+            executeDiff(apisFile);
         }
     }
 
-    private void doStuff(Set<WrappedApi> apisFile) {
+    private void executeDiff(Set<WrappedApi> apisFile) {
         SetView<WrappedApi> addedOrModified = Sets.difference(apisFile, wrappedApis);
         SetView<WrappedApi> removedOrModified = Sets.difference(wrappedApis, apisFile);
 
@@ -146,22 +159,33 @@ public class ApiProcessor {
 
         HttpClientRequest putReq = httpClient.put(endpoint.getPort(), endpoint.getHost(), path, response -> {
             if ((response.statusCode() / 100) == 2) {
-                //future.succeeded();
                 System.out.println("OK put");
             } else {
-                System.out.println("Delete fail");
-                //future.fail(response.statusMessage()); // TODO do something more interesting
+                System.out.println("Delete fail"); // TODO do something more interesting
             }
         });//.exceptionHandler(future::fail);
         putReq.write(Json.encode(api));
         putReq.end();
     }
 
-    private void getRemote(AsyncResultHandler<Set<WrappedApi>> result) {
-        // FIXME
+    private void getRemote(Handler<Set<Api>> result) {
+        // @GET
+        String path = String.format("/%s/apis", endpoint.getPath());
+
+        HttpClientRequest putReq = httpClient.put(endpoint.getPort(), endpoint.getHost(), path, response -> {
+            if ((response.statusCode() / 100) == 2) {
+                System.out.println("OK get");
+                response.bodyHandler(body -> {
+                   result.handle(new HashSet<>(Json.decodeValue(body.toString(), List.class))); // TODO change remote interface to set?
+                });
+            } else {
+                System.out.println("get fail");
+            }
+        });//.exceptionHandler(future::fail);
+        putReq.end();
     }
 
-    private Set<WrappedApi> getApis(JsonObject config) {
+    private Set<WrappedApi> parseApisFromConfig(JsonObject config) {
         return config.getJsonArray("apis").stream()
                 .map(obj -> (JsonObject) obj)
                 .map(JsonObject::encode)
