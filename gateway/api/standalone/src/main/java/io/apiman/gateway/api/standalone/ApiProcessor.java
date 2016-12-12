@@ -26,7 +26,6 @@ import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -44,7 +43,7 @@ import com.google.common.collect.Sets.SetView;
  */
 @SuppressWarnings("nls")
 public class ApiProcessor implements Handler<JsonObject> {
-    private Set<WrappedApi> wrappedApis = new LinkedHashSet<>();
+    //private Set<WrappedApi> wrappedApis = new LinkedHashSet<>();
     private Set<Api> apis = null;
     private boolean first = true;
     private boolean localCanonical = true;
@@ -64,15 +63,15 @@ public class ApiProcessor implements Handler<JsonObject> {
     public void handle(JsonObject config) {
         System.out.println("File was modified (or startup)");
 
-        Set<WrappedApi> apisFile = parseApisFromConfig(config);
+        Set<WrappedApi> localSet = parseApisFromConfig(config);
         // if (first) {
         first = false;
         // For now assume that local is canonical.
         if (localCanonical) {
-            wrappedApis = apisFile;
-            apis = wrappedApis.stream()
-                    .map(WrappedApi::getApi)
-                    .collect(Collectors.toSet());
+//            wrappedApis = apisFile;
+//            apis = wrappedApis.stream()
+//                    .map(WrappedApi::getApi)
+//                    .collect(Collectors.toSet());
         } else {
             // TODO Otherwise write remote to apisFile. Probably use handler?
         }
@@ -86,45 +85,36 @@ public class ApiProcessor implements Handler<JsonObject> {
                         .map(WrappedApi::new)
                         .collect(Collectors.toSet());
                 System.out.println("Execute diff");
-                executeDiff(remoteApis, wrappedRemote);
+                executeDiff(localSet, wrappedRemote, remoteApis);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
 
-    private void executeDiff(Set<Api> remoteSet, Set<WrappedApi> remoteSetWrapped) {
-        SetView<WrappedApi> addedOrModified = Sets.difference(wrappedApis, remoteSetWrapped);
-        SetView<WrappedApi> removedOrModified = Sets.difference(remoteSetWrapped, wrappedApis);
+    private void executeDiff(Set<WrappedApi> localSet, Set<WrappedApi> remoteSetWrapped, Set<Api> remoteSet) {
+        SetView<WrappedApi> addedOrModified = Sets.difference(localSet, remoteSetWrapped);
+        SetView<WrappedApi> removedOrModified = Sets.difference(remoteSetWrapped, localSet);
         add(addedOrModified, remoteSet);
         remove(removedOrModified, remoteSet);
-        modifiy(addedOrModified, removedOrModified, remoteSet);
+        modify(addedOrModified, removedOrModified, remoteSet);
     }
 
     private void add(SetView<WrappedApi> addedOrModified, Set<Api> remote) {
         if (addedOrModified.isEmpty())
             return;
 
-        System.out.println("add");
-
         Set<Api> added = addedOrModified.stream()
                 .filter(api -> !remote.contains(api.getApi()))
                 .map(WrappedApi::getApi)
                 .collect(Collectors.toSet());
-        // Add
-        publish(added);
-    }
 
-    private void modifiy(SetView<WrappedApi> a, SetView<WrappedApi> b, Set<Api> remote) {
-        if (a.isEmpty() && b.isEmpty())
+        if (added.isEmpty())
             return;
 
-        Set<Api> modified = Sets.intersection(a, b).stream()
-                .filter(api -> remote.contains(api.getApi()))
-                .map(WrappedApi::getApi)
-                .collect(Collectors.toSet());
-        // Retire, then publish
-        retire(modified, afterCompletion -> publish(modified));
+        System.out.println("Added = "  + added);
+        // Add
+        publish(added);
     }
 
     private void remove(SetView<WrappedApi> removedOrModified, Set<Api> remote) {
@@ -132,12 +122,37 @@ public class ApiProcessor implements Handler<JsonObject> {
             return;
 
         Set<Api> removed = removedOrModified.stream()
-                //.map(WrappedApi::getApi)
-                .filter(api -> !remote.contains(api))
+                .filter(api -> !remote.contains(api.getApi()))
                 .map(WrappedApi::getApi)
                 .collect(Collectors.toSet());
+
+        if (removed.isEmpty())
+            return;
+
+        System.out.println("Removed = "  + removed);
+
         // Remove
         retire(removed, completed -> { System.err.println("Removed..."); });
+    }
+
+    private void modify(SetView<WrappedApi> a, SetView<WrappedApi> b, Set<Api> remote) {
+        if (a.isEmpty() && b.isEmpty())
+            return;
+
+        Set<Api> modified = Sets.union(a, b).stream()
+                .filter(api -> remote.contains(api.getApi()))
+                .map(WrappedApi::getApi)
+                .collect(Collectors.toSet());
+
+        if (modified.isEmpty())
+            return;
+
+        System.out.println("Modified = " + modified);
+
+        // Retire, then publish
+        retire(modified, afterCompletion -> {
+            publish(modified);
+        });
     }
 
     private void retire(Set<Api> retireApis, Handler<Void> completed) {
@@ -149,7 +164,9 @@ public class ApiProcessor implements Handler<JsonObject> {
             futures.add(doDelete(api));
         }
 
-        CompositeFuture.join(futures).setHandler(result -> {
+        System.out.println("Futures " + futures.size());
+
+        CompositeFuture.all(futures).setHandler(result -> {
             completed.handle((Void) null); // TODO add retry mechanism? Must cope sensibly with situation where something fails.
         });
     }
@@ -160,7 +177,7 @@ public class ApiProcessor implements Handler<JsonObject> {
 
         HttpClientRequest deleteReq = httpClient.delete(endpoint.getPort(), endpoint.getHost(), path, response -> {
             if ((response.statusCode() / 100) == 2) {
-                future.succeeded();
+                future.complete();
             } else {
                 future.fail(response.statusMessage()); // TODO do something more interesting
             }
@@ -249,6 +266,11 @@ public class ApiProcessor implements Handler<JsonObject> {
                 return EqualsBuilder.reflectionEquals(api, ((WrappedApi) b).getApi(), true);
             }
             throw new RuntimeException("InvalidComparison");
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this);
         }
     }
 }
