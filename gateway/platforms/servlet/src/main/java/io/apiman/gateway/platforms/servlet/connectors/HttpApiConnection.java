@@ -38,11 +38,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
@@ -70,7 +70,7 @@ public class HttpApiConnection implements IApiConnection, IApiConnectionResponse
 
     static {
         SUPPRESSED_REQUEST_HEADERS.add("Transfer-Encoding"); //$NON-NLS-1$
-        SUPPRESSED_REQUEST_HEADERS.add("Content-Length"); //$NON-NLS-1$
+        //SUPPRESSED_REQUEST_HEADERS.add("Content-Length"); //$NON-NLS-1$
         SUPPRESSED_REQUEST_HEADERS.add("X-API-Key"); //$NON-NLS-1$
         SUPPRESSED_REQUEST_HEADERS.add("Host"); //$NON-NLS-1$
 
@@ -99,6 +99,8 @@ public class HttpApiConnection implements IApiConnection, IApiConnectionResponse
     private ApiResponse response;
     final private OkHttpClient client;
 
+    private boolean hasDataPolicy;
+
     /**
      * Constructor.
      *
@@ -107,17 +109,19 @@ public class HttpApiConnection implements IApiConnection, IApiConnectionResponse
      * @param request the request
      * @param api the API
      * @param requiredAuthType the authorization type
+     * @param hasDataPolicy if policy chain contains data policies
      * @param handler the result handler
      * @throws ConnectorException when unable to connect
      */
     public HttpApiConnection(OkHttpClient client, ApiRequest request, Api api,
             RequiredAuthType requiredAuthType, SSLSessionStrategy sslStrategy,
-            IAsyncResultHandler<IApiConnectionResponse> handler) throws ConnectorException {
+            boolean hasDataPolicy, IAsyncResultHandler<IApiConnectionResponse> handler) throws ConnectorException {
         this.client = client;
         this.request = request;
         this.api = api;
         this.requiredAuthType = requiredAuthType;
         this.sslStrategy = sslStrategy;
+        this.hasDataPolicy = hasDataPolicy;
         this.responseHandler = handler;
 
         try {
@@ -178,6 +182,10 @@ public class HttpApiConnection implements IApiConnection, IApiConnectionResponse
                 }
             }
 
+            if (hasDataPolicy) {
+                suppressedHeaders.add("Content-Length");
+            }
+
             if (isSsl) {
                 HttpsURLConnection https = (HttpsURLConnection) connection;
                 SSLSocketFactory socketFactory = sslStrategy.getSocketFactory();
@@ -215,7 +223,7 @@ public class HttpApiConnection implements IApiConnection, IApiConnectionResponse
     }
 
     /**
-     * If the endpoint properties includes a connect timeout override, then 
+     * If the endpoint properties includes a connect timeout override, then
      * set it here.
      * @param connection
      */
@@ -231,7 +239,7 @@ public class HttpApiConnection implements IApiConnection, IApiConnectionResponse
     }
 
     /**
-     * If the endpoint properties includes a read timeout override, then 
+     * If the endpoint properties includes a read timeout override, then
      * set it here.
      * @param connection
      */
