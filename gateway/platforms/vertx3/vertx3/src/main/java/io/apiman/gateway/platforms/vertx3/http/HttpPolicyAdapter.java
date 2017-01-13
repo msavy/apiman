@@ -98,7 +98,11 @@ public class HttpPolicyAdapter {
         if (engineResult.isResponse()) {
             ApiResponse response = engineResult.getApiResponse();
             HttpApiFactory.buildResponse(vertxResponse, response, vertxRequest.version());
-            vertxResponse.setChunked(true);
+
+            if (!response.getHeaders().containsKey("Content-Length")) {
+                System.out.print("Content length not set");
+                vertxResponse.setChunked(true);
+            }
 
             engineResult.bodyHandler(buffer -> {
                 vertxResponse.write((Buffer) buffer.getNativeBuffer());
@@ -121,7 +125,7 @@ public class HttpPolicyAdapter {
         errorResponse.setResponseCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
         errorResponse.setMessage(error.getMessage());
         errorResponse.setTrace(error);
-
+        response.setChunked(true);
         response.write(Json.encode(errorResponse));
         response.end();
     }
@@ -155,7 +159,7 @@ public class HttpPolicyAdapter {
         for (Map.Entry<String, String> entry : failure.getHeaders()) {
             response.headers().add(entry.getKey(), entry.getValue());
         }
-
+        response.setChunked(true);
         response.end(Json.encode(failure));
     }
 }

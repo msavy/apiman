@@ -71,7 +71,7 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
     private static final Set<String> SUPPRESSED_HEADERS = new HashSet<>();
     static {
         SUPPRESSED_HEADERS.add("Transfer-Encoding");
-        SUPPRESSED_HEADERS.add("Content-Length");
+        //SUPPRESSED_HEADERS.add("Content-Length");
         SUPPRESSED_HEADERS.add("X-API-Key");
         SUPPRESSED_HEADERS.add("Host");
     }
@@ -203,6 +203,7 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
         clientRequest.exceptionHandler(exceptionHandler);
 
         if (hasDataPolicies) {
+            System.out.println("Has data policies, so removing content length and setting chunked mode.");
             clientRequest.headers().remove("Content-Length");
             clientRequest.setChunked(true);
         }
