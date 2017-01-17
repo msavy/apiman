@@ -44,7 +44,7 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
 
     protected static final int API_PORT = 8081;
     protected static final int GW_PORT = 8082;
-    protected static final int ECHO_PORT = 9998;
+    protected static final int ECHO_PORT = 7654;
 
     private EchoServer echoServer = new EchoServer(ECHO_PORT);
     private String conf;

@@ -31,6 +31,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.Map;
 
@@ -41,7 +42,7 @@ public class HttpPolicyAdapter {
     private final HttpServerRequest vertxRequest;
     private final HttpServerResponse vertxResponse;
     private final IEngine engine;
-    private final Logger log;
+    private static final Logger log = LoggerFactory.getLogger(HttpPolicyAdapter.class);
     private final boolean isTls;
 
     public HttpPolicyAdapter(HttpServerRequest req,
@@ -50,7 +51,7 @@ public class HttpPolicyAdapter {
                       boolean isTls) {
         this.vertxRequest = req;
         this.engine = engine;
-        this.log = log;
+        //this.log = log;
         this.isTls = isTls;
         this.vertxResponse = req.response();
     }
@@ -112,6 +113,11 @@ public class HttpPolicyAdapter {
     }
 
     private static void handleError(HttpServerResponse response, Throwable error) {
+        if (response.closed()) {
+            log.error("Error occurred after response was closed: ", error);
+            return;
+        }
+
         response.setStatusCode(HttpResponseStatus.INTERNAL_SERVER_ERROR.code());
         response.setStatusMessage(HttpResponseStatus.INTERNAL_SERVER_ERROR.reasonPhrase());
         response.headers().add("X-Gateway-Error", String.valueOf(error.getMessage())); //$NON-NLS-1$
