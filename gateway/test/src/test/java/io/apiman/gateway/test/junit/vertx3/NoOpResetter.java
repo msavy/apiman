@@ -24,5 +24,6 @@ public class NoOpResetter implements Resetter {
 
     @Override
     public void reset() {
+        System.out.println("Want to reset");
     }
 }

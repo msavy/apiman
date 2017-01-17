@@ -32,15 +32,18 @@ public class HttpGatewayVerticle extends ApimanVerticleWithEngine {
     public void start() {
         super.start();
 
-        HttpServerOptions standardOptions = new HttpServerOptions()
-            .setHost(apimanConfig.getHostname());
+        HttpServerOptions standardOptions = new HttpServerOptions();
+            //.setHost(apimanConfig.getHostname());
 
         vertx.createHttpServer(standardOptions)
             .requestHandler(this::requestHandler)
+            .connectionHandler(conn -> System.out.println("Connection made"))
             .listen(apimanConfig.getPort(VERTICLE_TYPE));
+        System.out.println("Finished starting HttpGatewayVerticle");
     }
 
     private void requestHandler(HttpServerRequest req) {
+        System.err.println("----Request handler called----");
         new HttpPolicyAdapter(req, engine, log, false).execute();
     }
 

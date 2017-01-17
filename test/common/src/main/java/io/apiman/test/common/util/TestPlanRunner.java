@@ -23,7 +23,9 @@ import io.apiman.test.common.plan.TestPlan;
 import io.apiman.test.common.plan.TestType;
 import io.apiman.test.common.resttest.RestTest;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.net.ProtocolException;
 import java.net.URI;
@@ -32,6 +34,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -65,7 +68,7 @@ import com.squareup.okhttp.Response;
  *
  * @author eric.wittmann@redhat.com
  */
-@SuppressWarnings({"nls", "javadoc"})
+@SuppressWarnings({ "nls", "javadoc" })
 public class TestPlanRunner {
 
     private static Logger logger = LoggerFactory.getLogger(TestPlanRunner.class);
@@ -73,6 +76,10 @@ public class TestPlanRunner {
     {
         client.setFollowRedirects(false);
         client.setFollowSslRedirects(false);
+        client.setConnectTimeout(1, TimeUnit.SECONDS);
+        client.setReadTimeout(1, TimeUnit.SECONDS);
+        client.setWriteTimeout(1, TimeUnit.SECONDS);
+        client.setRetryOnConnectionFailure(true);
     }
 
     /**
@@ -106,7 +113,10 @@ public class TestPlanRunner {
                 Integer delay = test.getDelay();
                 log("Executing REST Test [{0}] - {1}", test.getName(), rtPath);
                 if (delay != null) {
-                    try { Thread.sleep(delay); } catch (InterruptedException e) { }
+                    try {
+                        Thread.sleep(delay);
+                    } catch (InterruptedException e) {
+                    }
                 }
                 if (rtPath == null || rtPath.trim().isEmpty()) {
                     continue;
@@ -135,30 +145,34 @@ public class TestPlanRunner {
      * @throws Error
      */
     public void runTest(RestTest restTest, String baseApiUrl) throws Error {
+        String requestPath = TestUtil.doPropertyReplacement(restTest.getRequestPath());
+        URI uri = null;
         try {
-            String requestPath = TestUtil.doPropertyReplacement(restTest.getRequestPath());
-            URI uri = getUri(baseApiUrl, requestPath);
-            String rawType = restTest.getRequestHeaders().get("Content-Type") != null ?
-                    restTest.getRequestHeaders().get("Content-Type") : "text/plain; charset=UTF-8";
-            MediaType mediaType = MediaType.parse(rawType);
+            uri = getUri(baseApiUrl, requestPath);
+        } catch (URISyntaxException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        String rawType = restTest.getRequestHeaders().get("Content-Type") != null ? restTest.getRequestHeaders().get("Content-Type")
+                : "text/plain; charset=UTF-8";
+        MediaType mediaType = MediaType.parse(rawType);
 
-            log("Sending HTTP request to: " + uri);
+        log("Sending HTTP request to: " + uri);
 
-            RequestBody body = null;
-            if (restTest.getRequestPayload() != null && !restTest.getRequestPayload().isEmpty()) {
-                body = RequestBody.create(mediaType, restTest.getRequestPayload());
-            }
+        RequestBody body = null;
+        if (restTest.getRequestPayload() != null && !restTest.getRequestPayload().isEmpty()) {
+            body = RequestBody.create(mediaType, restTest.getRequestPayload());
+        }
 
-            Request.Builder requestBuilder = new Request.Builder()
-                    .url(uri.toString())
-                    .method(restTest.getRequestMethod(), body);
+        Request.Builder requestBuilder = new Request.Builder().url(uri.toString()).method(restTest.getRequestMethod(), body);
+        try {
 
             Map<String, String> requestHeaders = restTest.getRequestHeaders();
             for (Entry<String, String> entry : requestHeaders.entrySet()) {
                 String value = TestUtil.doPropertyReplacement(entry.getValue());
                 // Handle system properties that may be configured in the rest-test itself
                 if (entry.getKey().startsWith("X-RestTest-System-Property")) {
-                    String [] split = value.split("=");
+                    String[] split = value.split("=");
                     System.setProperty(split[0], split[1]);
                     continue;
                 }
@@ -178,6 +192,23 @@ public class TestPlanRunner {
             throw e;
         } catch (ProtocolException e) {
             logPlain("[HTTP PROTOCOL EXCEPTION]" + e.getMessage());
+        } catch (InterruptedIOException e) {
+            System.err.println("Timeout...");
+            e.printStackTrace();
+            System.out.println("Trying again!");
+            // throw new RuntimeException(e);
+
+            // Try again
+            Response response;
+            try {
+                response = client.newCall(requestBuilder.build()).execute();
+                assertResponse(restTest, response);
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+            throw new RuntimeException(e);
+
         } catch (Exception e) {
             logPlain("[EXCEPTION] " + e.getMessage());
             throw new Error(e);
@@ -186,6 +217,7 @@ public class TestPlanRunner {
 
     /**
      * Create the basic auth header value.
+     *
      * @param username
      * @param password
      */
@@ -201,14 +233,14 @@ public class TestPlanRunner {
 
     /**
      * Assert that the response matched the expected.
+     *
      * @param restTest
      * @param response
      */
     private void assertResponse(RestTest restTest, Response response) {
         int actualStatusCode = response.code();
         try {
-            Assert.assertEquals("Unexpected REST response status code.  Status message: "
-                    + response.message(), restTest.getExpectedStatusCode(),
+            Assert.assertEquals("Unexpected REST response status code.  Status message: " + response.message(), restTest.getExpectedStatusCode(),
                     actualStatusCode);
         } catch (Error e) {
             if (actualStatusCode >= 400) {
@@ -256,6 +288,7 @@ public class TestPlanRunner {
 
     /**
      * Asserts that the response has no payload and that we are not expecting one.
+     *
      * @param restTest
      * @param response
      */
@@ -267,8 +300,9 @@ public class TestPlanRunner {
     }
 
     /**
-     * Assume the payload is JSON and do some assertions based on the configuration
-     * in the REST Test.
+     * Assume the payload is JSON and do some assertions based on the configuration in the REST
+     * Test.
+     *
      * @param restTest
      * @param response
      */
@@ -284,14 +318,11 @@ public class TestPlanRunner {
             JsonNode expectedJson = jacksonParser.readTree(expectedPayload);
             try {
                 JsonCompare jsonCompare = new JsonCompare();
-                jsonCompare.setArrayOrdering(JsonArrayOrderingType
-                        .fromString(restTest.getExpectedResponseHeaders().get("X-RestTest-ArrayOrdering")));
-                jsonCompare.setIgnoreCase("true"
-                        .equals(restTest.getExpectedResponseHeaders().get("X-RestTest-Assert-IgnoreCase")));
-                jsonCompare.setCompareNumericIds("true"
-                        .equals(restTest.getExpectedResponseHeaders().get("X-RestTest-Assert-NumericIds")));
-                jsonCompare.setMissingField(JsonMissingFieldType.fromString(
-                        restTest.getExpectedResponseHeaders().get("X-RestTest-Assert-MissingField")));
+                jsonCompare.setArrayOrdering(JsonArrayOrderingType.fromString(restTest.getExpectedResponseHeaders().get("X-RestTest-ArrayOrdering")));
+                jsonCompare.setIgnoreCase("true".equals(restTest.getExpectedResponseHeaders().get("X-RestTest-Assert-IgnoreCase")));
+                jsonCompare.setCompareNumericIds("true".equals(restTest.getExpectedResponseHeaders().get("X-RestTest-Assert-NumericIds")));
+                jsonCompare.setMissingField(
+                        JsonMissingFieldType.fromString(restTest.getExpectedResponseHeaders().get("X-RestTest-Assert-MissingField")));
                 jsonCompare.assertJson(expectedJson, actualJson);
             } catch (Error e) {
                 System.out.println("--- START FAILED JSON PAYLOAD ---");
@@ -307,8 +338,9 @@ public class TestPlanRunner {
     }
 
     /**
-     * The payload is expected to be XML.  Parse it and then use XmlUnit to compare
-     * the payload with the expected payload (obviously also XML).
+     * The payload is expected to be XML. Parse it and then use XmlUnit to compare the payload
+     * with the expected payload (obviously also XML).
+     *
      * @param restTest
      * @param response
      */
@@ -329,14 +361,14 @@ public class TestPlanRunner {
                 XMLUnit.setCompareUnmatched(false);
                 Diff diff = new Diff(expectedPayload, xmlPayload);
                 // A custom element qualifier allows us to customize how the diff engine
-                // compares the XML nodes.  In this case, we're specially handling any
+                // compares the XML nodes. In this case, we're specially handling any
                 // elements named "entry" so that we can compare the standard XML format
-                // of the Echo API we use for most of our tests.  The format of an
+                // of the Echo API we use for most of our tests. The format of an
                 // entry looks like:
-                //    <entry>
-                //      <key>Name</key>
-                //      <value>Value</value>
-                //    </entry>
+                // <entry>
+                // <key>Name</key>
+                // <value>Value</value>
+                // </entry>
                 diff.overrideElementQualifier(new ElementNameQualifier() {
                     @Override
                     public boolean qualifyForComparison(Element control, Element test) {
@@ -355,6 +387,7 @@ public class TestPlanRunner {
                     @Override
                     public void skippedComparison(Node control, Node test) {
                     }
+
                     @Override
                     public int differenceFound(Difference difference) {
                         String value = difference.getControlNodeDetail().getValue();
@@ -384,8 +417,9 @@ public class TestPlanRunner {
     }
 
     /**
-     * Binds any variables found in the response JSON to system properties
-     * so they can be used in later rest tests.
+     * Binds any variables found in the response JSON to system properties so they can be used
+     * in later rest tests.
+     *
      * @param actualJson
      * @param restTest
      */
@@ -417,8 +451,7 @@ public class TestPlanRunner {
     private String evaluate(String bindExpression, final JsonNode json) {
         PropertyHandlerFactory.registerPropertyHandler(ObjectNode.class, new PropertyHandler() {
             @Override
-            public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory,
-                    Object value) {
+            public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory, Object value) {
                 throw new RuntimeException("Not supported!");
             }
 
@@ -433,8 +466,9 @@ public class TestPlanRunner {
     }
 
     /**
-     * Assume the payload is Text and do some assertions based on the configuration
-     * in the REST Test.
+     * Assume the payload is Text and do some assertions based on the configuration in the REST
+     * Test.
+     *
      * @param restTest
      * @param response
      */
@@ -462,6 +496,7 @@ public class TestPlanRunner {
 
     /**
      * Gets the absolute URL to use to invoke a rest API at a given path.
+     *
      * @param path
      * @throws URISyntaxException
      */
