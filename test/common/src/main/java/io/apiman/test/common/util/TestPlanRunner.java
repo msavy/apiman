@@ -358,11 +358,11 @@ public class TestPlanRunner {
      * @param response
      */
     private void assertXmlPayload(RestTest restTest, com.jcabi.http.Response response) {
-        String inputStream = null;
+        InputStream inputStream;
         try {
-            inputStream = response.body();
+            inputStream = new ByteArrayInputStream(response.binary());
             StringWriter writer = new StringWriter();
-            //IOUtils.copy(inputStream, writer);
+            IOUtils.copy(inputStream, writer);
             String xmlPayload = writer.toString();
             String expectedPayload = TestUtil.doPropertyReplacement(restTest.getExpectedResponsePayload());
             Assert.assertNotNull("REST Test missing expected XML payload.", expectedPayload);
