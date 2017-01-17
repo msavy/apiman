@@ -32,8 +32,8 @@ public class HttpGatewayVerticle extends ApimanVerticleWithEngine {
     public void start() {
         super.start();
 
-        HttpServerOptions standardOptions = new HttpServerOptions();
-            //.setHost(apimanConfig.getHostname());
+        HttpServerOptions standardOptions = new HttpServerOptions()
+            .setHost(apimanConfig.getHostname());
 
         vertx.createHttpServer(standardOptions)
             .requestHandler(this::requestHandler)

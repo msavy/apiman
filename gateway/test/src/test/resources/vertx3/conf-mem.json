@@ -28,6 +28,11 @@
     }
   },
 
+  "logger-factory": {
+    "class": "io.apiman.gateway.platforms.vertx3.common.config.VertxLoggerDelegate",
+    "config": {}
+  },
+
   "policy-factory": {
     "class": "io.apiman.gateway.engine.policy.PolicyFactoryImpl",
     "config": {}
