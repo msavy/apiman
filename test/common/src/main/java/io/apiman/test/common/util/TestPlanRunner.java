@@ -23,7 +23,7 @@ import io.apiman.test.common.plan.TestPlan;
 import io.apiman.test.common.plan.TestType;
 import io.apiman.test.common.resttest.RestTest;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
@@ -34,7 +34,6 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -57,11 +56,9 @@ import org.w3c.dom.Node;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.jcabi.http.Request;
+import com.jcabi.http.request.ApacheRequest;
 import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
 /**
  * Runs a test plan.
@@ -72,14 +69,14 @@ import com.squareup.okhttp.Response;
 public class TestPlanRunner {
 
     private static Logger logger = LoggerFactory.getLogger(TestPlanRunner.class);
-    private OkHttpClient client = new OkHttpClient();
+    //private OkHttpClient client = new OkHttpClient();
     {
-        client.setFollowRedirects(false);
-        client.setFollowSslRedirects(false);
-        client.setConnectTimeout(1, TimeUnit.SECONDS);
-        client.setReadTimeout(1, TimeUnit.SECONDS);
-        client.setWriteTimeout(1, TimeUnit.SECONDS);
-        client.setRetryOnConnectionFailure(true);
+//        client.setFollowRedirects(false);
+//        client.setFollowSslRedirects(false);
+//        client.setConnectTimeout(1, TimeUnit.SECONDS);
+//        client.setReadTimeout(1, TimeUnit.SECONDS);
+//        client.setWriteTimeout(1, TimeUnit.SECONDS);
+//        client.setRetryOnConnectionFailure(true);
     }
 
     /**
@@ -159,12 +156,19 @@ public class TestPlanRunner {
 
         log("Sending HTTP request to: " + uri);
 
-        RequestBody body = null;
+        //RequestBody body = null;
+
+
+        Request request = new ApacheRequest(uri.toString()).method(restTest.getRequestMethod());
+
+
         if (restTest.getRequestPayload() != null && !restTest.getRequestPayload().isEmpty()) {
-            body = RequestBody.create(mediaType, restTest.getRequestPayload());
+            //body = RequestBody.create(mediaType, restTest.getRequestPayload());
+            request = request.body().set(restTest.getRequestPayload()).back().header("Content-Type", mediaType);
+
         }
 
-        Request.Builder requestBuilder = new Request.Builder().url(uri.toString()).method(restTest.getRequestMethod(), body);
+        //Request.Builder requestBuilder = new Request.Builder().url(uri.toString()).method(restTest.getRequestMethod(), body);
         try {
 
             Map<String, String> requestHeaders = restTest.getRequestHeaders();
@@ -176,17 +180,24 @@ public class TestPlanRunner {
                     System.setProperty(split[0], split[1]);
                     continue;
                 }
-                requestBuilder.addHeader(entry.getKey(), value);
+                //requestBuilder.addHeader(entry.getKey(), value);
+                request = request.header(entry.getKey(), value);
             }
 
             // Set up basic auth
             String authorization = createBasicAuthorization(restTest.getUsername(), restTest.getPassword());
             if (authorization != null) {
-                requestBuilder.addHeader("Authorization", authorization);
+                //requestBuilder.addHeader("Authorization", authorization);
+                System.out.println("Set auth header");
+                request = request.header("Authorization", authorization);
             }
 
-            Response response = client.newCall(requestBuilder.build()).execute();
-            assertResponse(restTest, response);
+            //Response response = client.newCall(requestBuilder.build()).execute();
+
+
+
+
+            assertResponse(restTest, request.fetch());
         } catch (Error e) {
             logPlain("[ERROR] " + e.getMessage());
             throw e;
@@ -199,15 +210,15 @@ public class TestPlanRunner {
             // throw new RuntimeException(e);
 
             // Try again
-            Response response;
-            try {
-                response = client.newCall(requestBuilder.build()).execute();
-                assertResponse(restTest, response);
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-            throw new RuntimeException(e);
+//            Response response;
+//            try {
+//                response = client.newCall(requestBuilder.build()).execute();
+//                assertResponse(restTest, response);
+//            } catch (IOException e1) {
+//                // TODO Auto-generated catch block
+//                e1.printStackTrace();
+//            }
+//            throw new RuntimeException(e);
 
         } catch (Exception e) {
             logPlain("[EXCEPTION] " + e.getMessage());
@@ -237,16 +248,16 @@ public class TestPlanRunner {
      * @param restTest
      * @param response
      */
-    private void assertResponse(RestTest restTest, Response response) {
-        int actualStatusCode = response.code();
+    private void assertResponse(RestTest restTest, com.jcabi.http.Response response) {
+        int actualStatusCode = response.status();
         try {
-            Assert.assertEquals("Unexpected REST response status code.  Status message: " + response.message(), restTest.getExpectedStatusCode(),
+            Assert.assertEquals("Unexpected REST response status code.  Status message: " + response.reason(), restTest.getExpectedStatusCode(),
                     actualStatusCode);
         } catch (Error e) {
             if (actualStatusCode >= 400) {
                 InputStream content = null;
                 try {
-                    String payload = response.body().string();
+                    String payload = response.body();
                     System.out.println("------ START ERROR PAYLOAD ------");
                     if (payload.startsWith("{")) {
                         payload = payload.replace("\\r\\n", "\r\n").replace("\\t", "\t");
@@ -265,23 +276,24 @@ public class TestPlanRunner {
             if (expectedHeaderName.startsWith("X-RestTest-"))
                 continue;
             String expectedHeaderValue = entry.getValue();
-            String header = response.header(expectedHeaderName);
+            List<String> headers = response.headers().get(expectedHeaderName);
 
-            Assert.assertNotNull("Expected header to exist but was not found: " + expectedHeaderName, header);
-            Assert.assertEquals(expectedHeaderValue, header);
+            Assert.assertNotNull("Expected header to exist but was not found: " + expectedHeaderName, headers);
+            Assert.assertEquals(expectedHeaderValue, headers.get(0));
         }
-        String ctValue = response.header("Content-Type");
-        if (ctValue == null) {
+        List<String> ctValueList = response.headers().get("Content-Type");
+        if (ctValueList == null) {
             assertNoPayload(restTest, response);
         } else {
-            if (ctValue.startsWith("application/json")) {
+            String ctValueFirst = ctValueList.get(0);
+            if (ctValueFirst.startsWith("application/json")) {
                 assertJsonPayload(restTest, response);
-            } else if (ctValue.startsWith("text/plain") || ctValue.startsWith("text/html")) {
+            } else if (ctValueFirst.startsWith("text/plain") || ctValueFirst.startsWith("text/html")) {
                 assertTextPayload(restTest, response);
-            } else if (ctValue.startsWith("application/xml") || ctValue.startsWith("application/wsdl+xml")) {
+            } else if (ctValueFirst.startsWith("application/xml") || ctValueFirst.startsWith("application/wsdl+xml")) {
                 assertXmlPayload(restTest, response);
             } else {
-                Assert.fail("Unsupported response payload type: " + ctValue);
+                Assert.fail("Unsupported response payload type: " + ctValueFirst);
             }
         }
     }
@@ -292,7 +304,7 @@ public class TestPlanRunner {
      * @param restTest
      * @param response
      */
-    private void assertNoPayload(RestTest restTest, Response response) {
+    private void assertNoPayload(RestTest restTest, com.jcabi.http.Response response) {
         String expectedPayload = restTest.getExpectedResponsePayload();
         if (expectedPayload != null && expectedPayload.trim().length() > 0) {
             Assert.fail("Expected a payload but didn't get one.");
@@ -306,10 +318,11 @@ public class TestPlanRunner {
      * @param restTest
      * @param response
      */
-    private void assertJsonPayload(RestTest restTest, Response response) {
-        InputStream inputStream = null;
+    private void assertJsonPayload(RestTest restTest, com.jcabi.http.Response response) {
+        //InputStream inputStream = null;
+        String inputStream;
         try {
-            inputStream = response.body().byteStream();
+            inputStream = response.body();
             ObjectMapper jacksonParser = new ObjectMapper();
             JsonNode actualJson = jacksonParser.readTree(inputStream);
             bindVariables(actualJson, restTest);
@@ -333,7 +346,7 @@ public class TestPlanRunner {
         } catch (Exception e) {
             throw new Error(e);
         } finally {
-            IOUtils.closeQuietly(inputStream);
+            //IOUtils.closeQuietly(inputStream);
         }
     }
 
@@ -344,12 +357,12 @@ public class TestPlanRunner {
      * @param restTest
      * @param response
      */
-    private void assertXmlPayload(RestTest restTest, Response response) {
-        InputStream inputStream = null;
+    private void assertXmlPayload(RestTest restTest, com.jcabi.http.Response response) {
+        String inputStream = null;
         try {
-            inputStream = response.body().byteStream();
+            inputStream = response.body();
             StringWriter writer = new StringWriter();
-            IOUtils.copy(inputStream, writer);
+            //IOUtils.copy(inputStream, writer);
             String xmlPayload = writer.toString();
             String expectedPayload = TestUtil.doPropertyReplacement(restTest.getExpectedResponsePayload());
             Assert.assertNotNull("REST Test missing expected XML payload.", expectedPayload);
@@ -412,7 +425,7 @@ public class TestPlanRunner {
         } catch (Exception e) {
             throw new Error(e);
         } finally {
-            IOUtils.closeQuietly(inputStream);
+            //IOUtils.closeQuietly(inputStream);
         }
     }
 
@@ -472,10 +485,10 @@ public class TestPlanRunner {
      * @param restTest
      * @param response
      */
-    private void assertTextPayload(RestTest restTest, Response response) {
+    private void assertTextPayload(RestTest restTest, com.jcabi.http.Response response) {
         InputStream inputStream = null;
         try {
-            inputStream = response.body().byteStream();
+            inputStream = new ByteArrayInputStream(response.binary());
             List<String> lines = IOUtils.readLines(inputStream);
             StringBuilder builder = new StringBuilder();
             for (String line : lines) {

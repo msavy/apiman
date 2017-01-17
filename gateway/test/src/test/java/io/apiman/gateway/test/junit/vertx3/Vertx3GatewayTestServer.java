@@ -17,8 +17,12 @@ package io.apiman.gateway.test.junit.vertx3;
 
 import io.apiman.common.util.ReflectionUtils;
 import io.apiman.gateway.platforms.vertx3.common.config.VertxEngineConfig;
+import io.apiman.gateway.platforms.vertx3.verticles.InitVerticle;
 import io.apiman.test.common.echo.EchoServer;
 import io.apiman.test.common.resttest.IGatewayTestServer;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
@@ -40,7 +44,7 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
 
     protected static final int API_PORT = 8081;
     protected static final int GW_PORT = 8082;
-    protected static final int ECHO_PORT = 7654;
+    protected static final int ECHO_PORT = 9998;
 
     private EchoServer echoServer = new EchoServer(ECHO_PORT);
     private String conf;
@@ -91,25 +95,21 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
         try {
             resetter.reset();
 
-//            vertx = Vertx.vertx();
+            vertx = Vertx.vertx();
             echoServer.start();
 
-//            startLatch = new CountDownLatch(1);
+            startLatch = new CountDownLatch(1);
 
-//            DeploymentOptions options = new DeploymentOptions();
-//            options.setConfig(vertxConf);
-//
-//            vertx.deployVerticle(InitVerticle.class.getCanonicalName(),
-//                    options, new Handler<AsyncResult<String>>() {
-//
-//                @Override
-//                public void handle(AsyncResult<String> event) {
-//                    System.out.println("Deployed init verticle!");
-//                    startLatch.countDown();
-//                }
-//            });
+            DeploymentOptions options = new DeploymentOptions();
+            options.setConfig(vertxConf);
 
-//            startLatch.await();
+            vertx.deployVerticle(InitVerticle.class.getCanonicalName(),
+                    options, (Handler<AsyncResult<String>>) event -> {
+                        System.out.println("Deployed init verticle!");
+                        startLatch.countDown();
+                    });
+
+            startLatch.await();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -118,15 +118,15 @@ public class Vertx3GatewayTestServer implements IGatewayTestServer {
     @Override
     public void stop() {
         try {
-//            stopLatch = new CountDownLatch(1);
+            stopLatch = new CountDownLatch(1);
             echoServer.stop();
 
-//            vertx.close(result -> {
-//                stopLatch.countDown();
-//                System.out.println("Vert.x stopped....");
-//            });
+            vertx.close(result -> {
+                stopLatch.countDown();
+                System.out.println("Vert.x stopped....");
+            });
 
-//            stopLatch.await();
+            stopLatch.await();
             resetter.reset(); // Also reset at end to avoid leaving pollution in index.
         } catch (Exception e) {
             throw new RuntimeException(e);
