@@ -19,6 +19,7 @@ import io.apiman.gateway.platforms.vertx3.common.verticles.VerticleType;
 import io.apiman.gateway.platforms.vertx3.http.HttpPolicyAdapter;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.net.JksOptions;
 
 /**
  * A HTTPS gateway verticle
@@ -33,18 +34,18 @@ public class HttpsGatewayVerticle extends ApimanVerticleWithEngine {
         super.start();
 
         HttpServerOptions sslOptions = new HttpServerOptions()
-            .setHost(apimanConfig.getHostname());
-//            .setSsl(true);
-//            .setKeyStoreOptions(
-//                    new JksOptions()
-//                        .setPath(apimanConfig.getKeyStore())
-//                        .setPassword(apimanConfig.getKeyStorePassword())
-//                    )
-//            .setTrustStoreOptions(
-//                    new JksOptions()
-//                        .setPath(apimanConfig.getTrustStore())
-//                        .setPassword(apimanConfig.getTrustStorePassword())
-//                    );
+            .setHost(apimanConfig.getHostname())
+            .setSsl(true)
+            .setKeyStoreOptions(
+                    new JksOptions()
+                        .setPath(apimanConfig.getKeyStore())
+                        .setPassword(apimanConfig.getKeyStorePassword())
+                    )
+            .setTrustStoreOptions(
+                    new JksOptions()
+                        .setPath(apimanConfig.getTrustStore())
+                        .setPassword(apimanConfig.getTrustStorePassword())
+                    );
 
         vertx.createHttpServer(sslOptions)
             .requestHandler(this::requestHandler)

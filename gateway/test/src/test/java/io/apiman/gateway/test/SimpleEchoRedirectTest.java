@@ -20,7 +20,6 @@ import io.apiman.gateway.test.junit.GatewayRestTestPlan;
 import io.apiman.gateway.test.junit.GatewayRestTestSystemProperties;
 import io.apiman.gateway.test.junit.GatewayRestTester;
 
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
@@ -33,7 +32,6 @@ import org.junit.runner.RunWith;
 @GatewayRestTestSystemProperties({
     GatewayConfigProperties.CONNECTOR_FACTORY_FOLLOW_REDIRECTS, "true"
 })
-@Ignore
 public class SimpleEchoRedirectTest {
 
 }
