@@ -60,10 +60,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 @SuppressWarnings("nls")
 public class VertxEngineConfig implements IEngineConfig {
-    public static final String GATEWAY_ENDPOINT_POLICY_INGESTION = "io.apiman.gateway.platforms.vertx2.policy";
-    public static final String GATEWAY_ENDPOINT_REQUEST = ".request";
-    public static final String GATEWAY_ENDPOINT_RESPONSE = ".response";
-
     private static final String VERTICLES = "verticles";
     private static final String VERTICLE_PORT = "port";
     private static final String VERTICLE_COUNT = "count";
@@ -117,13 +113,11 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getRegistryConfig() {
-        //return toFlatStringMap(getConfig(config, GATEWAY_REGISTRY_PREFIX));
         return getConfig(config, GATEWAY_REGISTRY_PREFIX);
     }
 
     @Override
     public Map<String, String> getDataEncrypterConfig() {
-        //return toFlatStringMap(getConfig(config, GATEWAY_ENCRYPTER_PREFIX));
         return getConfig(config, GATEWAY_ENCRYPTER_PREFIX);
     }
 
@@ -135,7 +129,6 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getPluginRegistryConfig() {
-        //return toFlatStringMap(getConfig(config, GATEWAY_PLUGIN_REGISTRY_PREFIX));
         return getConfig(config, GATEWAY_PLUGIN_REGISTRY_PREFIX);
     }
 
@@ -147,7 +140,6 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getConnectorFactoryConfig() {
-        //return toFlatStringMap(getConfig(config, GATEWAY_CONNECTOR_FACTORY_PREFIX));
         return getConfig(config, GATEWAY_CONNECTOR_FACTORY_PREFIX);
     }
 
@@ -159,7 +151,6 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getPolicyFactoryConfig() {
-        //return toFlatStringMap(getConfig(config, GATEWAY_POLICY_FACTORY_PREFIX));
         return getConfig(config, GATEWAY_POLICY_FACTORY_PREFIX);
     }
 
@@ -171,7 +162,6 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getMetricsConfig() {
-        //return toFlatStringMap(getConfig(config, GATEWAY_METRICS_PREFIX));
         return getConfig(config, GATEWAY_METRICS_PREFIX);
     }
 
@@ -194,7 +184,6 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getPolicyErrorWriterConfig() {
-        //return toFlatStringMap(getConfig(config, GatewayConfigProperties.ERROR_WRITER_CLASS));
         return getConfig(config, GatewayConfigProperties.ERROR_WRITER_CLASS);
     }
 
@@ -206,7 +195,6 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getPolicyFailureWriterConfig() {
-        //return toFlatStringMap(getConfig(config, GatewayConfigProperties.FAILURE_WRITER_CLASS));
         return getConfig(config, GatewayConfigProperties.FAILURE_WRITER_CLASS);
     }
 
@@ -218,7 +206,7 @@ public class VertxEngineConfig implements IEngineConfig {
 
         return loadConfigClass(className, componentType, null);
     }
-    //     public static final String POLICY_FACTORY_CLASS_RELOAD_SNAPSHOTS = "apiman-gateway.policy-factory.reload-snapshots";
+
     @Override
     public <T extends IComponent> Map<String, String> getComponentConfig(Class<T> componentType) {
         JsonObject componentConfig = config.getJsonObject(GATEWAY_COMPONENT_PREFIX).
@@ -302,7 +290,7 @@ public class VertxEngineConfig implements IEngineConfig {
 
     protected String getClassname(JsonObject obj, String prefix) {
         String clazzName = System.getProperty(prefix);
-        // Something of a hack because the constants may assume apiman-gateway prefix, which isn't in the vert.x JSON.
+        // TODO Something of a hack because the constants may assume apiman-gateway prefix, which isn't in the vert.x JSON.
         String strippedPrefix = StringUtils.substringAfter(prefix, "apiman-gateway.");
         String filteredPrefix = strippedPrefix.isEmpty() ? prefix : strippedPrefix;
 
@@ -316,8 +304,7 @@ public class VertxEngineConfig implements IEngineConfig {
         // First, check whether there's something interesting in System properties.
         Map<String, String> mfp = getConfigMapFromProperties("apiman-gateway." + prefix);
 
-        if (mfp != null && !mfp.isEmpty()) { //
-            System.err.println("Yes, there's something here! " + mfp);
+        if (mfp != null && !mfp.isEmpty()) { // TODO
             return mfp;
         }
         return toFlatStringMap(obj.getJsonObject(prefix).getJsonObject(GATEWAY_CONFIG));
@@ -347,10 +334,9 @@ public class VertxEngineConfig implements IEngineConfig {
             // Not found via Class.forName() - try other mechanisms.
         }
 
-        System.err.println("COULD NOT LOAD " + className);
-
-        throw new RuntimeException(Messages.getString("EngineConfig.FailedToLoadClass"));
-        //System.exit(-1);
+        System.err.println(Messages.getString("EngineConfig.FailedToLoadClass") + className);
+        System.exit(-1);
+        return null;
     }
 
     protected String stringConfigWithDefault(String name, String defaultValue) {
