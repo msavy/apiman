@@ -142,16 +142,9 @@ public class TestPlanRunner {
             throw new RuntimeException("Invalid URI", e);
         }
 
-        String existingType = restTest.getRequestHeaders().get("Content-Type");
-        String rawType = existingType != null ? StringUtils.appendIfMissing(existingType, "; charset=UTF-8") : "text/plain; charset=UTF-8";
-
         log("Sending HTTP request to: " + uri);
 
         Request request = new ApacheRequest(uri.toString()).method(restTest.getRequestMethod());
-
-        if (restTest.getRequestPayload() != null && !restTest.getRequestPayload().isEmpty()) {
-            request = request.body().set(restTest.getRequestPayload()).back().header("Content-Type", rawType);
-        }
 
         try {
             Map<String, String> requestHeaders = restTest.getRequestHeaders();
@@ -163,13 +156,24 @@ public class TestPlanRunner {
                     System.setProperty(split[0], split[1]);
                     continue;
                 }
-                request = request.header(entry.getKey(), value);
+
+                if (entry.getKey().equals("Content-Type")) {
+                    String contentType = entry.getKey() != null ? StringUtils.appendIfMissing(value, "; charset=UTF-8") : "text/plain; charset=UTF-8";
+                    request = request.header(entry.getKey(), contentType);
+                } else {
+                    request = request.header(entry.getKey(), value);
+                }
             }
 
             // Set up basic auth
             String authorization = createBasicAuthorization(restTest.getUsername(), restTest.getPassword());
             if (authorization != null) {
                 request = request.header("Authorization", authorization);
+            }
+
+            if (restTest.getRequestPayload() != null && !restTest.getRequestPayload().isEmpty()) {
+                request = request.body().set(restTest.getRequestPayload()).back();
+                System.err.println("Rawtype = ");
             }
 
             assertResponse(restTest, request.fetch());
@@ -307,7 +311,7 @@ public class TestPlanRunner {
         } catch (Exception e) {
             throw new Error(e);
         } finally {
-            //IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(inputStream);
         }
     }
 
@@ -319,7 +323,7 @@ public class TestPlanRunner {
      * @param response
      */
     private void assertXmlPayload(RestTest restTest, com.jcabi.http.Response response) {
-        InputStream inputStream;
+        InputStream inputStream = null;
         try {
             inputStream = new ByteArrayInputStream(response.binary());
             StringWriter writer = new StringWriter();
@@ -386,7 +390,7 @@ public class TestPlanRunner {
         } catch (Exception e) {
             throw new Error(e);
         } finally {
-            //IOUtils.closeQuietly(inputStream);
+            IOUtils.closeQuietly(inputStream);
         }
     }
 
