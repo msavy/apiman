@@ -24,8 +24,8 @@ import io.apiman.test.common.plan.TestType;
 import io.apiman.test.common.resttest.RestTest;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.net.ProtocolException;
 import java.net.URI;
@@ -57,8 +57,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.jcabi.http.Request;
+import com.jcabi.http.Response;
 import com.jcabi.http.request.ApacheRequest;
-import com.squareup.okhttp.MediaType;
 
 /**
  * Runs a test plan.
@@ -69,15 +69,6 @@ import com.squareup.okhttp.MediaType;
 public class TestPlanRunner {
 
     private static Logger logger = LoggerFactory.getLogger(TestPlanRunner.class);
-    //private OkHttpClient client = new OkHttpClient();
-    {
-//        client.setFollowRedirects(false);
-//        client.setFollowSslRedirects(false);
-//        client.setConnectTimeout(1, TimeUnit.SECONDS);
-//        client.setReadTimeout(1, TimeUnit.SECONDS);
-//        client.setWriteTimeout(1, TimeUnit.SECONDS);
-//        client.setRetryOnConnectionFailure(true);
-    }
 
     /**
      * Constructor.
@@ -146,31 +137,21 @@ public class TestPlanRunner {
         URI uri = null;
         try {
             uri = getUri(baseApiUrl, requestPath);
-        } catch (URISyntaxException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid URI", e);
         }
         String rawType = restTest.getRequestHeaders().get("Content-Type") != null ? restTest.getRequestHeaders().get("Content-Type")
                 : "text/plain; charset=UTF-8";
-        MediaType mediaType = MediaType.parse(rawType);
 
         log("Sending HTTP request to: " + uri);
 
-        //RequestBody body = null;
-
-
         Request request = new ApacheRequest(uri.toString()).method(restTest.getRequestMethod());
 
-
         if (restTest.getRequestPayload() != null && !restTest.getRequestPayload().isEmpty()) {
-            //body = RequestBody.create(mediaType, restTest.getRequestPayload());
-            request = request.body().set(restTest.getRequestPayload()).back().header("Content-Type", mediaType);
-
+            request = request.body().set(restTest.getRequestPayload()).back().header("Content-Type", rawType);
         }
 
-        //Request.Builder requestBuilder = new Request.Builder().url(uri.toString()).method(restTest.getRequestMethod(), body);
         try {
-
             Map<String, String> requestHeaders = restTest.getRequestHeaders();
             for (Entry<String, String> entry : requestHeaders.entrySet()) {
                 String value = TestUtil.doPropertyReplacement(entry.getValue());
@@ -180,22 +161,15 @@ public class TestPlanRunner {
                     System.setProperty(split[0], split[1]);
                     continue;
                 }
-                //requestBuilder.addHeader(entry.getKey(), value);
                 request = request.header(entry.getKey(), value);
             }
 
             // Set up basic auth
             String authorization = createBasicAuthorization(restTest.getUsername(), restTest.getPassword());
             if (authorization != null) {
-                //requestBuilder.addHeader("Authorization", authorization);
                 System.out.println("Set auth header");
                 request = request.header("Authorization", authorization);
             }
-
-            //Response response = client.newCall(requestBuilder.build()).execute();
-
-
-
 
             assertResponse(restTest, request.fetch());
         } catch (Error e) {
@@ -203,23 +177,10 @@ public class TestPlanRunner {
             throw e;
         } catch (ProtocolException e) {
             logPlain("[HTTP PROTOCOL EXCEPTION]" + e.getMessage());
-        } catch (InterruptedIOException e) {
-            System.err.println("Timeout...");
-            e.printStackTrace();
-            System.out.println("Trying again!");
-            // throw new RuntimeException(e);
-
-            // Try again
-//            Response response;
-//            try {
-//                response = client.newCall(requestBuilder.build()).execute();
-//                assertResponse(restTest, response);
-//            } catch (IOException e1) {
-//                // TODO Auto-generated catch block
-//                e1.printStackTrace();
-//            }
-//            throw new RuntimeException(e);
-
+            throw new Error(e);
+        } catch (IOException e) {
+            System.err.println("[IO EXCEPTION]");
+            throw new Error(e);
         } catch (Exception e) {
             logPlain("[EXCEPTION] " + e.getMessage());
             throw new Error(e);
@@ -304,7 +265,7 @@ public class TestPlanRunner {
      * @param restTest
      * @param response
      */
-    private void assertNoPayload(RestTest restTest, com.jcabi.http.Response response) {
+    private void assertNoPayload(RestTest restTest, Response response) {
         String expectedPayload = restTest.getExpectedResponsePayload();
         if (expectedPayload != null && expectedPayload.trim().length() > 0) {
             Assert.fail("Expected a payload but didn't get one.");
@@ -318,11 +279,10 @@ public class TestPlanRunner {
      * @param restTest
      * @param response
      */
-    private void assertJsonPayload(RestTest restTest, com.jcabi.http.Response response) {
-        //InputStream inputStream = null;
-        String inputStream;
+    private void assertJsonPayload(RestTest restTest, Response response) {
+        InputStream inputStream = null;
         try {
-            inputStream = response.body();
+            inputStream = new ByteArrayInputStream(response.binary());
             ObjectMapper jacksonParser = new ObjectMapper();
             JsonNode actualJson = jacksonParser.readTree(inputStream);
             bindVariables(actualJson, restTest);
