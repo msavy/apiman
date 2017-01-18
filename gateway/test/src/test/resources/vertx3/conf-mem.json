@@ -46,7 +46,8 @@
 
   "policy-factory": {
     "class": "io.apiman.gateway.engine.policy.PolicyFactoryImpl",
-    "config": {}
+    "config": {
+    }
   },
 
   "metrics": {

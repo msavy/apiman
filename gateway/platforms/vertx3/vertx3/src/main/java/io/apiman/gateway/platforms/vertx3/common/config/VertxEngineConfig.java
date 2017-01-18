@@ -40,13 +40,17 @@ import io.apiman.gateway.platforms.vertx3.engine.VertxPluginRegistry;
 import io.apiman.gateway.platforms.vertx3.i18n.Messages;
 import io.vertx.core.json.JsonObject;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+
 
 /**
  * Engine configuration, read simplistically from Vert'x JSON config.
@@ -113,12 +117,14 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getRegistryConfig() {
-        return toFlatStringMap(getConfig(config, GATEWAY_REGISTRY_PREFIX));
+        //return toFlatStringMap(getConfig(config, GATEWAY_REGISTRY_PREFIX));
+        return getConfig(config, GATEWAY_REGISTRY_PREFIX);
     }
 
     @Override
     public Map<String, String> getDataEncrypterConfig() {
-        return toFlatStringMap(getConfig(config, GATEWAY_ENCRYPTER_PREFIX));
+        //return toFlatStringMap(getConfig(config, GATEWAY_ENCRYPTER_PREFIX));
+        return getConfig(config, GATEWAY_ENCRYPTER_PREFIX);
     }
 
     @Override
@@ -129,7 +135,8 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getPluginRegistryConfig() {
-        return toFlatStringMap(getConfig(config, GATEWAY_PLUGIN_REGISTRY_PREFIX));
+        //return toFlatStringMap(getConfig(config, GATEWAY_PLUGIN_REGISTRY_PREFIX));
+        return getConfig(config, GATEWAY_PLUGIN_REGISTRY_PREFIX);
     }
 
     @Override
@@ -140,7 +147,8 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getConnectorFactoryConfig() {
-        return toFlatStringMap(getConfig(config, GATEWAY_CONNECTOR_FACTORY_PREFIX));
+        //return toFlatStringMap(getConfig(config, GATEWAY_CONNECTOR_FACTORY_PREFIX));
+        return getConfig(config, GATEWAY_CONNECTOR_FACTORY_PREFIX);
     }
 
     @Override
@@ -151,7 +159,8 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getPolicyFactoryConfig() {
-        return toFlatStringMap(getConfig(config, GATEWAY_POLICY_FACTORY_PREFIX));
+        //return toFlatStringMap(getConfig(config, GATEWAY_POLICY_FACTORY_PREFIX));
+        return getConfig(config, GATEWAY_POLICY_FACTORY_PREFIX);
     }
 
     @Override
@@ -162,7 +171,8 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getMetricsConfig() {
-        return toFlatStringMap(getConfig(config, GATEWAY_METRICS_PREFIX));
+        //return toFlatStringMap(getConfig(config, GATEWAY_METRICS_PREFIX));
+        return getConfig(config, GATEWAY_METRICS_PREFIX);
     }
 
     @Override
@@ -184,7 +194,8 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getPolicyErrorWriterConfig() {
-        return toFlatStringMap(getConfig(config, GatewayConfigProperties.ERROR_WRITER_CLASS));
+        //return toFlatStringMap(getConfig(config, GatewayConfigProperties.ERROR_WRITER_CLASS));
+        return getConfig(config, GatewayConfigProperties.ERROR_WRITER_CLASS);
     }
 
     @Override
@@ -195,7 +206,8 @@ public class VertxEngineConfig implements IEngineConfig {
 
     @Override
     public Map<String, String> getPolicyFailureWriterConfig() {
-        return toFlatStringMap(getConfig(config, GatewayConfigProperties.FAILURE_WRITER_CLASS));
+        //return toFlatStringMap(getConfig(config, GatewayConfigProperties.FAILURE_WRITER_CLASS));
+        return getConfig(config, GatewayConfigProperties.FAILURE_WRITER_CLASS);
     }
 
     @Override
@@ -206,7 +218,7 @@ public class VertxEngineConfig implements IEngineConfig {
 
         return loadConfigClass(className, componentType, null);
     }
-
+    //     public static final String POLICY_FACTORY_CLASS_RELOAD_SNAPSHOTS = "apiman-gateway.policy-factory.reload-snapshots";
     @Override
     public <T extends IComponent> Map<String, String> getComponentConfig(Class<T> componentType) {
         JsonObject componentConfig = config.getJsonObject(GATEWAY_COMPONENT_PREFIX).
@@ -290,13 +302,9 @@ public class VertxEngineConfig implements IEngineConfig {
 
     protected String getClassname(JsonObject obj, String prefix) {
         String clazzName = System.getProperty(prefix);
-
         // Something of a hack because the constants may assume apiman-gateway prefix, which isn't in the vert.x JSON.
-
         String strippedPrefix = StringUtils.substringAfter(prefix, "apiman-gateway.");
-
         String filteredPrefix = strippedPrefix.isEmpty() ? prefix : strippedPrefix;
-
 
         if (clazzName == null)
             return obj.getJsonObject(filteredPrefix).getString(GATEWAY_CLASS);
@@ -304,8 +312,15 @@ public class VertxEngineConfig implements IEngineConfig {
         return clazzName;
     }
 
-    protected JsonObject getConfig(JsonObject obj, String prefix) {
-        return obj.getJsonObject(prefix).getJsonObject(GATEWAY_CONFIG);
+    protected Map<String, String> getConfig(JsonObject obj, String prefix) {
+        // First, check whether there's something interesting in System properties.
+        Map<String, String> mfp = getConfigMapFromProperties("apiman-gateway." + prefix);
+
+        if (mfp != null && !mfp.isEmpty()) { //
+            System.err.println("Yes, there's something here! " + mfp);
+            return mfp;
+        }
+        return toFlatStringMap(obj.getJsonObject(prefix).getJsonObject(GATEWAY_CONFIG));
     }
 
     /**
@@ -384,5 +399,28 @@ public class VertxEngineConfig implements IEngineConfig {
         return config.getJsonObject(SSL, new JsonObject()).getJsonObject(SSL_TRUSTSTORE, new JsonObject()).getString(API_PASSWORD);
     }
 
+    /**
+     * Gets all properties in the engine configuration that are prefixed
+     * with the given prefix.
+     * @param prefix the prefix
+     * @return all prefixed properties
+     */
+    private Map<String, String> getConfigMapFromProperties(String prefix) {
+        Map<String, String> rval = new HashMap<>();
+        getKeys(prefix).forEach(pair -> {
+            if (!pair.getKey().equals(prefix)) {
+                String shortKey = pair.getKey().substring(prefix.length() + 1);
+                rval.put(shortKey, pair.getValue());
+            }
+        });
+        return rval;
+    }
+
+    private List<Entry<String, String>> getKeys(String prefix) {
+        return System.getProperties().entrySet().stream()
+                .map(pair -> new AbstractMap.SimpleEntry<>(String.valueOf(pair.getKey()), String.valueOf(pair.getValue())))
+                .filter(pair -> StringUtils.startsWith(pair.getKey(), prefix))
+                .collect(Collectors.toList());
+    }
 
 }

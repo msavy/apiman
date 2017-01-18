@@ -221,9 +221,9 @@ public class JsonCompare {
                     }
 
                     if (!expected.equals("*")) {
-//                        Assert.assertEquals(
-//                                message("Value mismatch for text field \"{0}\".", expectedFieldName),
-//                                expected, actual);
+                        Assert.assertEquals(
+                                message("Value mismatch for text field \"{0}\".", expectedFieldName),
+                                expected, actual);
                     }
                 } else if (expectedValue.isNumber()) {
                     NumericNode numeric = (NumericNode) expectedValue;

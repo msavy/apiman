@@ -37,6 +37,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.Difference;
 import org.custommonkey.xmlunit.DifferenceListener;
@@ -140,8 +141,9 @@ public class TestPlanRunner {
         } catch (URISyntaxException e) {
             throw new RuntimeException("Invalid URI", e);
         }
-        String rawType = restTest.getRequestHeaders().get("Content-Type") != null ? restTest.getRequestHeaders().get("Content-Type")
-                : "text/plain; charset=UTF-8";
+
+        String existingType = restTest.getRequestHeaders().get("Content-Type");
+        String rawType = existingType != null ? StringUtils.appendIfMissing(existingType, "; charset=UTF-8") : "text/plain; charset=UTF-8";
 
         log("Sending HTTP request to: " + uri);
 
@@ -167,7 +169,6 @@ public class TestPlanRunner {
             // Set up basic auth
             String authorization = createBasicAuthorization(restTest.getUsername(), restTest.getPassword());
             if (authorization != null) {
-                System.out.println("Set auth header");
                 request = request.header("Authorization", authorization);
             }
 
@@ -209,7 +210,7 @@ public class TestPlanRunner {
      * @param restTest
      * @param response
      */
-    private void assertResponse(RestTest restTest, com.jcabi.http.Response response) {
+    private void assertResponse(RestTest restTest, Response response) {
         int actualStatusCode = response.status();
         try {
             Assert.assertEquals("Unexpected REST response status code.  Status message: " + response.reason(), restTest.getExpectedStatusCode(),
