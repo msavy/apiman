@@ -5,6 +5,17 @@
     }
   },
 
+//  "writers": {
+//    "error": {
+//      "class": "io.apiman.gateway.engine.impl.TracePolicyErrorWriter",
+//      "config": {}
+//    },
+//    "policy-failure": {
+//      "class": "",
+//      "config": {}
+//    }
+//  },
+
   "encrypter": {
     "class": "io.apiman.gateway.engine.impl.DefaultDataEncrypter",
     "config": {}
