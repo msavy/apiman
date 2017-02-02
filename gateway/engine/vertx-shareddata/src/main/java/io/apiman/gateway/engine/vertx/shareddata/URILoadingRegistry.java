@@ -165,6 +165,8 @@ public class URILoadingRegistry extends InMemoryRegistry {
             JsonObject json = new JsonObject();
             clients = Json.decodeValue(json.getJsonObject("clients").encode(), List.class, Client.class);
             apis = Json.decodeValue(json.getJsonObject("apis").encode(), List.class, Api.class);
+            dataProcessed = true;
+            checkQueue();
         }
 
         public synchronized void subscribe(URILoadingRegistry urlLoadingRegistry, IAsyncResultHandler<Void> failureHandler) {
