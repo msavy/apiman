@@ -140,13 +140,6 @@ public class URILoadingRegistry extends InMemoryRegistry {
             });
         }
 
-        private void failAll(Throwable cause) {
-            AsyncResultImpl<Void> failure = AsyncResultImpl.create(cause);
-            failureHandlers.stream().forEach(failureHandler -> {
-                vertx.runOnContext(run -> failureHandler.handle(failure));
-            });
-        }
-
         private void fetchHttp(boolean isHttps) {
             vertx.createHttpClient(new HttpClientOptions().setSsl(isHttps))
                 .get(uri.getPort(), uri.getHost(), uri.getPath(), clientResponse -> {
@@ -210,6 +203,13 @@ public class URILoadingRegistry extends InMemoryRegistry {
                     throw new RuntimeException(result.getError());
                 }
             };
+        }
+
+        private void failAll(Throwable cause) {
+            AsyncResultImpl<Void> failure = AsyncResultImpl.create(cause);
+            failureHandlers.stream().forEach(failureHandler -> {
+                vertx.runOnContext(run -> failureHandler.handle(failure));
+            });
         }
     }
 
