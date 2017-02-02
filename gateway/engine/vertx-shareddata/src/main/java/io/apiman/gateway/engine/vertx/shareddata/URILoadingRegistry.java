@@ -22,14 +22,15 @@ import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.beans.Api;
 import io.apiman.gateway.engine.beans.Client;
 import io.apiman.gateway.engine.impl.InMemoryRegistry;
+import io.apiman.gateway.platforms.vertx3.common.verticles.Json;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.impl.Arguments;
+import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class URILoadingRegistry extends InMemoryRegistry {
     // Protected by DCL, use #getUriLoader
     private static volatile OneShotURILoader instance;
 
+    // TODO: Authentication for HTTP(S).
     public URILoadingRegistry(Vertx vertx, IEngineConfig vxConfig, Map<String, String> options) {
         super();
         this.vertx = vertx;
@@ -101,8 +103,8 @@ public class URILoadingRegistry extends InMemoryRegistry {
         private URI uri;
         private IAsyncResultHandler<Void> failureHandler;
         private Buffer rawData;
-        private List<Client> clients = new ArrayList<>();
-        private List<Api> apis = new ArrayList<>();
+        private List<Client> clients;
+        private List<Api> apis;
 
         public OneShotURILoader(Vertx vertx, URI uri) {
             this.vertx = vertx;
@@ -157,15 +159,19 @@ public class URILoadingRegistry extends InMemoryRegistry {
 
         }
 
+        @SuppressWarnings("unchecked")
         private void processData() {
-            // TODO
+            // TODO more robust checking and handling.
+            JsonObject json = new JsonObject();
+            clients = Json.decodeValue(json.getJsonObject("clients").encode(), List.class, Client.class);
+            apis = Json.decodeValue(json.getJsonObject("apis").encode(), List.class, Api.class);
         }
 
         public synchronized void subscribe(URILoadingRegistry urlLoadingRegistry, IAsyncResultHandler<Void> failureHandler) {
             Objects.requireNonNull(urlLoadingRegistry, "no null registry allowed.");
             this.failureHandler = failureHandler;
             awaiting.add(urlLoadingRegistry);
-            checkQueue();
+            vertx.runOnContext(action -> checkQueue());
         }
 
         private void checkQueue() {
@@ -175,17 +181,18 @@ public class URILoadingRegistry extends InMemoryRegistry {
         }
 
         private void loadDataIntoRegistries() {
-            for (URILoadingRegistry reg : awaiting) {
+            URILoadingRegistry reg = null;
+            while ((reg = awaiting.poll()) != null) {
                 for (Api api : apis) {
-                    reg.publishApiInternal(api, percolateFailures());
+                    reg.publishApiInternal(api, handleAnyFailure());
                 }
                 for (Client client : clients) {
-                    reg.registerClientInternal(client, percolateFailures());
+                    reg.registerClientInternal(client, handleAnyFailure());
                 }
             }
         }
 
-        private IAsyncResultHandler<Void> percolateFailures() {
+        private IAsyncResultHandler<Void> handleAnyFailure() {
             return result -> {
                 if (result.isError()) {
                     failureHandler.handle(AsyncResultImpl.create(result.getError()));
