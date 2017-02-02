@@ -31,6 +31,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
@@ -99,10 +100,10 @@ public class URILoadingRegistry extends InMemoryRegistry {
     private static final class OneShotURILoader {
         private Vertx vertx;
         private Deque<URILoadingRegistry> awaiting = new ArrayDeque<>();
-        private boolean dataProcessed = false;
+        private List<IAsyncResultHandler<Void>> failureHandlers = new ArrayList<>();
         private URI uri;
-        private IAsyncResultHandler<Void> failureHandler;
         private Buffer rawData;
+        private boolean dataProcessed = false;
         private List<Client> clients;
         private List<Api> apis;
 
@@ -134,8 +135,15 @@ public class URILoadingRegistry extends InMemoryRegistry {
                     rawData = result.result();
                     processData();
                 } else {
-                    failureHandler.handle(AsyncResultImpl.create(result.cause()));
+                    failAll(result.cause());
                 }
+            });
+        }
+
+        private void failAll(Throwable cause) {
+            AsyncResultImpl<Void> failure = AsyncResultImpl.create(cause);
+            failureHandlers.stream().forEach(failureHandler -> {
+                vertx.runOnContext(run -> failureHandler.handle(failure));
             });
         }
 
@@ -151,11 +159,11 @@ public class URILoadingRegistry extends InMemoryRegistry {
                             }
                         })
                         .endHandler(end -> processData())
-                        .exceptionHandler(exception -> failureHandler.handle(AsyncResultImpl.create(exception)));
+                        .exceptionHandler(this::failAll);
                     } else { // TODO Handle bad response code.
 
                     }
-                }).exceptionHandler(exception -> failureHandler.handle(AsyncResultImpl.create(exception)));
+                }).exceptionHandler(this::failAll);
 
         }
 
@@ -169,10 +177,11 @@ public class URILoadingRegistry extends InMemoryRegistry {
             checkQueue();
         }
 
-        public synchronized void subscribe(URILoadingRegistry urlLoadingRegistry, IAsyncResultHandler<Void> failureHandler) {
-            Objects.requireNonNull(urlLoadingRegistry, "no null registry allowed.");
-            this.failureHandler = failureHandler;
-            awaiting.add(urlLoadingRegistry);
+        public synchronized void subscribe(URILoadingRegistry registry, IAsyncResultHandler<Void> failureHandler) {
+            Objects.requireNonNull(registry, "registry must be non-null.");
+            Objects.requireNonNull(failureHandler, "failure handler must be non-null.");
+            failureHandlers.add(failureHandler);
+            awaiting.add(registry);
             vertx.runOnContext(action -> checkQueue());
         }
 
@@ -197,7 +206,7 @@ public class URILoadingRegistry extends InMemoryRegistry {
         private IAsyncResultHandler<Void> handleAnyFailure() {
             return result -> {
                 if (result.isError()) {
-                    failureHandler.handle(AsyncResultImpl.create(result.getError()));
+                    failAll(result.getError());
                     throw new RuntimeException(result.getError());
                 }
             };
