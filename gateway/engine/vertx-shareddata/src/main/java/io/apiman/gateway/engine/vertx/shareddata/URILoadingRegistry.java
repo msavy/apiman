@@ -51,7 +51,12 @@ public class URILoadingRegistry extends InMemoryRegistry {
         super();
         Arguments.require(options.containsKey("configUri"), "configUri is required in configuration");
         URI uri = URI.create(options.get("configUri"));
-        getURILoader(vertx, uri).subscribe(this, result -> {});
+        getURILoader(vertx, uri).subscribe(this, result -> {
+            // For now just throw any exception as it should successfully propagate at this phase
+            // In future we should add an initialise method with a result handler (e.g. via interface).
+            if (result.isError())
+                throw new RuntimeException(result.getError());
+        });
     }
 
 //    public URILoadingRegistry(IEngineConfig vxConfig, Map<String, String> options) {
