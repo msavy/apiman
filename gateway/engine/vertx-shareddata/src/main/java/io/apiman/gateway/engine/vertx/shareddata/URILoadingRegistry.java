@@ -48,11 +48,14 @@ public class URILoadingRegistry extends InMemoryRegistry {
     // TODO: Authentication for HTTP(S).
     public URILoadingRegistry(Vertx vertx, IEngineConfig vxConfig, Map<String, String> options) {
         super();
-
         Arguments.require(options.containsKey("configUri"), "configUri is required in configuration");
         URI uri = URI.create(options.get("configUri"));
         getURILoader(vertx, uri).subscribe(this, result -> {});
     }
+
+//    public URILoadingRegistry(IEngineConfig vxConfig, Map<String, String> options) {
+//        this(Vertx.vertx(), vxConfig, options);
+//    }
 
     private OneShotURILoader getURILoader(Vertx vertx, URI uri) {
         if (instance == null) {
@@ -159,7 +162,7 @@ public class URILoadingRegistry extends InMemoryRegistry {
         @SuppressWarnings("unchecked")
         private void processData() {
             // TODO more robust checking and handling.
-            JsonObject json = new JsonObject();
+            JsonObject json = rawData.toJsonObject();
             clients = Json.decodeValue(json.getJsonObject("clients").encode(), List.class, Client.class);
             apis = Json.decodeValue(json.getJsonObject("apis").encode(), List.class, Api.class);
             dataProcessed = true;
