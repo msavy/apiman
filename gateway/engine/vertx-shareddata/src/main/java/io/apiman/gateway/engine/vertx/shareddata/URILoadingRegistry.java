@@ -27,6 +27,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.impl.Arguments;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
@@ -152,8 +153,9 @@ public class URILoadingRegistry extends InMemoryRegistry {
                         })
                         .endHandler(end -> processData())
                         .exceptionHandler(this::failAll);
-                    } else { // TODO Handle bad response code.
-
+                    } else {
+                        failAll(new BadResponseCodeError("Unexpected response code when trying to retrieve config: "
+                                + clientResponse.statusCode()));
                     }
                 }).exceptionHandler(this::failAll);
 
@@ -162,11 +164,21 @@ public class URILoadingRegistry extends InMemoryRegistry {
         @SuppressWarnings("unchecked")
         private void processData() {
             // TODO more robust checking and handling.
-            JsonObject json = rawData.toJsonObject();
-            clients = Json.decodeValue(json.getJsonObject("clients").encode(), List.class, Client.class);
-            apis = Json.decodeValue(json.getJsonObject("apis").encode(), List.class, Api.class);
-            dataProcessed = true;
-            checkQueue();
+            try {
+                JsonObject json = rawData.toJsonObject();
+                Arguments.require(json.containsKey("clients"), "Must provide array of Clients objects for key 'clients'");
+                Arguments.require(json.getValue("clients") instanceof List, "'clients' must be a list");
+
+                Arguments.require(json.containsKey("apis"), "Must provide array of API objects for key 'apis'");
+                Arguments.require(json.getValue("apis") instanceof List, "'apis' must be a list");
+
+                clients = Json.decodeValue(json.getJsonObject("clients").encode(), List.class, Client.class);
+                apis = Json.decodeValue(json.getJsonObject("apis").encode(), List.class, Api.class);
+                dataProcessed = true;
+                checkQueue();
+            } catch (DecodeException e) {
+                failAll(e);
+            }
         }
 
         public synchronized void subscribe(URILoadingRegistry registry, IAsyncResultHandler<Void> failureHandler) {
