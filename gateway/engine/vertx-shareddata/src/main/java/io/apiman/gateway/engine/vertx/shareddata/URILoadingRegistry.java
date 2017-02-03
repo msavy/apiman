@@ -42,16 +42,12 @@ import java.util.Objects;
 */
 @SuppressWarnings("nls")
 public class URILoadingRegistry extends InMemoryRegistry {
-    Vertx vertx;
-    IEngineConfig vxConfig;
     // Protected by DCL, use #getUriLoader
     private static volatile OneShotURILoader instance;
 
     // TODO: Authentication for HTTP(S).
     public URILoadingRegistry(Vertx vertx, IEngineConfig vxConfig, Map<String, String> options) {
         super();
-        this.vertx = vertx;
-        this.vxConfig = vxConfig;
 
         Arguments.require(options.containsKey("configUri"), "configUri is required in configuration");
         URI uri = URI.create(options.get("configUri"));
