@@ -13,7 +13,7 @@ services:
   - elasticsearch
 
 before_install:
-  - cat "mvnw"
+  - cat './mvnw'
   - sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g' ~/.m2/settings.xml
   - echo 'MAVEN_OPTS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xmx512m"' > ~/.mavenrc
 
