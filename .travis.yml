@@ -19,6 +19,7 @@ addons:
       - xmlstarlet
 
 before_install:
+  - "ls -lah"
   - sed -i.bak -e 's|https://nexus.codehaus.org/snapshots/|https://oss.sonatype.org/content/repositories/codehaus-snapshots/|g' ~/.m2/settings.xml
 
 jdk:
@@ -46,6 +47,6 @@ matrix:
     - env: ACTION='-Dapiman.gateway-test.config=amg-1'
       jdk: oraclejdk8
       
-install: travis_retry mvn clean install -s ~/.travis/settings.xml -Dinvoker.skip -Dmaven.javadoc.skip=true -Dmvn.skip.test=true -DskipTests=true -T1C -B | egrep -v 'Download|\\[exec\\] [[:digit:]]+/[[:digit:]]+|^[[:space:]]*\\[exec\\][[:space:]]*$' ; [ ${PIPESTATUS[0]} == 0 ];
+install: travis_retry mvn clean install -s "$TRAVIS_BUILD_DIR/.travis/settings.xml" -Dinvoker.skip -Dmaven.javadoc.skip=true -Dmvn.skip.test=true -DskipTests=true -T1C -B | egrep -v 'Download|\\[exec\\] [[:digit:]]+/[[:digit:]]+|^[[:space:]]*\\[exec\\][[:space:]]*$' ; [ ${PIPESTATUS[0]} == 0 ];
 
 script: if [[ -v COMMAND ]]; then $COMMAND; else travis_retry mvn test install -s ~/.travis/settings.xml -B -Dmaven.javadoc.skip=true $ACTION | egrep -v 'Download|\\[exec\\] [[:digit:]]+/[[:digit:]]+|^[[:space:]]*\\[exec\\][[:space:]]*$' ; [ ${PIPESTATUS[0]} == 0 ]; fi
