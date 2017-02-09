@@ -140,8 +140,8 @@ public class ApiToFileRegistry extends InMemoryRegistry {
                publish(api);
            }
            handler.handle(result);
+           rewrite();
         });
-        rewrite();
     }
 
     @Override
@@ -151,8 +151,8 @@ public class ApiToFileRegistry extends InMemoryRegistry {
                 retire(api);
             }
             handler.handle(result);
+            rewrite();
          });
-        rewrite();
     }
 
     @Override
@@ -162,8 +162,8 @@ public class ApiToFileRegistry extends InMemoryRegistry {
                 register(client);
             }
             handler.handle(result);
+            rewrite();
          });
-        rewrite();
     }
 
     @Override
@@ -173,8 +173,8 @@ public class ApiToFileRegistry extends InMemoryRegistry {
                 unregister(client);
             }
             handler.handle(result);
+            rewrite();
          });
-        rewrite();
     }
 
     @Override
