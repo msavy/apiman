@@ -108,8 +108,8 @@ public class Vertx3GatewayFileRegistryServer implements IGatewayTestServer {
             echoServer.start();
 
             startLatch = new CountDownLatch(1);
-            DeploymentOptions options = new DeploymentOptions();
-            options.setConfig(vertxConf);
+            DeploymentOptions options = new DeploymentOptions().
+                    setConfig(vertxConf);
 
             vertx.deployVerticle(InitVerticle.class.getCanonicalName(),
                     options, event -> {
