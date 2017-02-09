@@ -154,6 +154,7 @@ public class URILoadingRegistry extends InMemoryRegistry implements AsyncInitial
             allRegistries.stream()
                 .map(URILoadingRegistry::getMap)
                 .forEach(Map::clear);
+
             dataProcessed = false;
             // Load again from scratch.
             fetchResource();

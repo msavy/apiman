@@ -122,7 +122,7 @@ public class InMemoryRegistry implements IRegistry {
             handler.handle(AsyncResultImpl.create(e, Void.class));
         }
     }
-    
+
     /**
      * @param client
      * @param silent
@@ -140,7 +140,7 @@ public class InMemoryRegistry implements IRegistry {
             }
         }
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#getClient(java.lang.String, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -161,7 +161,7 @@ public class InMemoryRegistry implements IRegistry {
         }
         return client;
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.IRegistry#getContract(java.lang.String, java.lang.String, java.lang.String, java.lang.String, io.apiman.gateway.engine.async.IAsyncResultHandler)
      */
@@ -170,7 +170,7 @@ public class InMemoryRegistry implements IRegistry {
             IAsyncResultHandler<ApiContract> handler) {
         Client client = null;
         Api api = null;
-        
+
         String apiIdx = getApiIndex(apiOrganizationId, apiId, apiVersion);
         synchronized (mutex) {
             client = (Client) getMap().get(apiKey);
@@ -187,7 +187,7 @@ public class InMemoryRegistry implements IRegistry {
             handler.handle(AsyncResultImpl.create(error, ApiContract.class));
             return;
         }
-        
+
         Contract matchedContract = null;
         for (Contract contract : client.getContracts()) {
             if (contract.matches(apiOrganizationId, apiId, apiVersion)) {
@@ -195,14 +195,14 @@ public class InMemoryRegistry implements IRegistry {
                 break;
             }
         }
-        
+
         if (matchedContract == null) {
             Exception error = new InvalidContractException(Messages.i18n.format("InMemoryRegistry.NoContractFound", //$NON-NLS-1$
                     client.getClientId(), api.getApiId()));
             handler.handle(AsyncResultImpl.create(error, ApiContract.class));
             return;
         }
-        
+
         ApiContract contract = new ApiContract(api, client, matchedContract.getPlan(), matchedContract.getPolicies());
         handler.handle(AsyncResultImpl.create(contract));
     }
@@ -268,7 +268,7 @@ public class InMemoryRegistry implements IRegistry {
     /**
      * @return the map to use when storing stuff
      */
-    protected Map<String, Object> getMap() {
+    public Map<String, Object> getMap() {
         return map;
     }
 
