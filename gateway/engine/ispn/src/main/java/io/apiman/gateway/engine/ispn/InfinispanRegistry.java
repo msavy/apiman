@@ -35,16 +35,16 @@ import org.infinispan.manager.CacheContainer;
  * @author eric.wittmann@redhat.com
  */
 public class InfinispanRegistry extends InMemoryRegistry {
-    
+
     private static final String DEFAULT_CACHE_CONTAINER = "java:jboss/infinispan/apiman"; //$NON-NLS-1$
     private static final String DEFAULT_CACHE = "registry"; //$NON-NLS-1$
-    
+
     private String cacheContainer;
     private String cacheName;
-    
+
     private Cache<Object, Object> cache;
     private Map<String, Object> cacheWrapper;
-    
+
     /**
      * Constructor.
      * @param config
@@ -52,7 +52,7 @@ public class InfinispanRegistry extends InMemoryRegistry {
     public InfinispanRegistry(Map<String, String> config) {
         cacheContainer = config.get("cache.container"); //$NON-NLS-1$
         cacheName = config.get("cache.name"); //$NON-NLS-1$
-        
+
         if (StringUtils.isEmpty(cacheContainer)) {
             cacheContainer = DEFAULT_CACHE_CONTAINER;
         }
@@ -60,12 +60,12 @@ public class InfinispanRegistry extends InMemoryRegistry {
             cacheName = DEFAULT_CACHE;
         }
     }
-    
+
     /**
      * @see io.apiman.gateway.engine.impl.InMemoryRegistry#getMap()
      */
     @Override
-    protected Map<String, Object> getMap() {
+    public Map<String, Object> getMap() {
         if (cacheWrapper == null) {
             cacheWrapper = new RegistryCacheMapWrapper(getCache());
         }
@@ -79,7 +79,7 @@ public class InfinispanRegistry extends InMemoryRegistry {
         if (cache != null) {
             return cache;
         }
-        
+
         try {
             InitialContext ic = new InitialContext();
             CacheContainer container = (CacheContainer) ic.lookup(cacheContainer);
