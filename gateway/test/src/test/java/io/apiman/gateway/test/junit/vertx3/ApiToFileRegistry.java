@@ -85,7 +85,7 @@ public class ApiToFileRegistry extends InMemoryRegistry {
     }
 
     public void reset() {
-        //fileSystem.deleteBlocking(file.getAbsolutePath());
+        fileSystem.writeFileBlocking(file.getAbsolutePath(), Buffer.buffer(""));
         super.getMap().clear();
         apis.clear();
         clients.clear();
@@ -180,19 +180,19 @@ public class ApiToFileRegistry extends InMemoryRegistry {
     @Override
     public void getApi(String organizationId, String apiId, String apiVersion, IAsyncResultHandler<Api> handler) {
         super.getApi(organizationId, apiId, apiVersion, handler);
-        rewrite();
+        //rewrite();
     }
 
     @Override
     public void getClient(String apiKey, IAsyncResultHandler<Client> handler) {
         super.getClient(apiKey, handler);
-        rewrite();
+        //rewrite();
     }
 
     @Override
     public void getContract(String apiOrganizationId, String apiId, String apiVersion, String apiKey, IAsyncResultHandler<ApiContract> handler) {
         super.getContract(apiOrganizationId, apiId, apiVersion, apiKey, handler);
-        rewrite();
+        //rewrite();
     }
 
 }
