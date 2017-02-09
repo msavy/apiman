@@ -191,7 +191,7 @@ public class URILoadingRegistry extends InMemoryRegistry implements AsyncInitial
             }
             try {
                 JsonObject json = new JsonObject(rawData.toString("UTF-8").trim());
-                log.trace("Processing JSON: {0}", json);
+                log.info("Processing JSON: {0}", json);
                 clients = requireJsonArray("clients", json, Client.class);
                 apis = requireJsonArray("apis", json, Api.class);
                 dataProcessed = true;
@@ -231,14 +231,14 @@ public class URILoadingRegistry extends InMemoryRegistry implements AsyncInitial
         private void loadDataIntoRegistries() {
             URILoadingRegistry reg = null;
             while ((reg = awaiting.poll()) != null) {
-                log.debug("Loading data into registry {0}:", reg);
+                log.info("Loading data into registry {0}:", reg);
                 for (Api api : apis) {
                     reg.publishApiInternal(api, handleAnyFailure());
-                    log.debug("Publishing: {0} ", api);
+                    log.info("Publishing: {0} ", api);
                 }
                 for (Client client : clients) {
                     reg.registerClientInternal(client, handleAnyFailure());
-                    log.debug("Registering: {0} ", client);
+                    log.info("Registering: {0} ", client);
                 }
             }
             if (reloadHandler != null)
