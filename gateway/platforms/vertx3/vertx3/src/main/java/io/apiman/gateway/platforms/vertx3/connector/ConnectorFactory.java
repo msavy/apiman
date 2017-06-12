@@ -65,8 +65,7 @@ public class ConnectorFactory implements IConnectorFactory {
                                 .setConnectTimeout(opts.getConnectionTimeout())
                                 .setIdleTimeout(opts.getIdleTimeout())
                                 .setKeepAlive(opts.isKeepAlive())
-                                .setTryUseCompression(opts.isTryUseCompression())
-                                .setSsl(opts.isSsl());
+                                .setTryUseCompression(opts.isTryUseCompression());
                         return vertx.createHttpClient(vxClientOptions);
                     }
                 });
