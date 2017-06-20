@@ -28,6 +28,7 @@ public class Auth3ScaleBean {
     private String defaultOrg;
     private String defaultVersion;
     private RateLimitingStrategy rateLimitingStrategy = RateLimitingStrategy.STANDARD;
+    private String backendEndpoint;
 
     public ProxyConfigRoot getThreescaleConfig() {
         return threescaleConfig;
@@ -62,6 +63,15 @@ public class Auth3ScaleBean {
 
     public Auth3ScaleBean setRateLimitingStrategy(RateLimitingStrategy rateLimitingStrategy) {
         this.rateLimitingStrategy = rateLimitingStrategy;
+        return this;
+    }
+
+    public String getBackendEndpoint() {
+        return backendEndpoint;
+    }
+
+    public Auth3ScaleBean setBackendEndpoint(String backendEndpoint) {
+        this.backendEndpoint = backendEndpoint;
         return this;
     }
 }
