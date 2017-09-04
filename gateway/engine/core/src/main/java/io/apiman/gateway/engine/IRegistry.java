@@ -23,6 +23,8 @@ import io.apiman.gateway.engine.beans.exceptions.InvalidContractException;
 import io.apiman.gateway.engine.beans.exceptions.PublishingException;
 import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
 
+import java.util.List;
+
 /**
  * A registry that maintains a collection of APIs and Contracts that have
  * been published to the API Management runtime engine. This registry provides a
@@ -93,4 +95,6 @@ public interface IRegistry {
      */
     public void getContract(String apiOrganizationId, String apiId, String apiVersion, String apiKey, IAsyncResultHandler<ApiContract> handler);
 
+    // New list methods (for headless, CLI, etc).
+    public void listApis(String organizationId, int page, int pageSize, IAsyncResultHandler<List<Api>> handler);
 }

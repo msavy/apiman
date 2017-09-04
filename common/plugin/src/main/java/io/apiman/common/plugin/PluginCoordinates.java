@@ -20,7 +20,7 @@ import java.io.Serializable;
 /**
  * A simple bean that models unique plugin coordinates.  A plugin is uniquely identified
  * by its Maven properties:
- * 
+ *
  * groupId
  * artifactId
  * version
@@ -30,15 +30,15 @@ import java.io.Serializable;
  * @author eric.wittmann@redhat.com
  */
 public class PluginCoordinates implements Serializable {
-    
+
     private static final long serialVersionUID = -1368521324833902631L;
-    
+
     private String groupId;
     private String artifactId;
     private String version;
     private String classifier;
     private String type = "war"; //$NON-NLS-1$
-    
+
     /**
      * Constructor.
      */
@@ -48,7 +48,7 @@ public class PluginCoordinates implements Serializable {
     /**
      * Constructor.
      * @param groupId Maven group id
-     * @param artifactId Maven artifact id 
+     * @param artifactId Maven artifact id
      * @param version Maven version
      */
     public PluginCoordinates(String groupId, String artifactId, String version) {
@@ -60,7 +60,7 @@ public class PluginCoordinates implements Serializable {
     /**
      * Constructor.
      * @param groupId  Maven group id
-     * @param artifactId Maven artifact id 
+     * @param artifactId Maven artifact id
      * @param version Maven version
      * @param classifier Maven classifier
      * @param type Maven type
@@ -199,7 +199,7 @@ public class PluginCoordinates implements Serializable {
             return false;
         return true;
     }
-    
+
     /**
      * @see java.lang.Object#toString()
      */
@@ -223,13 +223,13 @@ public class PluginCoordinates implements Serializable {
 
         return builder.toString();
     }
-    
+
     /**
      * Returns the plugin coordinates associated with the given plugin policy specification.  The format
      * of a plugin policy specification is:
-     * 
+     *
      * plugin:groupId:artifactId:version[:classifier][:type]/org.example.plugins.PluginImpl
-     * 
+     *
      * @param pluginPolicySpec the policy specification
      * @return plugin coordinates
      */
@@ -239,7 +239,7 @@ public class PluginCoordinates implements Serializable {
         }
         int startIdx = 7;
         int endIdx = pluginPolicySpec.indexOf('/');
-        
+
         String [] split = pluginPolicySpec.substring(startIdx, endIdx).split(":"); //$NON-NLS-1$
         String groupId = split[0];
         String artifactId = split[1];
@@ -253,8 +253,7 @@ public class PluginCoordinates implements Serializable {
             classifier = split[3];
             type = split[4];
         }
-        PluginCoordinates rval = new PluginCoordinates(groupId, artifactId, version, classifier, type);
-        return rval;
+        return new PluginCoordinates(groupId, artifactId, version, classifier, type);
     }
 
 }

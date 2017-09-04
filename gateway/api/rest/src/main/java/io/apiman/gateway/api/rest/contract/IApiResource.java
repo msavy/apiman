@@ -21,6 +21,7 @@ import io.apiman.gateway.engine.beans.Api;
 import io.apiman.gateway.engine.beans.ApiEndpoint;
 import io.apiman.gateway.engine.beans.exceptions.PublishingException;
 import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
+import io.swagger.annotations.ResponseHeader;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -29,7 +30,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * The API API.  Ha!
@@ -47,13 +50,35 @@ public interface IApiResource {
     @DELETE
     @Path("{organizationId}/{apiId}/{version}")
     public void retire(@PathParam("organizationId") String organizationId,
-            @PathParam("apiId") String apiId, @PathParam("version") String version)
+                       @PathParam("apiId") String apiId, @PathParam("version") String version)
             throws RegistrationException, NotAuthorizedException;
 
     @GET
     @Path("{organizationId}/{apiId}/{version}/endpoint")
     @Produces(MediaType.APPLICATION_JSON)
     public ApiEndpoint getApiEndpoint(@PathParam("organizationId") String organizationId,
-            @PathParam("apiId") String apiId, @PathParam("version") String version)
+                                      @PathParam("apiId") String apiId, @PathParam("version") String version)
             throws NotAuthorizedException;
+
+    /**
+     * Paginated list of APIs (see Link header w.r.t rfc5988)
+     *
+     * @return list of APIs
+     * @throws NotAuthorizedException
+     */
+    @GET
+    @Path("{organizationId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Api> listApis(@PathParam("organizationId") String organizationId,
+                              @QueryParam("page") int page,
+                              @QueryParam("pageSize") int pageSize) throws NotAuthorizedException;
+
+
+    // Probably should be simple list of
+    //    @GET
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Async
+//    public List<Api> listApis() throws NotAuthorizedException;
+
+
 }
