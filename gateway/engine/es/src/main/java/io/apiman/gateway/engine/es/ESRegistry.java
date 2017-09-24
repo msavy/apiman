@@ -15,6 +15,7 @@
  */
 package io.apiman.gateway.engine.es;
 
+import io.apiman.common.es.util.ESUtils;
 import io.apiman.gateway.engine.IRegistry;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
@@ -36,11 +37,15 @@ import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchResult;
 import io.searchbox.core.SearchResult.Hit;
+import io.searchbox.core.search.aggregation.MetricAggregation;
+import io.searchbox.core.search.aggregation.TermsAggregation;
 import io.searchbox.params.Parameters;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * An implementation of the Registry that uses elasticsearch as a storage
@@ -203,22 +208,25 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
                 "      \"filter\": {" +
                 "        \"and\" : [" +
                 "          {" +
-                "            \"term\": { \"organizationId\": \"" + orgId + "\" }" +
+                "            \"term\": { \"organizationId\": ? }" + // orgId
                 "          }," +
                 "          {" +
-                "            \"term\": { \"clientId\": \"" + clientId + "\" }" +
+                "            \"term\": { \"clientId\": ? }" + // clientId
                 "          }," +
                 "          {" +
-                "            \"term\": { \"version\": \"" + version + "\" }" +
+                "            \"term\": { \"version\": ? }" + // version
                 "          }" +
                 "        ]" +
                 "      }" +
                 "    }" +
                 "  }" +
                 "}";
+        String escaped = ESUtils.queryWithEscapedArgs(query, orgId, clientId, version);
         try {
-            Search search = new Search.Builder(query).addIndex(getIndexName())
-                    .addType("client").build();
+            Search search = new Search.Builder(escaped)
+                    .addIndex(getIndexName())
+                    .addType("client")
+                    .build();
             SearchResult response = getClient().execute(search);
             if (response.getTotal() < 1) {
                 throw new IOException();
@@ -242,6 +250,17 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
             handler.handle(AsyncResultImpl.create(api));
         } catch (IOException e) {
             handler.handle(AsyncResultImpl.create(e, Api.class));
+        }
+    }
+
+    @Override
+    public void getClient(String organizationId, String clientId, String clientVersion,
+            IAsyncResultHandler<Client> handler) {
+        try {
+            Client client = lookupClient(organizationId, clientId, clientVersion);
+            handler.handle(AsyncResultImpl.create(client));
+        } catch (ClientNotFoundException e) {
+            handler.handle(AsyncResultImpl.create(e, Client.class));
         }
     }
 
@@ -337,6 +356,239 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
 
     }
 
+    @Override
+    public void listClients(String organizationId, int page, int pageSize, IAsyncResultHandler<List<String>> handler) {
+        try {
+            String query =
+                    "{\n" +
+                    "  \"query\": {\n" +
+                    "        \"filtered\": {\n" +
+                    "           \"query\": {\n" +
+                    "                \"match_all\": {}\n" +
+                    "           },\n" +
+                    "           \"filter\": {\n" +
+                    "               \"term\": {\n" +
+                    "                  \"organizationId\": ?\n" + // organizationId
+                    "               }\n" +
+                    "           }\n" +
+                    "        }\n" +
+                    "    },\n" +
+                    "    \"aggs\" : {\n" +
+                    "        \"clients\" : {\n" +
+                    "            \"terms\" : { \"field\" : \"clientId\" }\n" + // Only records with a clientId field
+                    "        }\n" +
+                    "    }\n" +
+                    "}";
+            String escaped = ESUtils.queryWithEscapedArgs(query, organizationId);
+            Search search = new Search.Builder(escaped)
+                    .addIndex(getIndexName())
+                    .setParameter(Parameters.SIZE, 0)
+                    .build();
+            SearchResult response = getClient().execute(search);
+            // Aggregations section
+            MetricAggregation aggregation = response.getAggregations();
+            // Look at the terms subsection
+            TermsAggregation terms = aggregation.getTermsAggregation("clients");
+            // Grab only the name of each aggregation (we don't care about count [for now]).
+            List<String> results = terms.getBuckets().stream()
+                    .map(TermsAggregation.Entry::getKey)
+                    .collect(Collectors.toList());
+            handler.handle(AsyncResultImpl.create(results));
+        } catch (IOException e) {
+            handler.handle(AsyncResultImpl.create(e));
+        }
+    }
+
+    @SuppressWarnings("nls")
+    @Override
+    public void listApis(String organizationId, int page, int pageSize, IAsyncResultHandler<List<String>> handler) {
+        try {
+            String query =
+                    "{\n" +
+                    "  \"query\": {\n" +
+                    "        \"filtered\": {\n" +
+                    "           \"query\": {\n" +
+                    "                \"match_all\": {}\n" +
+                    "           },\n" +
+                    "           \"filter\": {\n" +
+                    "               \"term\": {\n" +
+                    "                  \"organizationId\": ?\n" + // organizationId
+                    "               }\n" +
+                    "           }\n" +
+                    "        }\n" +
+                    "    },\n" +
+                    "    \"aggs\" : {\n" +
+                    "        \"apis\" : {\n" +
+                    "            \"terms\" : { \"field\" : \"apiId\" }\n" + // Show only records containing an API ID field.
+                    "        }\n" +
+                    "    }\n" +
+                    "}";
+            String escaped = ESUtils.queryWithEscapedArgs(query, organizationId);
+            Search search = new Search.Builder(escaped)
+                    .addIndex(getIndexName())
+                    .setParameter(Parameters.SIZE, 0)
+                    .build();
+            SearchResult response = getClient().execute(search);
+            // Aggregations section
+            MetricAggregation aggregation = response.getAggregations();
+            // Look at the terms subsection
+            TermsAggregation terms = aggregation.getTermsAggregation("apis");
+            // Grab only the name of each aggregation (we don't care about count [for now]).
+            List<String> results = terms.getBuckets().stream()
+                    .map(TermsAggregation.Entry::getKey)
+                    .collect(Collectors.toList());
+            handler.handle(AsyncResultImpl.create(results));
+        } catch (IOException e) {
+            handler.handle(AsyncResultImpl.create(e));
+        }
+    }
+
+    @Override
+    @SuppressWarnings("nls")
+    public void listOrgs(IAsyncResultHandler<List<String>> handler) {
+        try {
+            String query =
+                    "{\n" +
+                    "    \"aggs\" : {\n" +
+                    "        \"all_orgs\" : {\n" +
+                    "            \"terms\" : { \"field\" : \"organizationId\" }\n" + // i.e. only records containing an orgId field.
+                    "        }\n" +
+                    "    }\n" +
+                    "}";
+            Search search = new Search.Builder(query)
+                    .addIndex(getIndexName())
+                    .setParameter(Parameters.SIZE, 0)
+                    .build();
+            SearchResult response = getClient().execute(search);
+            // Aggregations section
+            MetricAggregation aggregation = response.getAggregations();
+            // Look at the terms subsection
+            TermsAggregation terms = aggregation.getTermsAggregation("all_orgs");
+            // Grab only the name of each aggregation (we don't care about count
+            List<String> results = terms.getBuckets().stream()
+                    .map(TermsAggregation.Entry::getKey)
+                    .collect(Collectors.toList());
+            handler.handle(AsyncResultImpl.create(results));
+        } catch (IOException e) {
+            handler.handle(AsyncResultImpl.create(e));
+        }
+    }
+
+    @Override
+    @SuppressWarnings("nls")
+    public void listClientVersions(String organizationId, String clientId, int page, int pageSize, IAsyncResultHandler<List<String>> handler) {
+        try {
+            String query =
+                    "{\n" +
+                    "  \"query\": {\n" +
+                    "    \"filtered\": {\n" +
+                    "      \"query\": {\n" +
+                    "        \"match_all\": {}\n" +
+                    "      },\n" +
+                    "      \"filter\": {\n" +
+                    "        \"bool\": {\n" +
+                    "          \"must\": [\n" +
+                    "            {\n" +
+                    "              \"term\": {\n" +
+                    "                \"organizationId\": ? \n" + // organizationId
+                    "              }\n" +
+                    "            },\n" +
+                    "            {\n" +
+                    "              \"term\": {\n" +
+                    "                \"clientId\": ? \n" + // clientId
+                    "              }\n" +
+                    "            }\n" +
+                    "          ]\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  },\n" +
+                    "  \"aggs\": {\n" +
+                    "    \"client_versions\": {\n" +
+                    "      \"terms\": {\n" +
+                    "        \"field\": \"version\"\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}";
+            String escaped = ESUtils.queryWithEscapedArgs(query, organizationId, clientId);
+            Search search = new Search.Builder(escaped)
+                    .addIndex(getIndexName())
+                    .setParameter(Parameters.SIZE, 0)
+                    .build();
+            SearchResult response = getClient().execute(search);
+            // Aggregations section
+            MetricAggregation aggregation = response.getAggregations();
+            // Look at the terms subsection
+            TermsAggregation terms = aggregation.getTermsAggregation("client_versions");
+            // Grab only the name of each aggregation
+            List<String> results = terms.getBuckets().stream()
+                    .map(TermsAggregation.Entry::getKey)
+                    .collect(Collectors.toList());
+            handler.handle(AsyncResultImpl.create(results));
+        } catch (IOException e) {
+            handler.handle(AsyncResultImpl.create(e));
+        }
+    }
+
+    @Override
+    @SuppressWarnings("nls")
+    public void listApiVersions(String organizationId, String apiId, int page, int pageSize,
+                                IAsyncResultHandler<List<String>> handler) {
+        try {
+            String query =
+                    "{\n" +
+                    "  \"query\": {\n" +
+                    "    \"filtered\": {\n" +
+                    "      \"query\": {\n" +
+                    "        \"match_all\": {}\n" +
+                    "      },\n" +
+                    "      \"filter\": {\n" +
+                    "        \"bool\": {\n" +
+                    "          \"must\": [\n" +
+                    "            {\n" +
+                    "              \"term\": {\n" +
+                    "                \"organizationId\": ? \n" + // organizationId
+                    "              }\n" +
+                    "            },\n" +
+                    "            {\n" +
+                    "              \"term\": {\n" +
+                    "                \"apiId\": ? \n" + // apiId
+                    "              }\n" +
+                    "            }\n" +
+                    "          ]\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  },\n" +
+                    "  \"aggs\": {\n" +
+                    "    \"api_versions\": {\n" +
+                    "      \"terms\": {\n" +
+                    "        \"field\": \"version\"\n" +
+                    "      }\n" +
+                    "    }\n" +
+                    "  }\n" +
+                    "}";
+            String escaped = ESUtils.queryWithEscapedArgs(query, organizationId, apiId);
+            Search search = new Search.Builder(escaped)
+                    .addIndex(getIndexName())
+                    .setParameter(Parameters.SIZE, 0)
+                    .build();
+            SearchResult response = getClient().execute(search);
+            // Aggregations section
+            MetricAggregation aggregation = response.getAggregations();
+            // Look at the terms subsection
+            TermsAggregation terms = aggregation.getTermsAggregation("api_versions");
+            // Grab only the name of each aggregation
+            List<String> results = terms.getBuckets().stream()
+                    .map(TermsAggregation.Entry::getKey)
+                    .collect(Collectors.toList());
+            handler.handle(AsyncResultImpl.create(results));
+        } catch (IOException e) {
+            handler.handle(AsyncResultImpl.create(e));
+        }
+    }
+
     /**
      * Generates a valid document ID for a api, used to index the api in ES.
      * @param api an api
@@ -363,7 +615,7 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
      * @return a api id
      */
     protected String getApiId(String orgId, String apiId, String version) {
-        return orgId + ":" + apiId + ":" + version; //$NON-NLS-1$ //$NON-NLS-2$
+        return ESUtils.escape(orgId + ":" + apiId + ":" + version); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**

@@ -35,6 +35,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
+import javax.ws.rs.container.AsyncResponse;
+
 /**
  * API Resource route builder
  *
@@ -72,14 +74,6 @@ public class ApiResourceImpl implements IApiResource, IRouteBuilder {
         registry.publishApi(api, (IAsyncResultHandler<Void>) result -> {
             if (result.isError()) {
                 error(routingContext, result.getError());
-//                Throwable e = result.getError();
-//                if (e instanceof PublishingException) {
-//                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-//                } else if (e instanceof NotAuthorizedException) {
-//                    error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
-//                } else {
-//                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-//                }
             } else {
                 end(routingContext, HttpResponseStatus.NO_CONTENT);
             }
@@ -90,7 +84,6 @@ public class ApiResourceImpl implements IApiResource, IRouteBuilder {
       try {
           publish(Json.decodeValue(routingContext.getBodyAsString(), Api.class));
       } catch (Exception e) {
-//          error(routingContext, HttpResponseStatus.BAD_REQUEST, e.getMessage(), e);
           error(routingContext, e);
       }
     }
@@ -106,14 +99,6 @@ public class ApiResourceImpl implements IApiResource, IRouteBuilder {
         registry.retireApi(api, (IAsyncResultHandler<Void>) result -> {
             if (result.isError()) {
                 error(routingContext, result.getError());
-//                Throwable e = result.getError();
-//                if (e instanceof RegistrationException) {
-//                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-//                } else if (e instanceof NotAuthorizedException) {
-//                    error(routingContext, HttpResponseStatus.UNAUTHORIZED, e.getMessage(), e);
-//                } else {
-//                    error(routingContext, HttpResponseStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
-//                }
             } else {
                 end(routingContext, HttpResponseStatus.NO_CONTENT);
             }
@@ -127,6 +112,41 @@ public class ApiResourceImpl implements IApiResource, IRouteBuilder {
 
         retire(orgId, apiId, ver);
     }
+
+
+    @Override
+    public void listApis(String organizationId, int page, int pageSize, AsyncResponse response) throws NotAuthorizedException {
+        registry.listApis(organizationId, page, pageSize, result -> {
+            if (result.isError()) {
+                error(routingContext, result.getError());
+            } else {
+                writeBody(routingContext, Json.encode(result.getResult()));
+                end(routingContext, HttpResponseStatus.OK);
+            }
+        });
+    }
+
+    @Override
+    public void retire(String organizationId, String apiId, String version, AsyncResponse response)
+            throws RegistrationException, NotAuthorizedException {
+        retire(organizationId, apiId, version);
+    }
+
+    @Override
+    public void listApiVersions(String organizationId, String apiId, int page, int pageSize, AsyncResponse response) throws NotAuthorizedException {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void getApiVersion(String organizationId, String apiId, String version, AsyncResponse response) throws NotAuthorizedException {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void getApiEndpoint(String organizationId, String apiId, String version, AsyncResponse response) throws NotAuthorizedException {
+        // Don't need to
+    }
+
 
     @Override
     public ApiEndpoint getApiEndpoint(String organizationId, String apiId, String version)
@@ -199,4 +219,5 @@ public class ApiResourceImpl implements IApiResource, IRouteBuilder {
     public String getPath() {
         return "apis";
     }
+
 }

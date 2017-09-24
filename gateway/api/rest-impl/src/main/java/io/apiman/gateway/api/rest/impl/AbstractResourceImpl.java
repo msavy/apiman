@@ -23,26 +23,29 @@ import io.apiman.gateway.engine.beans.exceptions.AbstractEngineException;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.core.Response;
+
 /**
  * Base class for all resource implementation classes.
  *
  * @author eric.wittmann@redhat.com
  */
 public abstract class AbstractResourceImpl {
-    
+
     /**
      * Constructor.
      */
     public AbstractResourceImpl() {
     }
-    
+
     /**
      * @return the api management runtime engine
      */
     protected IEngine getEngine() {
         return ServiceRegistryUtil.getSingleService(IEngineAccessor.class).getEngine();
     }
-    
+
     /**
      * @return the current platform
      */
@@ -74,5 +77,34 @@ public abstract class AbstractResourceImpl {
             }
         }
     }
+
+    protected <T> IAsyncResultHandler<T> handlerWithResult(AsyncResponse response) {
+        return result -> {
+            if (result.isSuccess()) {
+                response.resume(Response.ok(result.getResult()).build());
+            } else {
+                if (result.getError() instanceof RuntimeException) {
+                    throw (RuntimeException) result.getError();
+                } else {
+                    throw new RuntimeException(result.getError());
+                }
+            }
+        };
+    }
+
+    protected <T> IAsyncResultHandler<T> handlerWithEmptyResult(AsyncResponse response) {
+        return result -> {
+            if (result.isSuccess()) {
+                response.resume(Response.ok().build());
+            } else {
+                if (result.getError() instanceof RuntimeException) {
+                    throw (RuntimeException) result.getError();
+                } else {
+                    throw new RuntimeException(result.getError());
+                }
+            }
+        };
+    }
+
 
 }

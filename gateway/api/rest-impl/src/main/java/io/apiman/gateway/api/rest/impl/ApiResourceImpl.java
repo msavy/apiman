@@ -23,14 +23,9 @@ import io.apiman.gateway.engine.beans.ApiEndpoint;
 import io.apiman.gateway.engine.beans.exceptions.PublishingException;
 import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.core.Response;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
@@ -84,29 +79,42 @@ public class ApiResourceImpl extends AbstractResourceImpl implements IApiResourc
             throws NotAuthorizedException {
         return getPlatform().getApiEndpoint(organizationId, apiId, version);
     }
-//
-//    @Override
-//    public List<Api> listApis(String organizationId, int index, int maxRecords) throws NotAuthorizedException {
-//        getEngine().getRegistry().listApis(organizationId);
-//    }
+
+    @Override
+    public void retire(String organizationId, String apiId, String version, AsyncResponse response)
+            throws RegistrationException, NotAuthorizedException {
+        Api api = new Api();
+        api.setOrganizationId(organizationId);
+        api.setApiId(apiId);
+        api.setVersion(version);
+        getEngine().getRegistry().retireApi(api, handlerWithEmptyResult(response));
+    }
+
+    @Override
+    public void getApiEndpoint(String organizationId, String apiId, String version, AsyncResponse response)
+            throws NotAuthorizedException {
+        ApiEndpoint apiEndpoint = getPlatform().getApiEndpoint(organizationId, apiId, version);
+        response.resume(Response.ok(apiEndpoint).build());
+    }
 
 
     @Override
-    public List<Api> listApis(String organizationId,
-                              int page,
-                              int pageSize) throws NotAuthorizedException {
-//        final Set<Throwable> errorHolder = new HashSet<>();
-//        final CountDownLatch latch = new CountDownLatch(1);
-//
-//        getEngine().getRegistry().listApis(organizationId, page, pageSize, result -> {
-//            if (result.isError()) {
-//                errorHolder.add(result.getError());
-//            }
-//            latch.countDown();
-//        });
-//
-//        awaitOnLatch(latch, errorHolder);
-//        return result;
+    public void listApis(String organizationId, int page, int pageSize, AsyncResponse response)
+            throws NotAuthorizedException {
+        getEngine().getRegistry().listApis(organizationId, page, pageSize, handlerWithResult(response));
+    }
+
+
+    @Override
+    public void listApiVersions(String organizationId, String apiId, int page, int pageSize, AsyncResponse response)
+            throws NotAuthorizedException {
+        getEngine().getRegistry().listApiVersions(organizationId, apiId, page, pageSize, handlerWithResult(response));
+    }
+
+    @Override
+    public void getApiVersion(String organizationId, String apiId, String version, AsyncResponse response)
+            throws NotAuthorizedException {
+        getEngine().getRegistry().getApi(organizationId, apiId, version, handlerWithResult(response));
     }
 
 }

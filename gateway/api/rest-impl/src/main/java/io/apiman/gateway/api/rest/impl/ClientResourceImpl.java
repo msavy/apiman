@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
+import javax.ws.rs.container.AsyncResponse;
+
 
 /**
  * Implementation of the Client API.
@@ -70,6 +72,32 @@ public class ClientResourceImpl extends AbstractResourceImpl implements IClientR
         // Unregister client; latch until result returned and evaluated
         getEngine().getRegistry().unregisterClient(application, latchedResultHandler(latch, errorHolder));
         awaitOnLatch(latch, errorHolder);
+    }
+
+    @Override
+    public void unregister(String organizationId, String clientId, String version, AsyncResponse response)
+            throws RegistrationException, NotAuthorizedException {
+        Client application = new Client();
+        application.setOrganizationId(organizationId);
+        application.setClientId(clientId);
+        application.setVersion(version);
+        getEngine().getRegistry().unregisterClient(application, handlerWithEmptyResult(response));
+    }
+
+    @Override
+    public void listClients(String organizationId, int page, int pageSize, AsyncResponse response) throws NotAuthorizedException {
+        getEngine().getRegistry().listClients(organizationId, page, pageSize, handlerWithResult(response));
+    }
+
+    @Override
+    public void listClientVersions(String organizationId, String clientId, int page, int pageSize, AsyncResponse response)
+            throws NotAuthorizedException {
+        getEngine().getRegistry().listClientVersions(organizationId, clientId, page, pageSize, handlerWithResult(response));
+    }
+
+    @Override
+    public void getClientVersion(String organizationId, String clientId, String version, AsyncResponse response) throws NotAuthorizedException {
+        getEngine().getRegistry().getClient(organizationId, clientId, version, handlerWithResult(response));
     }
 
 }

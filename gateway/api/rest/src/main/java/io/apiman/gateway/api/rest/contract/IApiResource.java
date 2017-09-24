@@ -21,7 +21,6 @@ import io.apiman.gateway.engine.beans.Api;
 import io.apiman.gateway.engine.beans.ApiEndpoint;
 import io.apiman.gateway.engine.beans.exceptions.PublishingException;
 import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
-import io.swagger.annotations.ResponseHeader;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -31,54 +30,84 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
 
 /**
  * The API API.  Ha!
  *
  * @author eric.wittmann@redhat.com
  */
-@Path("apis")
 @io.swagger.annotations.Api
 public interface IApiResource {
 
+    // Legacy API, plus simple publishing endpoint
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
+    @Path("apis")
     public void publish(Api api) throws PublishingException, NotAuthorizedException;
 
+    /**
+     * @see #retire(String, String, String, AsyncResponse)
+     */
     @DELETE
-    @Path("{organizationId}/{apiId}/{version}")
+    @Path("apis/{organizationId}/{apiId}/{version}")
+    @Deprecated
     public void retire(@PathParam("organizationId") String organizationId,
-                       @PathParam("apiId") String apiId, @PathParam("version") String version)
+                       @PathParam("apiId") String apiId,
+                       @PathParam("version") String version)
             throws RegistrationException, NotAuthorizedException;
 
     @GET
-    @Path("{organizationId}/{apiId}/{version}/endpoint")
+    @Path("apis/{organizationId}/{apiId}/{version}/endpoint")
     @Produces(MediaType.APPLICATION_JSON)
+    @Deprecated
     public ApiEndpoint getApiEndpoint(@PathParam("organizationId") String organizationId,
-                                      @PathParam("apiId") String apiId, @PathParam("version") String version)
+                                      @PathParam("apiId") String apiId,
+                                      @PathParam("version") String version)
             throws NotAuthorizedException;
 
-    /**
-     * Paginated list of APIs (see Link header w.r.t rfc5988)
-     *
-     * @return list of APIs
-     * @throws NotAuthorizedException
-     */
+    // New API
+    @DELETE
+    @Path("organizations/{organizationId}/apis/{apiId}/versions/{version}")
+    public void retire(@PathParam("organizationId") String organizationId,
+                       @PathParam("apiId") String apiId,
+                       @PathParam("version") String version,
+                       @Suspended final AsyncResponse response)
+            throws RegistrationException, NotAuthorizedException;
+
     @GET
-    @Path("{organizationId}")
+    @Path("organizations/{organizationId}/apis/{apiId}/versions/{version}/endpoint")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Api> listApis(@PathParam("organizationId") String organizationId,
+    public void getApiEndpoint(@PathParam("organizationId") String organizationId,
+                                      @PathParam("apiId") String apiId,
+                                      @PathParam("version") String version,
+                                      @Suspended final AsyncResponse response) // ApiEndpoint
+            throws NotAuthorizedException;
+
+    @GET
+    @Path("organizations/{organizationId}/apis/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void listApis(@PathParam("organizationId") String organizationId,
+                         @QueryParam("page") int page,
+                         @QueryParam("pageSize") int pageSize,
+                         @Suspended final AsyncResponse response) throws NotAuthorizedException;
+
+    @GET
+    @Path("organizations/{organizationId}/apis/{apiId}/versions")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void listApiVersions(@PathParam("organizationId") String organizationId,
+                              @PathParam("apiId") String apiId,
                               @QueryParam("page") int page,
-                              @QueryParam("pageSize") int pageSize) throws NotAuthorizedException;
+                              @QueryParam("pageSize") int pageSize,
+                              @Suspended final AsyncResponse response) throws NotAuthorizedException;
 
-
-    // Probably should be simple list of
-    //    @GET
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Async
-//    public List<Api> listApis() throws NotAuthorizedException;
-
-
+    @GET
+    @Path("organizations/{organizationId}/apis/{apiId}/versions/{version}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getApiVersion(@PathParam("organizationId") String organizationId,
+                              @PathParam("apiId") String apiId,
+                              @PathParam("version") String version,
+                              @Suspended final AsyncResponse response) throws NotAuthorizedException;
 }
