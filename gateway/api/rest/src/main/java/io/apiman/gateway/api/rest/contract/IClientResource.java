@@ -39,6 +39,7 @@ import javax.ws.rs.core.MediaType;
  * @author eric.wittmann@redhat.com
  */
 @Api
+@Path("/")
 public interface IClientResource {
 
     @PUT

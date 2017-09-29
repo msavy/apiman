@@ -357,6 +357,7 @@ public class ESRegistry extends AbstractESComponent implements IRegistry {
     }
 
     @Override
+    @SuppressWarnings("nls")
     public void listClients(String organizationId, int page, int pageSize, IAsyncResultHandler<List<String>> handler) {
         try {
             String query =

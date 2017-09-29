@@ -133,9 +133,11 @@ public class SecureRegistryWrapper implements IRegistry {
         delegate.getClient(apiKey, result -> {
             if (result.isSuccess()) {
                 Client client = result.getResult();
-                for (Contract contract : client.getContracts()) {
-                    decryptPolicies(client.getOrganizationId(), client.getClientId(), client.getVersion(),
-                            EntityType.ClientApp, contract.getPolicies());
+                if (client != null) {
+                    for (Contract contract : client.getContracts()) {
+                        decryptPolicies(client.getOrganizationId(), client.getClientId(), client.getVersion(),
+                                EntityType.ClientApp, contract.getPolicies());
+                    }
                 }
             }
             handler.handle(result);
@@ -148,9 +150,11 @@ public class SecureRegistryWrapper implements IRegistry {
         delegate.getClient(organizationId, clientId, clientVersion, result -> {
             if (result.isSuccess()) {
                 Client client = result.getResult();
-                for (Contract contract : client.getContracts()) {
-                    decryptPolicies(client.getOrganizationId(), client.getClientId(), client.getVersion(),
-                            EntityType.ClientApp, contract.getPolicies());
+                if (client != null) {
+                    for (Contract contract : client.getContracts()) {
+                        decryptPolicies(client.getOrganizationId(), client.getClientId(), client.getVersion(),
+                                EntityType.ClientApp, contract.getPolicies());
+                    }
                 }
             }
             handler.handle(result);

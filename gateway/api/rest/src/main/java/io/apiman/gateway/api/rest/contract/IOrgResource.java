@@ -28,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * Org API
  */
-@Path("organizations")
+@Path("/")
 @io.swagger.annotations.Api
 public interface IOrgResource {
 
@@ -42,6 +42,6 @@ public interface IOrgResource {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("organizations")
     public void listOrgs(@Suspended final AsyncResponse response) throws NotAuthorizedException;
-
 }

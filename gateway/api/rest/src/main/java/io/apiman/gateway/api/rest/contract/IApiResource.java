@@ -40,6 +40,7 @@ import javax.ws.rs.core.MediaType;
  * @author eric.wittmann@redhat.com
  */
 @io.swagger.annotations.Api
+@Path("")
 public interface IApiResource {
 
     // Legacy API, plus simple publishing endpoint
