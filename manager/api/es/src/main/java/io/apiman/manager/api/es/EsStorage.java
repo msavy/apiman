@@ -15,6 +15,7 @@
  */
 package io.apiman.manager.api.es;
 
+import io.apiman.common.es.util.ESUtils;
 import io.apiman.common.util.crypt.DataEncryptionContext;
 import io.apiman.common.util.crypt.IDataEncrypter;
 import io.apiman.manager.api.beans.apis.ApiBean;
@@ -572,7 +573,7 @@ public class EsStorage implements IStorage, IStorageQuery {
     @Override
     @SuppressWarnings("nls")
     public void deleteOrganization(OrganizationBean organization) throws StorageException {
-        String orgId = organization.getId().replace('"', '_');
+        String orgId = ESUtils.escape(organization.getId().replace('"', '_'));
         String query = "{\n" +
                 "  \"query\": {\n" +
                 "    \"filtered\": {\n" +
@@ -632,8 +633,8 @@ public class EsStorage implements IStorage, IStorageQuery {
     @Override
     @SuppressWarnings("nls")
     public void deleteClient(ClientBean client) throws StorageException {
-        String clientId = client.getId().replace('"', '_');
-        String orgId = client.getOrganization().getId().replace('"', '_');
+        String clientId = ESUtils.escape(client.getId().replace('"', '_'));
+        String orgId = ESUtils.escape(client.getOrganization().getId().replace('"', '_'));
         String query = "{\n" +
                 "  \"query\": {\n" +
                 "    \"filtered\": {\n" +
@@ -750,8 +751,8 @@ public class EsStorage implements IStorage, IStorageQuery {
     @Override
     @SuppressWarnings("nls")
     public void deleteApi(ApiBean api) throws StorageException {
-        String apiId = api.getId().replace('"', '_');
-        String orgId = api.getOrganization().getId().replace('"', '_');
+        String apiId = ESUtils.escape(api.getId().replace('"', '_'));
+        String orgId = ESUtils.escape(api.getOrganization().getId().replace('"', '_'));
 
         String query = "{\n" +
         "    \"query\": {\n" +
@@ -872,8 +873,8 @@ public class EsStorage implements IStorage, IStorageQuery {
     @Override
     @SuppressWarnings("nls")
     public void deletePlan(PlanBean plan) throws StorageException {
-        String planId = plan.getId().replace('"', '_');
-        String orgId = plan.getOrganization().getId().replace('"', '_');
+        String planId = ESUtils.escape(plan.getId().replace('"', '_'));
+        String orgId = ESUtils.escape(plan.getOrganization().getId().replace('"', '_'));
 
         String query = "{\n" +
                 "  \"query\": {\n" +
@@ -2058,7 +2059,7 @@ public class EsStorage implements IStorage, IStorageQuery {
             @SuppressWarnings("nls")
             QueryBuilder qb = QueryBuilders.filteredQuery(
                     QueryBuilders.matchAllQuery(),
-                    FilterBuilders.termFilter("userId", userId)
+                    FilterBuilders.termFilter("userId", ESUtils.escape(userId))
                 );
             SearchSourceBuilder builder = new SearchSourceBuilder().query(qb).size(500);
             List<Hit<Map<String,Object>,Void>> hits = listEntities("roleMembership", builder); //$NON-NLS-1$
@@ -2317,7 +2318,7 @@ public class EsStorage implements IStorage, IStorageQuery {
      * @param entityId
      */
     private static String id(String organizationId, String entityId) {
-        return organizationId + ":" + entityId; //$NON-NLS-1$
+        return ESUtils.escape(organizationId + ":" + entityId); //$NON-NLS-1$
     }
 
     /**
@@ -2327,7 +2328,7 @@ public class EsStorage implements IStorage, IStorageQuery {
      * @param version
      */
     private static String id(String organizationId, String entityId, String version) {
-        return organizationId + ':' + entityId + ':' + version;
+        return ESUtils.escape(organizationId + ':' + entityId + ':' + version);
     }
 
     @Override
@@ -2392,22 +2393,23 @@ public class EsStorage implements IStorage, IStorageQuery {
                 "      \"filter\": {" +
                 "        \"and\" : [" +
                 "          {" +
-                "            \"term\": { \"organizationId\": \"" + organizationId + "\" }" +
+                "            \"term\": { \"organizationId\": ? }" + // organizationId
                 "          }," +
                 "          {" +
-                "            \"term\": { \"planId\": \"" + planId + "\" }" +
+                "            \"term\": { \"planId\": ? }" + // planId
                 "          }" +
                 "      ]" +
                 "      }" +
                 "    }" +
                 "  }" +
                 "}";
+        String escaped = ESUtils.queryWithEscapedArgs(query, organizationId, planId);
         return getAll("planVersion", new IUnmarshaller<PlanVersionBean>() { //$NON-NLS-1$
             @Override
             public PlanVersionBean unmarshal(Map<String, Object> source) {
                 return EsMarshalling.unmarshallPlanVersion(source);
             }
-        }, query);
+        }, escaped);
     }
 
     /**
@@ -2423,22 +2425,23 @@ public class EsStorage implements IStorage, IStorageQuery {
                 "      \"filter\": {" +
                 "        \"and\" : [" +
                 "          {" +
-                "            \"term\": { \"organizationId\": \"" + organizationId + "\" }" +
+                "            \"term\": { \"organizationId\": ? }" + // organizationId
                 "          }," +
                 "          {" +
-                "            \"term\": { \"apiId\": \"" + apiId + "\" }" +
+                "            \"term\": { \"apiId\": ? }" + // apiId
                 "          }" +
                 "      ]" +
                 "      }" +
                 "    }" +
                 "  }" +
                 "}";
+        String escaped = ESUtils.queryWithEscapedArgs(query, organizationId, apiId);
         return getAll("apiVersion", new IUnmarshaller<ApiVersionBean>() { //$NON-NLS-1$
             @Override
             public ApiVersionBean unmarshal(Map<String, Object> source) {
                 return EsMarshalling.unmarshallApiVersion(source);
             }
-        }, query);
+        }, escaped);
     }
 
     /**
@@ -2454,22 +2457,23 @@ public class EsStorage implements IStorage, IStorageQuery {
                 "      \"filter\": {" +
                 "        \"and\" : [" +
                 "          {" +
-                "            \"term\": { \"organizationId\": \"" + organizationId + "\" }" +
+                "            \"term\": { \"organizationId\": ? }" + // organizationId
                 "          }," +
                 "          {" +
-                "            \"term\": { \"clientId\": \"" + clientId + "\" }" +
+                "            \"term\": { \"clientId\": ? }" + // clientId
                 "          }" +
                 "      ]" +
                 "      }" +
                 "    }" +
                 "  }" +
                 "}";
+        String escaped = ESUtils.queryWithEscapedArgs(query, organizationId, clientId);
         return getAll("clientVersion", new IUnmarshaller<ClientVersionBean>() { //$NON-NLS-1$
             @Override
             public ClientVersionBean unmarshal(Map<String, Object> source) {
                 return EsMarshalling.unmarshallClientVersion(source);
             }
-        }, query);
+        }, escaped);
     }
 
     /**
@@ -2485,19 +2489,20 @@ public class EsStorage implements IStorage, IStorageQuery {
                 "      \"filter\": {" +
                 "        \"and\" : [" +
                 "          {" +
-                "            \"term\": { \"clientOrganizationId\": \"" + organizationId + "\" }" +
+                "            \"term\": { \"clientOrganizationId\": ? }" + // organizationId
                 "          }," +
                 "          {" +
-                "            \"term\": { \"clientId\": \"" + clientId + "\" }" +
+                "            \"term\": { \"clientId\": ? }" + // clientId
                 "          }," +
                 "          {" +
-                "            \"term\": { \"clientVersion\": \"" + version + "\" }" +
+                "            \"term\": { \"clientVersion\": ? }" + // version
                 "          }" +
                 "      ]" +
                 "      }" +
                 "    }" +
                 "  }" +
                 "}";
+        String escaped = ESUtils.queryWithEscapedArgs(query, organizationId, clientId, version);
         return getAll("contract", new IUnmarshaller<ContractBean>() { //$NON-NLS-1$
             @Override
             public ContractBean unmarshal(Map<String, Object> source) {
@@ -2526,7 +2531,7 @@ public class EsStorage implements IStorage, IStorageQuery {
                 contract.setApi(svb);
                 return contract;
             }
-        }, query);
+        }, escaped);
     }
 
     /**
@@ -2802,10 +2807,10 @@ public class EsStorage implements IStorage, IStorageQuery {
                 "      \"filter\": {" +
                 "        \"and\" : [" +
                 "          {" +
-                "            \"term\": { \"organizationId\": \"" + organizationId + "\" }" +
+                "            \"term\": { \"organizationId\": \"" + ESUtils.escape(organizationId) + "\" }" +
                 "          }," +
                 "          {" +
-                "            \"term\": { \"status\": \"" + status + "\" }" +
+                "            \"term\": { \"status\": \"" + ESUtils.escape(status) + "\" }" +
                 "          }" +
                 "      ]" +
                 "      }" +
@@ -2832,7 +2837,7 @@ public class EsStorage implements IStorage, IStorageQuery {
                 "  \"query\": {" +
                 "    \"filtered\": { " +
                 "      \"filter\": {" +
-                "        \"term\": { \"organizationId\": \"" + organizationId + "\" }" +
+                "        \"term\": { \"organizationId\": \"" + ESUtils.escape(organizationId) + "\" }" +
                 "      }" +
                 "    }" +
                 "  }" +
