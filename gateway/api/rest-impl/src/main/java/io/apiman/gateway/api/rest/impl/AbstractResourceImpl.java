@@ -83,11 +83,7 @@ public abstract class AbstractResourceImpl {
             if (result.isSuccess()) {
                 response.resume(Response.ok(result.getResult()).build());
             } else {
-                if (result.getError() instanceof RuntimeException) {
-                    throw (RuntimeException) result.getError();
-                } else {
-                    throw new RuntimeException(result.getError());
-                }
+                throwError(result.getError());
             }
         };
     }
@@ -97,14 +93,16 @@ public abstract class AbstractResourceImpl {
             if (result.isSuccess()) {
                 response.resume(Response.ok().build());
             } else {
-                if (result.getError() instanceof RuntimeException) {
-                    throw (RuntimeException) result.getError();
-                } else {
-                    throw new RuntimeException(result.getError());
-                }
+                throwError(result.getError());
             }
         };
     }
 
-
+    protected void throwError(Throwable error) {
+        if (error instanceof RuntimeException) {
+            throw (RuntimeException) error;
+        } else {
+            throw new RuntimeException(error);
+        }
+    }
 }

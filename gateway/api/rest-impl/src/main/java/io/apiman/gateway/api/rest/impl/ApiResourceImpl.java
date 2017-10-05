@@ -23,11 +23,13 @@ import io.apiman.gateway.engine.beans.ApiEndpoint;
 import io.apiman.gateway.engine.beans.exceptions.PublishingException;
 import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
 
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.core.Response;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Implementation of the API API :).
@@ -114,7 +116,18 @@ public class ApiResourceImpl extends AbstractResourceImpl implements IApiResourc
     @Override
     public void getApiVersion(String organizationId, String apiId, String version, AsyncResponse response)
             throws NotAuthorizedException {
-        getEngine().getRegistry().getApi(organizationId, apiId, version, handlerWithResult(response));
+        getEngine().getRegistry().getApi(organizationId, apiId, version, result -> {
+            if (result.isSuccess()) {
+                Api api = result.getResult();
+                if (api == null) {
+                    response.resume(Response.status(Status.NOT_FOUND).build());
+                } else {
+                    response.resume(Response.ok(api).build());
+                }
+            } else {
+                throwError(result.getError());
+            }
+        });
     }
 
 }

@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 
 /**
@@ -97,7 +99,18 @@ public class ClientResourceImpl extends AbstractResourceImpl implements IClientR
 
     @Override
     public void getClientVersion(String organizationId, String clientId, String version, AsyncResponse response) throws NotAuthorizedException {
-        getEngine().getRegistry().getClient(organizationId, clientId, version, handlerWithResult(response));
+        getEngine().getRegistry().getClient(organizationId, clientId, version, result -> {
+            if (result.isSuccess()) {
+                Client client = result.getResult();
+                if (client == null) {
+                    response.resume(Response.status(Status.NOT_FOUND).build());
+                } else {
+                    response.resume(Response.ok(client).build());
+                }
+            } else {
+                throwError(result.getError());
+            }
+        });
     }
 
 }

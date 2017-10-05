@@ -32,6 +32,7 @@ import java.net.URI;
 
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * @author Marc Savy {@literal <marc@rhymewithgravy.com>}
@@ -133,7 +134,18 @@ public class ApiResourceImpl extends AbstractResource implements IApiResource {
 
     @Override
     public void getApiVersion(String organizationId, String apiId, String version, AsyncResponse response) throws NotAuthorizedException {
-        registry.getApi(organizationId, apiId, version, handlerWithResult(response));
+        registry.getApi(organizationId, apiId, version, result -> {
+            if (result.isSuccess()) {
+                Api api = result.getResult();
+                if (api == null) {
+                    response.resume(Response.status(Status.NOT_FOUND).build());
+                } else {
+                    response.resume(Response.ok(api).build());
+                }
+            } else {
+                throwError(result.getError());
+            }
+        });
     }
 
 }

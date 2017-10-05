@@ -24,6 +24,8 @@ import io.apiman.gateway.engine.beans.exceptions.RegistrationException;
 import io.apiman.gateway.platforms.vertx3.common.config.VertxEngineConfig;
 
 import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Implement {@link ClientResourceImpl} using Vert.x Web.
@@ -75,7 +77,18 @@ public class ClientResourceImpl extends AbstractResource implements IClientResou
 
     @Override
     public void getClientVersion(String organizationId, String clientId, String version, AsyncResponse response) throws NotAuthorizedException {
-        registry.getClient(organizationId, clientId, version, handlerWithResult(response));
+        registry.getClient(organizationId, clientId, version, result -> {
+            if (result.isSuccess()) {
+                Client client = result.getResult();
+                if (client == null) {
+                    response.resume(Response.status(Status.NOT_FOUND).build());
+                } else {
+                    response.resume(Response.ok(client).build());
+                }
+            } else {
+                throwError(result.getError());
+            }
+        });
     }
 
 }

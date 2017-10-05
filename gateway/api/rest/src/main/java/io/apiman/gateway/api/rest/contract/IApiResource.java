@@ -82,9 +82,9 @@ public interface IApiResource {
     @Path("organizations/{organizationId}/apis/{apiId}/versions/{version}/endpoint")
     @Produces(MediaType.APPLICATION_JSON)
     public void getApiEndpoint(@PathParam("organizationId") String organizationId,
-                                      @PathParam("apiId") String apiId,
-                                      @PathParam("version") String version,
-                                      @Suspended final AsyncResponse response) // ApiEndpoint
+                               @PathParam("apiId") String apiId,
+                               @PathParam("version") String version,
+                               @Suspended final AsyncResponse response) // ApiEndpoint
             throws NotAuthorizedException;
 
     @GET
@@ -99,10 +99,10 @@ public interface IApiResource {
     @Path("organizations/{organizationId}/apis/{apiId}/versions")
     @Produces(MediaType.APPLICATION_JSON)
     public void listApiVersions(@PathParam("organizationId") String organizationId,
-                              @PathParam("apiId") String apiId,
-                              @QueryParam("page") int page,
-                              @QueryParam("pageSize") int pageSize,
-                              @Suspended final AsyncResponse response) throws NotAuthorizedException;
+                                @PathParam("apiId") String apiId,
+                                @QueryParam("page") int page,
+                                @QueryParam("pageSize") int pageSize,
+                                @Suspended final AsyncResponse response) throws NotAuthorizedException;
 
     @GET
     @Path("organizations/{organizationId}/apis/{apiId}/versions/{version}")

@@ -227,6 +227,7 @@ public class InMemoryRegistry implements IRegistry {
                 .map(entity -> (Client) entity)
                 .filter(client -> client.getOrganizationId().equals(organizationId))
                 .map(client -> client.getClientId())
+                .distinct()
                 .collect(Collectors.toList());
         handler.handle(AsyncResultImpl.create(res));
     }
@@ -240,6 +241,7 @@ public class InMemoryRegistry implements IRegistry {
                 .map(entity -> (Client) entity)
                 .filter(client -> client.getOrganizationId().equals(organizationId) && client.getClientId().equals(clientId))
                 .map(client -> client.getVersion())
+                .distinct()
                 .collect(Collectors.toList());
         handler.handle(AsyncResultImpl.create(res));
     }
@@ -253,6 +255,7 @@ public class InMemoryRegistry implements IRegistry {
                 .map(entity -> (Api) entity)
                 .filter(api -> api.getOrganizationId().equals(organizationId))
                 .map(api -> api.getApiId())
+                .distinct()
                 .collect(Collectors.toList());
         handler.handle(AsyncResultImpl.create(res));
     }
@@ -266,6 +269,7 @@ public class InMemoryRegistry implements IRegistry {
                 .map(entity -> (Api) entity)
                 .filter(api -> api.getOrganizationId().equals(organizationId) && api.getApiId().equals(apiId))
                 .map(api -> api.getVersion())
+                .distinct()
                 .collect(Collectors.toList());
         handler.handle(AsyncResultImpl.create(res));
     }
