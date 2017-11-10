@@ -96,6 +96,7 @@ public class VertxEngineConfig implements IEngineConfig {
     private JsonObject config;
 
     public VertxEngineConfig(JsonObject config) {
+        substituteLeafVars(config);
         this.config = config;
     }
 
@@ -254,7 +255,7 @@ public class VertxEngineConfig implements IEngineConfig {
     }
 
     public int getPort(String name) {
-        return getVerticleConfig(name).getInteger(VERTICLE_PORT, -1);
+        return getValueAsInteger(getVerticleConfig(name), VERTICLE_PORT, -1);
     }
 
     public int getPort(VerticleType verticleType) {
@@ -300,9 +301,7 @@ public class VertxEngineConfig implements IEngineConfig {
             return Collections.emptyMap();
 
         Map<String, String> outMap = new LinkedHashMap<>();
-        // TODO figure out why this workaround is necessary.
         jsonMapToProperties("", new JsonObject(jsonObject.encode()).getMap(), outMap);
-        substituteValues(outMap);
         return outMap;
     }
 
@@ -356,6 +355,20 @@ public class VertxEngineConfig implements IEngineConfig {
         return toFlatStringMap(obj.getJsonObject(prefix, new JsonObject()).getJsonObject(GATEWAY_CONFIG));
     }
 
+    private int getValueAsInteger(JsonObject obj, String key, int defaultValue) {
+        Object val = obj.getValue(key);
+        if (val == null) {
+            return defaultValue;
+        } else {
+            if (val instanceof Number) {
+                return (int) val;
+            } else if (val instanceof String) {
+                return Integer.valueOf((String)val);
+            }
+            throw new IllegalArgumentException("Expected integer, got " + obj.getClass().getName());
+        }
+    }
+
     /**
      * @return a loaded class
      */
@@ -390,11 +403,6 @@ public class VertxEngineConfig implements IEngineConfig {
         return str == null ? defaultValue : str;
     }
 
-    protected Boolean boolConfigWithDefault(String name, Boolean defaultValue) {
-        Boolean bool = config.containsKey(name);
-        return bool == null ? defaultValue : bool;
-    }
-
     public JsonObject getVerticleConfig(String verticleType) {
         return config.getJsonObject(VERTICLES).getJsonObject(verticleType.toLowerCase());
     }
@@ -423,18 +431,27 @@ public class VertxEngineConfig implements IEngineConfig {
                 .collect(Collectors.toList());
     }
 
-    private void substituteValues(Map<String, String> map) {
-        map.entrySet().stream()
-            .forEach(pair -> map.put(pair.getKey(), SUBSTITUTOR.replace(pair.getValue())));
+    protected void substituteLeafVars(JsonObject node) {
+        node.forEach(elem -> {
+           Object value = elem.getValue();
+           if (value instanceof JsonObject) {
+               substituteLeafVars((JsonObject) value);
+           } else if (value instanceof String) {
+               node.put(elem.getKey(), SUBSTITUTOR.replace((String) value));
+           }
+        });
     }
 
     private final StrSubstitutor SUBSTITUTOR = new StrSubstitutor(new VertxEngineStrSubstitutor());
 
     private class VertxEngineStrSubstitutor extends ApimanStrLookup {
+
         @Override
         public String lookup(String key) {
+            // Upside of this approach is that we can capture any dynamically defined variables.
+            // Downside is that it's slightly expensive but should only happen at startup.
             Map<String, String> flattenedMap = new LinkedHashMap<>();
-            jsonMapToProperties("", new JsonObject(getVariables().encode()).getMap(), flattenedMap); // TODO tidy up
+            jsonMapToProperties("", new JsonObject(getVariables().encode()).getMap(), flattenedMap);
             if (flattenedMap.containsKey(key)) {
                 return flattenedMap.get(key);
             } else {
