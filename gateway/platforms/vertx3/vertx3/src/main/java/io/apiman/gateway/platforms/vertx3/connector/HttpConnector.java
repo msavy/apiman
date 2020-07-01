@@ -79,6 +79,7 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
 
     private boolean inboundFinished = false;
     private boolean outboundFinished = false;
+    private boolean anyChunksWritten = false;
 
     private Api api;
     private String apiPath;
@@ -90,6 +91,7 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
     private HttpClient client;
     private HttpClientRequest clientRequest;
     private HttpClientResponse clientResponse;
+    private HttpMethod httpMethod;
 
     private URI apiEndpoint;
 
@@ -157,7 +159,9 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
         logger.debug("Connecting to {0} | ssl?: {1} port: {2} verb: {3} path: {4}",
                 apiHost, options.isSsl(), apiPort, HttpMethod.valueOf(apiRequest.getType()), endpoint);
 
-        clientRequest = client.request(HttpMethod.valueOf(apiRequest.getType()),
+        httpMethod = HttpMethod.valueOf(apiRequest.getType());
+
+        clientRequest = client.request(httpMethod,
                 apiPort,
                 apiHost,
                 endpoint,
@@ -175,6 +179,7 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
 
                     vxClientResponse.endHandler((Handler<Void>) v -> {
                         endHandler.handle((Void) null);
+                        outboundFinished = true;
                     });
 
                     vxClientResponse.exceptionHandler(exceptionHandler);
@@ -229,11 +234,11 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
     public void abort(Throwable t) {
         bodyHandler(null);
 
-        if(clientRequest != null) {
+        if (clientRequest != null) {
            clientRequest.end();
         }
 
-        if(clientResponse != null) {
+        if (clientResponse != null) {
             clientResponse.netSocket().close(); //TODO verify
         }
     }
@@ -250,6 +255,7 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
 
     @Override
     public void write(IApimanBuffer chunk) {
+        anyChunksWritten = true;
         if (inboundFinished) {
             throw new IllegalStateException(Messages.getString("HttpConnector.0"));
         }
@@ -267,6 +273,11 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
 
     @Override
     public void end() {
+        // Try workaround for IIS bug: when chunked encoding is enabled on `GET`, but body ends up being empty
+        // we send a character to try to keep it happy.
+        if (!anyChunksWritten && this.httpMethod.equals(HttpMethod.GET)) {
+            clientRequest.write(" ");
+        }
         clientRequest.end();
         inboundFinished = true;
     }
