@@ -32,10 +32,13 @@ import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.net.ssl.SSLSocketFactory;
 import net.sf.ehcache.CacheManager;
+import org.apache.commons.collections.ListUtils;
 import org.apache.directory.api.ldap.model.constants.SupportedSaslMechanisms;
 import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.server.annotations.CreateLdapServer;
@@ -144,12 +147,21 @@ public class BasicAuthLDAPSTest extends AbstractLdapTestUnit implements LdapTest
      */
     private static void overrideDefaultTrustStore(Path keyStorePath,
         DefaultLdapComponent ldapComponent) throws Exception {
+        SSLUtil.setEnabledSSLProtocols(
+            new ArrayList<String>(){{
+                add("TLSv1.3");
+                add("TLSv1.2");
+                add("TLSv1.1");
+                add("TLSv1");
+                add("SSLv3");
+            }}
+        );
         // Load the generated test keystore as Apiman's current TrustStore
         SSLUtil sslUtil = new SSLUtil(new TrustStoreTrustManager(
             keyStorePath.toFile(), LDAP_KEYSTORE_PASSWD.toCharArray(), "JKS", false
         ));
-        SSLSocketFactory testContext = sslUtil.createSSLSocketFactory();
-        ldapComponent.setSocketFactory(testContext);
+        SSLSocketFactory testSocketFactory = sslUtil.createSSLSocketFactory();
+        ldapComponent.setSocketFactory(testSocketFactory);
 
         // Load generated Keystore in ldaps server
         ldapServer.setKeystoreFile(keyStorePath.toString());
