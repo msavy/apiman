@@ -68,7 +68,6 @@ public class DefaultLdapSearchImpl implements ILdapSearch {
 
     @Override
     public void search(final IAsyncResultHandler<List<ILdapSearchEntry>> resultHandler) {
-        System.out.println("Doing a search....");
         getResults(searchDn, filter, scope, (IAsyncResult<List<SearchResultEntry>> results) -> {
             if (results.isSuccess()) {
                 List<ILdapSearchEntry> searchResults = toSearchEntry(results.getResult());

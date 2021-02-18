@@ -1346,28 +1346,6 @@
           <version>${version.docker.plugin}</version>
         </plugin>
         <plugin>
-          <groupId>io.vertx</groupId>
-          <artifactId>vertx-maven-plugin</artifactId>
-          <version>${version.vertx.plugin}</version>
-          <dependencies>
-            <dependency>
-              <groupId>io.vertx</groupId>
-              <artifactId>vertx-core</artifactId>
-              <version>${version.io.vertx}</version>
-            </dependency>
-<!--            <dependency>-->
-<!--              <groupId>io.vertx</groupId>-->
-<!--              <artifactId>vertx-platform</artifactId>-->
-<!--              <version>${version.io.vertx}</version>-->
-<!--            </dependency>-->
-            <dependency>
-              <groupId>io.vertx</groupId>
-              <artifactId>vertx-hazelcast</artifactId>
-              <version>3.7.0</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${version.surefire.plugin}</version>
@@ -1375,7 +1353,6 @@
             <systemPropertyVariables>
               <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
             </systemPropertyVariables>
-<!--            <argLine>-Xmx1024m</argLine>-->
           </configuration>
         </plugin>
         <plugin>
@@ -1483,9 +1460,6 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <source>8</source>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
