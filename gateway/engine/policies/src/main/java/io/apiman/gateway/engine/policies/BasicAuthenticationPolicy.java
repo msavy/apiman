@@ -127,6 +127,9 @@ public class BasicAuthenticationPolicy extends AbstractMappedPolicy<BasicAuthent
             @Override
             public void handle(IAsyncResult<Boolean> result) {
                 if (result.isError()) {
+                    // TODO REMOVE ME! For debugging the CI.
+                    assert result.getError() != null;
+                    result.getError().printStackTrace(System.err);
                     chain.throwError(result.getError());
                 } else {
                     if (result.getResult()) {
