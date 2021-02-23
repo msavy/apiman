@@ -16,10 +16,6 @@
 
 package io.apiman.gateway.engine.impl;
 
-import com.unboundid.ldap.sdk.LDAPConnection;
-import com.unboundid.ldap.sdk.LDAPException;
-import com.unboundid.ldap.sdk.SearchResultEntry;
-import com.unboundid.ldap.sdk.SearchScope;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncHandler;
 import io.apiman.gateway.engine.async.IAsyncResult;
@@ -29,8 +25,14 @@ import io.apiman.gateway.engine.components.ldap.ILdapSearchEntry;
 import io.apiman.gateway.engine.components.ldap.LdapSearchScope;
 import io.apiman.gateway.engine.components.ldap.result.DefaultExceptionFactory;
 import io.apiman.gateway.engine.components.ldap.result.LdapException;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import com.unboundid.ldap.sdk.LDAPConnection;
+import com.unboundid.ldap.sdk.LDAPException;
+import com.unboundid.ldap.sdk.SearchResultEntry;
+import com.unboundid.ldap.sdk.SearchScope;
 
 /**
  * @author Marc Savy {@literal <msavy@redhat.com>}
