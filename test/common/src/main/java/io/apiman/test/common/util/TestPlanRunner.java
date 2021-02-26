@@ -64,6 +64,8 @@ import com.jcabi.http.Request;
 import com.jcabi.http.Response;
 import com.jcabi.http.request.ApacheRequest;
 
+import static org.assertj.core.api.Assertions.*;
+
 /**
  * Runs a test plan.
  *
@@ -468,11 +470,9 @@ public class TestPlanRunner {
             String expected = restTest.getExpectedResponsePayload();
 
             if (expected != null) {
-                Pattern pattern = Pattern.compile(expected);
-                Matcher matcher = pattern.matcher(actual);
-                if (!matcher.matches()) {
-                    throw new ComparisonFailure("Response payload (text/plain) mismatch.\n", expected, actual);
-                }
+                assertThat(actual)
+                    .withFailMessage("Response payload (text/plain) mismatch. Expected %s != %s\n", expected, actual)
+                    .matches(expected);
             }
         } catch (Exception e) {
             throw new Error(e);
