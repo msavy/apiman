@@ -17,6 +17,7 @@ package io.apiman.gateway.engine.es;
 
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
+import io.apiman.common.es.util.builder.index.EsIndex;
 import io.apiman.gateway.engine.DependsOnComponents;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncHandler;
@@ -231,14 +232,9 @@ public class EsCacheStoreComponent extends AbstractEsComponent implements ICache
         return EsConstants.CACHE_INDEX_NAME;
     }
 
-    /**
-     * @see AbstractEsComponent#getDefaultIndices()
-     * @return default indices
-     */
     @Override
-    protected List<String> getDefaultIndices() {
-        String[] indices = {EsConstants.INDEX_CACHE_CACHE_ENTRY};
-        return Arrays.asList(indices);
+    public List<EsIndex> getEsIndices() {
+        return null;
     }
 
     /**

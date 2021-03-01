@@ -88,7 +88,7 @@ public class EsMetricsAccessorTest {
         config.put("client.host", node.getContainerIpAddress());
         config.put("client.port", node.getFirstMappedPort().toString());
         config.put("client.initialize", "true");
-        return new DefaultEsClientFactory().createClient(config, APIMAN_METRICS_INDEX_NAME, getDefaultIndices());
+        return new DefaultEsClientFactory().createClient(config, getEsIndex(), APIMAN_METRICS_INDEX_NAME, getDefaultIndices());
     }
 
     private static void loadTestData(RestHighLevelClient client) throws Exception {

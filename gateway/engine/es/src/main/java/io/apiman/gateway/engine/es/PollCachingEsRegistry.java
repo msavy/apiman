@@ -15,7 +15,6 @@
  */
 package io.apiman.gateway.engine.es;
 
-import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
 import io.apiman.common.logging.DefaultDelegateFactory;
 import io.apiman.common.logging.IApimanLogger;
@@ -30,8 +29,6 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -225,17 +222,5 @@ public class PollCachingEsRegistry extends CachingEsRegistry {
         if (invalidate) {
             invalidateCache();
         }
-    }
-
-    /**
-     * @see AbstractEsComponent#getDefaultIndices()
-     * @return default indices
-     */
-    @Override
-    protected List<String> getDefaultIndices() {
-        List<String> indices = new ArrayList<String>();
-        indices.addAll(super.getDefaultIndices());
-        indices.add(EsConstants.INDEX_DATA_VERSION);
-        return indices;
     }
 }

@@ -181,7 +181,7 @@ public class ManagerApiTestServer {
 
     private static RestHighLevelClient createEsClient() {
         Map<String, String> config = getTestClientConfig();
-        return new DefaultEsClientFactory().createClient(config, ES_DEFAULT_INDEX, getDefaultIndices());
+        return new DefaultEsClientFactory().createClient(config, getEsIndex(), ES_DEFAULT_INDEX, getDefaultIndices());
     }
 
     public static Map<String, String> getTestClientConfig() {

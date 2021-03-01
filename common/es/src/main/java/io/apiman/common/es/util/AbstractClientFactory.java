@@ -15,8 +15,12 @@
  */
 package io.apiman.common.es.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.apiman.common.es.util.builder.index.EsIndex;
 import io.apiman.common.logging.DefaultDelegateFactory;
 import io.apiman.common.logging.IApimanLogger;
+import java.util.stream.Collectors;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
@@ -28,6 +32,7 @@ import org.elasticsearch.client.indices.GetIndexRequest;
 
 import java.io.IOException;
 import java.util.*;
+import org.elasticsearch.common.xcontent.XContentType;
 
 /**
  * Base class for client factories.  Provides caching of clients.
@@ -41,6 +46,8 @@ public abstract class AbstractClientFactory {
     protected static final Map<String, RestHighLevelClient> clients = new HashMap<>();
 
     protected static final Set<String> createdIndices = new HashSet<>();
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Clears all the clients from the cache.  Useful for unit testing.
@@ -61,7 +68,7 @@ public abstract class AbstractClientFactory {
      * @param indexPrefix the index prefix of the ES index to initialize
      * @param defaultIndices the default indices for the component
      */
-    protected void initializeIndices(RestHighLevelClient client, String indexPrefix, List<String> defaultIndices) {
+    protected void initializeIndices(RestHighLevelClient client, List<EsIndex> indexDefs, String indexPrefix) {
         try {
             //Do Health request
             ClusterHealthRequest healthRequest = new ClusterHealthRequest();
@@ -74,14 +81,18 @@ public abstract class AbstractClientFactory {
             // There was occasions where a race occurred here when multiple threads try to
             // create the index simultaneously. This caused a non-fatal, but annoying, exception.
             synchronized (AbstractClientFactory.class) {
+                List<String> indexNames = indexDefs.stream()
+                    .map(EsIndex::getIndexName)
+                    .collect(Collectors.toList());
+
                 // check if indices exist - if not create them
-                for (String indexPostfix: defaultIndices) {
+                for (String indexPostfix: indexNames) {
                     String fullIndexName = EsIndexMapping.getFullIndexName(indexPrefix, indexPostfix);
                     if (!createdIndices.contains(fullIndexName)) {
                         GetIndexRequest indexExistsRequest = new GetIndexRequest(fullIndexName);
                         boolean indexExists = client.indices().exists(indexExistsRequest, RequestOptions.DEFAULT);
                         if (!indexExists) {
-                            this.createIndex(client, indexPrefix, indexPostfix); //$NON-NLS-1$
+                            this.createIndex(client, indexDefs, indexPrefix, indexPostfix); //$NON-NLS-1$
                             createdIndices.add(fullIndexName);
                         }
                     }
@@ -133,18 +144,24 @@ public abstract class AbstractClientFactory {
     /**
      * Creates an index.
      * @param client the elasticsearch client
+     * @param indexDef
      * @param indexPrefix the index prefix
      * @param indexPostfix the index postfix
      * @throws Exception
      */
     @SuppressWarnings("nls")
-    protected void createIndex(RestHighLevelClient client, String indexPrefix, String indexPostfix) throws Exception {
+    protected void createIndex(RestHighLevelClient client, List<EsIndex> indexDef, String indexPrefix, String indexPostfix) throws Exception {
         String indexToCreate = EsIndexMapping.getFullIndexName(indexPrefix, indexPostfix);
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexToCreate);
-        //add field properties to index
-        final Map<String, Object> documentMapping = EsIndexMapping.getDocumentMapping(indexPrefix, indexPostfix);
-
-        createIndexRequest.mapping(documentMapping);
+        try {
+            for (EsIndex index : indexDef) {
+                // Create index using a full definition.
+                createIndexRequest.mapping(objectMapper.writeValueAsString(index.getFirst()), XContentType.JSON);
+            }
+        } catch (JsonProcessingException jpe) {
+            logger.warn("The EsIndex definition provided by {} definition cannot be marshalled", this.getClass().getCanonicalName());
+            throw jpe;
+        }
         CreateIndexResponse createIndexResponse = client.indices().create(createIndexRequest, RequestOptions.DEFAULT);
 
         // When running in e.g. Wildfly, the Gateway exists as two separate WARs - the API and the
@@ -152,11 +169,11 @@ public abstract class AbstractClientFactory {
         // the ES index if it doesn't exist.  A race condition could result in both WARs trying to
         // create the index.  So a result of "IndexAlreadyExistsException" should be ignored.
         if (!createIndexResponse.isAcknowledged()) {
-            logger.error("Failed to create index: '" + indexToCreate + "' Reason: request was not acknowledged.", new Exception());
+            logger.error("Failed to create ES index: '" + indexToCreate + "' Reason: request was not acknowledged.", new Exception());
         } else if (!createIndexResponse.isShardsAcknowledged()) {
-            logger.error("Failed to create index: '" + indexToCreate + "' Reason: request was not acknowledged by shards.", new Exception());
+            logger.error("Failed to create ES index: '" + indexToCreate + "' Reason: request was not acknowledged by shards.", new Exception());
         } else {
-            logger.info("Index created: " + indexToCreate);
+            logger.info("ES index created: " + indexToCreate);
         }
     }
 

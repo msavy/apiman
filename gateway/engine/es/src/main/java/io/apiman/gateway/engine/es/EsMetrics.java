@@ -19,6 +19,7 @@ package io.apiman.gateway.engine.es;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
+import io.apiman.common.es.util.builder.index.EsIndex;
 import io.apiman.common.logging.DefaultDelegateFactory;
 import io.apiman.common.logging.IApimanLogger;
 import io.apiman.gateway.engine.IComponentRegistry;
@@ -156,13 +157,8 @@ public class EsMetrics extends AbstractEsComponent implements IMetrics {
         return EsConstants.METRICS_INDEX_NAME;
     }
 
-    /**
-     * @see AbstractEsComponent#getDefaultIndices()
-     * @return default indices
-     */
     @Override
-    protected List<String> getDefaultIndices() {
-        String[] indices = {""};
-        return Arrays.asList(indices);
+    public List<EsIndex> getEsIndices() {
+        return null;
     }
 }
