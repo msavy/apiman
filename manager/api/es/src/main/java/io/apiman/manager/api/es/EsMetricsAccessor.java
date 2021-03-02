@@ -16,6 +16,7 @@
 package io.apiman.manager.api.es;
 
 import io.apiman.common.es.util.EsConstants;
+import io.apiman.common.es.util.builder.index.EsIndex;
 import io.apiman.common.logging.IApimanLogger;
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.manager.api.beans.metrics.*;
@@ -746,13 +747,8 @@ public class EsMetricsAccessor extends AbstractEsComponent implements IMetricsAc
         return EsConstants.METRICS_INDEX_NAME;
     }
 
-    /**
-     * @see AbstractEsComponent#getDefaultIndices()
-     * @return default indices
-     */
     @Override
-    protected List<String> getDefaultIndices() {
-        String[] indices = {""};
-        return Arrays.asList(indices);
+    public List<EsIndex> getEsIndices() {
+        return null;
     }
 }

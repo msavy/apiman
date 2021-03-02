@@ -17,6 +17,7 @@ package io.apiman.gateway.engine.es;
 
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
+import io.apiman.common.es.util.builder.index.EsIndex;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.IRateLimiterComponent;
@@ -146,15 +147,11 @@ public class EsRateLimiterComponent extends AbstractEsComponent implements IRate
         return EsConstants.GATEWAY_INDEX_NAME;
     }
 
-    /**
-     * @see AbstractEsComponent#getDefaultIndices()
-     * @return default indices
-     */
     @Override
-    protected List<String> getDefaultIndices() {
-        String[] indices = {EsConstants.INDEX_RATE_BUCKET};
-        return Arrays.asList(indices);
+    public List<EsIndex> getEsIndices() {
+        return null;
     }
+
     /**
      * get index full name for rate bucket
      * @return full index name
