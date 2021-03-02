@@ -16,12 +16,12 @@
 package io.apiman.common.es.util.builder.index;
 
 /**
- * Any implementation that is allowed as an index property entry.
+ * Any implementation that is allowed as a root entry
  *
  * This interface helps to prevent erroneous index definition constructions.
  *
  * @author Marc Savy {@literal <marc@blackparrotlabs.io>}
  */
-public interface AllowableIndexPropertyEntry {
+public interface AllowableRootEntry {
 
 }

@@ -18,6 +18,7 @@ package io.apiman.gateway.engine.es;
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
 import io.apiman.common.es.util.EsUtils;
+import io.apiman.common.es.util.builder.index.EsIndex;
 import io.apiman.common.logging.DefaultDelegateFactory;
 import io.apiman.common.logging.IApimanLogger;
 import io.apiman.gateway.engine.IRegistry;
@@ -640,16 +641,6 @@ public class EsRegistry extends AbstractEsComponent implements IRegistry {
     @Override
     protected String getDefaultIndexPrefix() {
         return EsConstants.GATEWAY_INDEX_NAME;
-    }
-
-    /**
-     * @see AbstractEsComponent#getDefaultIndices()
-     * @return default indices
-     */
-    @Override
-    protected List<String> getDefaultIndices() {
-        String[] indices = {EsConstants.INDEX_APIS, EsConstants.INDEX_CLIENTS};
-        return Arrays.asList(indices);
     }
 
 }

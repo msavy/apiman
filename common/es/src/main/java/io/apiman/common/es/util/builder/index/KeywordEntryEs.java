@@ -16,12 +16,19 @@
 package io.apiman.common.es.util.builder.index;
 
 /**
- * Any implementation that is allowed as an index property entry.
- *
- * This interface helps to prevent erroneous index definition constructions.
+ * An ES keyword entry
  *
  * @author Marc Savy {@literal <marc@blackparrotlabs.io>}
  */
-public interface AllowableIndexPropertyEntry {
+public class KeywordEntryEs extends EsField {
+    KeywordEntryEs(EsFieldBuilder builder) {
+        super(builder);
+    }
 
+    /**
+     * Build an instance of {@link KeywordEntryEs}
+     */
+    public static EsFieldBuilder builder() {
+        return EsField.builder().setType("keyword");
+    }
 }
