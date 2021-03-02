@@ -17,6 +17,7 @@ package io.apiman.manager.api.es;
 
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
+import io.apiman.common.es.util.builder.index.EsIndex;
 import io.apiman.common.util.crypt.DataEncryptionContext;
 import io.apiman.common.util.crypt.IDataEncrypter;
 import io.apiman.manager.api.beans.apis.*;
@@ -779,11 +780,6 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
 
         return getClient().deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
     }
-
-    public @interface Foo {
-        String maxo() default "/";
-    }
-
 
     /**
      * @see io.apiman.manager.api.core.IStorage#deletePlanVersion(io.apiman.manager.api.beans.plans.PlanVersionBean)
@@ -2682,21 +2678,26 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
     protected String getDefaultIndexPrefix() {
         return EsConstants.MANAGER_INDEX_NAME;
     }
-
-    /**
-     * @see AbstractEsComponent#getDefaultIndices()
-     * @return default indices
-     */
-    @Override
-    protected List<String> getDefaultIndices() {
-        return Arrays.asList(EsConstants.MANAGER_INDEX_POSTFIXES);
-    }
+//
+//    /**
+//     * @see AbstractEsComponent#getDefaultIndices()
+//     * @return default indices
+//     */
+//    @Override
+//    protected List<String> getDefaultIndices() {
+//        return Arrays.asList(EsConstants.MANAGER_INDEX_POSTFIXES);
+//    }
 
     /**
      * @return the indexName
      */
     public String getIndexPrefix() {
         return indexPrefix;
+    }
+
+    @Override
+    public List<EsIndex> getEsIndices() {
+        return null;
     }
 
     /**

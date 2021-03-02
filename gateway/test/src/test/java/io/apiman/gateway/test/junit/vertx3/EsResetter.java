@@ -18,6 +18,7 @@ package io.apiman.gateway.test.junit.vertx3;
 import io.apiman.common.es.util.DefaultEsClientFactory;
 import io.apiman.common.es.util.EsConstants;
 import io.apiman.common.es.util.AbstractEsComponent;
+import io.apiman.common.es.util.builder.index.EsIndex;
 import io.apiman.gateway.platforms.vertx3.common.config.VertxEngineConfig;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.client.RequestOptions;
@@ -78,12 +79,17 @@ public class EsResetter extends AbstractEsComponent implements Resetter {
         return EsConstants.GATEWAY_INDEX_NAME;
     }
 
-    /**
-     * @see AbstractEsComponent#getDefaultIndices()
-     * @return default indices
-     */
     @Override
-    protected List<String> getDefaultIndices() {
-        return Arrays.asList(EsConstants.GATEWAY_INDEX_POSTFIXES);
+    public List<EsIndex> getEsIndices() {
+        return null;
     }
+
+//    /**
+//     * @see AbstractEsComponent#getDefaultIndices()
+//     * @return default indices
+//     */
+//    @Override
+//    protected List<String> getDefaultIndices() {
+//        return Arrays.asList(EsConstants.GATEWAY_INDEX_POSTFIXES);
+//    }
 }
