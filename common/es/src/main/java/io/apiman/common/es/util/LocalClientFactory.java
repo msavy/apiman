@@ -15,11 +15,10 @@
  */
 package io.apiman.common.es.util;
 
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import org.elasticsearch.client.RestHighLevelClient;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,7 +40,7 @@ public class LocalClientFactory extends AbstractClientFactory implements IEsClie
      * @return the ES client
      */
     @Override
-    public RestHighLevelClient createClient(Map<String, String> config,  List<EsIndex> esIndices, String defaultIndexPrefix) {
+    public RestHighLevelClient createClient(Map<String, String> config,  Map<String, EsIndexProperties> esIndices, String defaultIndexPrefix) {
         RestHighLevelClient client;
         String indexName = config.get("client.indexPrefix"); //$NON-NLS-1$
         if (indexName == null) {
@@ -57,7 +56,7 @@ public class LocalClientFactory extends AbstractClientFactory implements IEsClie
      * @param indexName the name of the ES index
      * @return the ES client
      */
-    public RestHighLevelClient createLocalClient(Map<String, String> config, String indexName, List<EsIndex> indexDef) {
+    public RestHighLevelClient createLocalClient(Map<String, String> config, String indexName, Map<String, EsIndexProperties> indexDef) {
         String clientLocClassName = config.get("client.class"); //$NON-NLS-1$
         String clientLocFieldName = config.get("client.field"); //$NON-NLS-1$
         return createLocalClient(clientLocClassName, clientLocFieldName, indexName, indexDef);
@@ -71,7 +70,7 @@ public class LocalClientFactory extends AbstractClientFactory implements IEsClie
      * @param indexName the name of the ES index
      * @return the ES client
      */
-    public RestHighLevelClient createLocalClient(String className, String fieldName, String indexName, List<EsIndex> indexDef) {
+    public RestHighLevelClient createLocalClient(String className, String fieldName, String indexName, Map<String, EsIndexProperties> indexDef) {
         String clientKey = "local:" + className + '/' + fieldName; //$NON-NLS-1$
         synchronized (clients) {
             if (clients.containsKey(clientKey)) {

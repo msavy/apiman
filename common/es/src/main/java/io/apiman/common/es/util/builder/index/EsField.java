@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @author Marc Savy {@literal <marc@blackparrotlabs.io>}
  */
 @JsonInclude(Include.NON_EMPTY)
-public class EsField implements AllowableFieldEntry {
+public class EsField implements AllowableFieldEntry, AllowableIndexPropertyEntry {
 
     private final String type;
 
@@ -44,7 +44,7 @@ public class EsField implements AllowableFieldEntry {
         return type;
     }
 
-    public int getIgnoreAbove() {
+    public Integer getIgnoreAbove() {
         return ignoreAbove;
     }
 

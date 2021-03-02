@@ -73,7 +73,7 @@ public class EsIndex {
         return Collections.singletonMap(indexName, rootEntryMap);
     }
 
-    public Object getFirst() {
+    public Object getMappings() {
         return rootEntryMap.keySet().stream().findFirst();
     }
 

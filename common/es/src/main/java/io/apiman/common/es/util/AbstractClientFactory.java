@@ -17,10 +17,9 @@ package io.apiman.common.es.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.common.logging.DefaultDelegateFactory;
 import io.apiman.common.logging.IApimanLogger;
-import java.util.stream.Collectors;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
@@ -68,7 +67,7 @@ public abstract class AbstractClientFactory {
      * @param indexPrefix the index prefix of the ES index to initialize
      * @param defaultIndices the default indices for the component
      */
-    protected void initializeIndices(RestHighLevelClient client, List<EsIndex> indexDefs, String indexPrefix) {
+    protected void initializeIndices(RestHighLevelClient client, Map<String, EsIndexProperties> indexDefs, String indexPrefix) {
         try {
             //Do Health request
             ClusterHealthRequest healthRequest = new ClusterHealthRequest();
@@ -81,12 +80,8 @@ public abstract class AbstractClientFactory {
             // There was occasions where a race occurred here when multiple threads try to
             // create the index simultaneously. This caused a non-fatal, but annoying, exception.
             synchronized (AbstractClientFactory.class) {
-                List<String> indexNames = indexDefs.stream()
-                    .map(EsIndex::getIndexName)
-                    .collect(Collectors.toList());
-
                 // check if indices exist - if not create them
-                for (String indexPostfix: indexNames) {
+                for (String indexPostfix: Collections.<String>emptyList()) {
                     String fullIndexName = EsIndexMapping.getFullIndexName(indexPrefix, indexPostfix);
                     if (!createdIndices.contains(fullIndexName)) {
                         GetIndexRequest indexExistsRequest = new GetIndexRequest(fullIndexName);
@@ -150,13 +145,13 @@ public abstract class AbstractClientFactory {
      * @throws Exception
      */
     @SuppressWarnings("nls")
-    protected void createIndex(RestHighLevelClient client, List<EsIndex> indexDef, String indexPrefix, String indexPostfix) throws Exception {
+    protected void createIndex(RestHighLevelClient client, Map<String, EsIndexProperties> indexDef, String indexPrefix, String indexPostfix) throws Exception {
         String indexToCreate = EsIndexMapping.getFullIndexName(indexPrefix, indexPostfix);
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexToCreate);
         try {
-            for (EsIndex index : indexDef) {
+            for (EsIndexProperties index : indexDef) {
                 // Create index using a full definition.
-                createIndexRequest.mapping(objectMapper.writeValueAsString(index.getFirst()), XContentType.JSON);
+                createIndexRequest.mapping(objectMapper.writeValueAsString(index), XContentType.JSON);
             }
         } catch (JsonProcessingException jpe) {
             logger.warn("The EsIndex definition provided by {} definition cannot be marshalled", this.getClass().getCanonicalName());

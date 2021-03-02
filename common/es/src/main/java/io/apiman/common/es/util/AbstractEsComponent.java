@@ -15,11 +15,10 @@
  */
 package io.apiman.common.es.util;
 
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import org.elasticsearch.client.RestHighLevelClient;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -128,5 +127,5 @@ public abstract class AbstractEsComponent {
      *
      * @return the list of valid Elasticsearch index definitions
      */
-    public abstract List<EsIndex> getEsIndices();
+    public abstract Map<String, EsIndexProperties> getEsIndices();
 }

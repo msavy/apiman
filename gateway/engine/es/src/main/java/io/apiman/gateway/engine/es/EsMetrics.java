@@ -19,7 +19,7 @@ package io.apiman.gateway.engine.es;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.common.logging.DefaultDelegateFactory;
 import io.apiman.common.logging.IApimanLogger;
 import io.apiman.gateway.engine.IComponentRegistry;
@@ -36,6 +36,12 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import static io.apiman.common.es.util.builder.index.IndexUtils.BOOL_PROP;
+import static io.apiman.common.es.util.builder.index.IndexUtils.DATE_PROP;
+import static io.apiman.common.es.util.builder.index.IndexUtils.IP_PROP;
+import static io.apiman.common.es.util.builder.index.IndexUtils.KEYWORD_PROP;
+import static io.apiman.common.es.util.builder.index.IndexUtils.LONG_PROP;
+import static io.apiman.common.es.util.builder.index.IndexUtils.TEXT_AND_KEYWORD_PROP_256;
 import static io.apiman.gateway.engine.storage.util.BackingStoreUtil.JSON_MAPPER;
 
 /**
@@ -158,7 +164,39 @@ public class EsMetrics extends AbstractEsComponent implements IMetrics {
     }
 
     @Override
-    public List<EsIndex> getEsIndices() {
-        return null;
+    public Map<String, EsIndexProperties> getEsIndices() {
+        EsIndexProperties propertiesMap = EsIndexProperties.builder()
+            .addProperty(EsConstants.ES_FIELD_API_DURATION, LONG_PROP)
+            .addProperty(EsConstants.ES_FIELD_API_END, DATE_PROP)
+            .addProperty(EsConstants.ES_FIELD_API_ID,  KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_API_ORG_ID, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_API_START, DATE_PROP)
+            .addProperty(EsConstants.ES_FIELD_API_VERSION, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_BYTES_DOWNLOADED, LONG_PROP)
+            .addProperty(EsConstants.ES_FIELD_BYTES_UPLOADED, LONG_PROP)
+            .addProperty(EsConstants.ES_FIELD_CLIENT_ID, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_CLIENT_ORG_ID, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_CLIENT_VERSION, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_CONTRACT_ID, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_ERROR, BOOL_PROP)
+            .addProperty(EsConstants.ES_FIELD_ERROR_MESSAGE, TEXT_AND_KEYWORD_PROP_256)
+            .addProperty(EsConstants.ES_FIELD_FAILURE, BOOL_PROP)
+            .addProperty(EsConstants.ES_FIELD_FAILURE_CODE, LONG_PROP)
+            .addProperty(EsConstants.ES_FIELD_FAILURE_REASON, TEXT_AND_KEYWORD_PROP_256)
+            .addProperty(EsConstants.ES_FIELD_METHOD, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_PLAN_ID, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_REMOTE_ADDR, IP_PROP)
+            .addProperty(EsConstants.ES_FIELD_REQUEST_DURATION, LONG_PROP)
+            .addProperty(EsConstants.ES_FIELD_REQUEST_END, DATE_PROP)
+            .addProperty(EsConstants.ES_FIELD_REQUEST_START, DATE_PROP)
+            .addProperty(EsConstants.ES_FIELD_RESOURCE, TEXT_AND_KEYWORD_PROP_256)
+            .addProperty(EsConstants.ES_FIELD_RESPONSE_CODE, LONG_PROP)
+            .addProperty(EsConstants.ES_FIELD_RESPONSE_MESSAGE, TEXT_AND_KEYWORD_PROP_256)
+            .addProperty(EsConstants.ES_FIELD_URL, TEXT_AND_KEYWORD_PROP_256)
+            .addProperty(EsConstants.ES_FIELD_USER, TEXT_AND_KEYWORD_PROP_256)
+            .build();
+        Map<String, EsIndexProperties> indexMap = new HashMap<>();
+        indexMap.put("", propertiesMap);
+        return indexMap;
     }
 }

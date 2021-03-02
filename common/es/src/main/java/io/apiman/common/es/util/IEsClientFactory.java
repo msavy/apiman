@@ -16,10 +16,9 @@
 
 package io.apiman.common.es.util;
 
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import org.elasticsearch.client.RestHighLevelClient;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +33,6 @@ public interface IEsClientFactory {
      * @param esIndices the index definitions for the component
      * @param defaultIndexPrefix the default index prefix
      */
-    RestHighLevelClient createClient(Map<String, String> config, List<EsIndex> esIndices, String defaultIndexPrefix);
+    RestHighLevelClient createClient(Map<String, String> config, Map<String, EsIndexProperties> esIndices, String defaultIndexPrefix);
 
 }

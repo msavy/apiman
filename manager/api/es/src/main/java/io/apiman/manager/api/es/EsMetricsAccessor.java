@@ -16,7 +16,7 @@
 package io.apiman.manager.api.es;
 
 import io.apiman.common.es.util.EsConstants;
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.common.logging.IApimanLogger;
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.manager.api.beans.metrics.*;
@@ -39,7 +39,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -748,7 +747,7 @@ public class EsMetricsAccessor extends AbstractEsComponent implements IMetricsAc
     }
 
     @Override
-    public List<EsIndex> getEsIndices() {
+    public Map<String, EsIndexProperties> getEsIndices() {
         return null;
     }
 }

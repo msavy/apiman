@@ -17,15 +17,13 @@ package io.apiman.gateway.engine.es;
 
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.ISharedStateComponent;
 import io.apiman.gateway.engine.es.beans.PrimitiveBean;
 import io.apiman.gateway.engine.storage.util.BackingStoreUtil;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
@@ -171,7 +169,7 @@ public class EsSharedStateComponent extends AbstractEsComponent implements IShar
     }
 
     @Override
-    public List<EsIndex> getEsIndices() {
+    public Map<String, EsIndexProperties> getEsIndices() {
         return null;
     }
 

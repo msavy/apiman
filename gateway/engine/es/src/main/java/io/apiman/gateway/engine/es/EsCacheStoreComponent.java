@@ -17,7 +17,7 @@ package io.apiman.gateway.engine.es;
 
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.gateway.engine.DependsOnComponents;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncHandler;
@@ -36,8 +36,6 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.xcontent.XContentType;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import static io.apiman.gateway.engine.storage.util.BackingStoreUtil.JSON_MAPPER;
@@ -233,7 +231,7 @@ public class EsCacheStoreComponent extends AbstractEsComponent implements ICache
     }
 
     @Override
-    public List<EsIndex> getEsIndices() {
+    public Map<String, EsIndexProperties> getEsIndices() {
         return null;
     }
 

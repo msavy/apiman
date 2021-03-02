@@ -15,7 +15,7 @@
  */
 package io.apiman.common.es.util;
 
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.common.logging.DefaultDelegateFactory;
 import io.apiman.common.logging.IApimanLogger;
 import io.apiman.common.util.Holder;
@@ -52,7 +52,6 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,7 +74,7 @@ public class DefaultEsClientFactory extends AbstractClientFactory implements IEs
      */
     @Override
     public RestHighLevelClient createClient(Map<String, String> config,
-        List<EsIndex> esIndices,
+        Map<String, EsIndexProperties> esIndices,
         String defaultIndexPrefix) {
 
         RestHighLevelClient client;
@@ -95,7 +94,7 @@ public class DefaultEsClientFactory extends AbstractClientFactory implements IEs
      * @return the ES client
      */
     private RestHighLevelClient createEsClient(Map<String, String> config,
-        List<EsIndex> esIndexes,
+        Map<String, EsIndexProperties> esIndexes,
         String indexNamePrefix) {
 
         String host = config.get("client.host"); //$NON-NLS-1$

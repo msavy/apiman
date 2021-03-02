@@ -17,7 +17,7 @@ package io.apiman.gateway.engine.es;
 
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
-import io.apiman.common.es.util.builder.index.EsIndex;
+import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.gateway.engine.async.AsyncResultImpl;
 import io.apiman.gateway.engine.async.IAsyncResultHandler;
 import io.apiman.gateway.engine.components.IRateLimiterComponent;
@@ -25,8 +25,6 @@ import io.apiman.gateway.engine.components.rate.RateLimitResponse;
 import io.apiman.gateway.engine.rates.RateBucketPeriod;
 import io.apiman.gateway.engine.rates.RateLimiterBucket;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
@@ -148,7 +146,7 @@ public class EsRateLimiterComponent extends AbstractEsComponent implements IRate
     }
 
     @Override
-    public List<EsIndex> getEsIndices() {
+    public Map<String, EsIndexProperties> getEsIndices() {
         return null;
     }
 
