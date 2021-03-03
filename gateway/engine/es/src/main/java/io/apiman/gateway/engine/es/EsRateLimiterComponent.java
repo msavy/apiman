@@ -25,6 +25,7 @@ import io.apiman.gateway.engine.components.rate.RateLimitResponse;
 import io.apiman.gateway.engine.rates.RateBucketPeriod;
 import io.apiman.gateway.engine.rates.RateLimiterBucket;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
@@ -33,9 +34,12 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.common.util.CollectionUtils;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 
+import static io.apiman.common.es.util.builder.index.IndexUtils.KEYWORD_PROP;
+import static io.apiman.common.es.util.builder.index.IndexUtils.LONG_PROP;
 import static io.apiman.gateway.engine.storage.util.BackingStoreUtil.JSON_MAPPER;
 
 /**
@@ -147,7 +151,15 @@ public class EsRateLimiterComponent extends AbstractEsComponent implements IRate
 
     @Override
     public Map<String, EsIndexProperties> getEsIndices() {
-        return null;
+        EsIndexProperties indexDef = EsIndexProperties.builder()
+            .addProperty(EsConstants.ES_FIELD_COUNT, LONG_PROP)
+            .addProperty(EsConstants.ES_FIELD_LAST, LONG_PROP)
+            .addProperty(EsConstants.ES_FIELD_ORGANIZATION_ID, KEYWORD_PROP)
+            .addProperty(EsConstants.ES_FIELD_VERSION, KEYWORD_PROP)
+            .build();
+        Map<String, EsIndexProperties> indexMap = new HashMap<>();
+        indexMap.put(EsConstants.INDEX_RATE_BUCKET, indexDef);
+        return indexMap;
     }
 
     /**

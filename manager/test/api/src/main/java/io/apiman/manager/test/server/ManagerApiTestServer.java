@@ -27,6 +27,7 @@ import io.apiman.manager.api.war.TransactionWatchdogFilter;
 import io.apiman.manager.test.util.ManagerTestUtils;
 import io.apiman.manager.test.util.ManagerTestUtils.TestType;
 import io.apiman.test.common.util.TestUtil;
+import io.apiman.manager.api.es.EsStorage;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
@@ -180,8 +181,8 @@ public class ManagerApiTestServer {
     }
 
     private static RestHighLevelClient createEsClient() {
-        Map<String, String> config = getTestClientConfig();
-        return new DefaultEsClientFactory().createClient(config, getEsIndex(), ES_DEFAULT_INDEX, getDefaultIndices());
+        Map<String, String> config = getTestClientConfig(); // EsStorage.indexDefinitions()
+        return new DefaultEsClientFactory().createClient(config, Collections.emptyMap(), ES_DEFAULT_INDEX);
     }
 
     public static Map<String, String> getTestClientConfig() {
@@ -344,13 +345,5 @@ public class ManagerApiTestServer {
         } catch (IOException e) {
             System.err.println("Error flushing indices " + indices);
         }
-    }
-
-    /**
-     * Get default indices for metrics
-     * @return default indeces for metrics
-     */
-    private static List<String> getDefaultIndices() {
-        return Arrays.asList(EsConstants.MANAGER_INDEX_POSTFIXES);
     }
 }

@@ -15,74 +15,62 @@ import io.apiman.common.es.util.builder.index.EsIndexProperties.EsIndexPropertie
 import org.junit.Test;
 
 public class EsIndexPropertiesTest {
+//
+//    @Test
+//    public void test() throws JsonProcessingException {
+//        EsIndexPropertiesBuilder topLevel = EsIndexProperties.builder();
+//
+//        topLevel.addProperty(
+//            "apiId",
+//            EsIndexProperty.builder().setType("keyword").build()
+//        );
+//
+//        topLevel.addProperty(
+//            "organizationName",
+//            EsIndexProperty.builder()
+//                .setType("text")
+//                .addField("keyword",
+//                    EsField.builder().setIgnoreAbove(256).build())
+//                .build()
+//        );
+//
+//        topLevel.addProperty(
+//            "organizationName",
+//            EsIndexProperty.builder()
+//                .setType("text")
+//                .addField("keyword",
+//                    EsField.builder().setIgnoreAbove(256).build())
+//                .build()
+//        );
+//
+//        AllowableIndexPropertyEntry policyImpl =
+//            EsIndexProperty.builder().setType("text")
+//                .addField("keyword", KeywordEntryEs.builder().setIgnoreAbove(256).build())
+//                .build();
+//
+//        topLevel.addProperty(
+//            "apiPolicies",
+//            EsIndexProperties.builder()
+//                .addProperty("policyImpl", policyImpl)
+//                .addProperty("policyJsonConfig", policyImpl)
+//                .addProperty("data",
+//                    EsIndexProperty.builder().setType("binary").build()
+//                ).build()
+//        );
+//
+//        EsIndex root = EsIndex.builder()
+//            .setIndexName("apiman_gateway_foo")
+//            .addPropertyMappings(topLevel.build())
+//            .build();
+//
+//        ObjectMapper om = new ObjectMapper();
+//        String result = om.writerWithDefaultPrettyPrinter().writeValueAsString(root);
+//        System.err.println(result);
+//
+//    }
 
     @Test
-    public void test() throws JsonProcessingException {
-        EsIndexPropertiesBuilder topLevel = EsIndexProperties.builder();
-
-        topLevel.addProperty(
-            "apiId",
-            EsIndexProperty.builder().setType("keyword").build()
-        );
-
-        topLevel.addProperty(
-            "organizationName",
-            EsIndexProperty.builder()
-                .setType("text")
-                .addField("keyword",
-                    EsField.builder().setIgnoreAbove(256).build())
-                .build()
-        );
-
-        topLevel.addProperty(
-            "organizationName",
-            EsIndexProperty.builder()
-                .setType("text")
-                .addField("keyword",
-                    EsField.builder().setIgnoreAbove(256).build())
-                .build()
-        );
-
-        AllowableIndexPropertyEntry policyImpl =
-            EsIndexProperty.builder().setType("text")
-                .addField("keyword", KeywordEntryEs.builder().setIgnoreAbove(256).build())
-                .build();
-
-        topLevel.addProperty(
-            "apiPolicies",
-            EsIndexProperties.builder()
-                .addProperty("policyImpl", policyImpl)
-                .addProperty("policyJsonConfig", policyImpl)
-                .addProperty("data",
-                    EsIndexProperty.builder().setType("binary").build()
-                ).build()
-        );
-
-        EsIndex root = EsIndex.builder()
-            .setIndexName("apiman_gateway_foo")
-            .addPropertyMappings(topLevel.build())
-            .build();
-
-        ObjectMapper om = new ObjectMapper();
-        String result = om.writerWithDefaultPrettyPrinter().writeValueAsString(root);
-        System.err.println(result);
-
-        assertThatJson(result).isEqualTo(EXPECTED_INDEX_DEF_JSON);
-    }
-
-    @Test
-    public void foo() throws JsonProcessingException {
-        EsIndexProperty longProp = EsIndexProperty.builder().setType("long").build();
-        EsIndexProperty dateProp = EsIndexProperty.builder().setType("date").build();
-        EsIndexProperty ipProp = EsIndexProperty.builder().setType("ip").build();
-        EsIndexProperty boolProp = EsIndexProperty.builder().setType("boolean").build();
-        EsField keywordProp = KeywordEntryEs.builder().build();
-        EsIndexProperty textAndKeywordProp =
-            EsIndexProperty.builder().setType("text")
-                .addField("keyword",
-                    KeywordEntryEs.builder().setIgnoreAbove(256).build())
-                .build();
-
+    public void basicPropertiesMap() throws JsonProcessingException {
         EsIndexProperties propertiesMap = EsIndexProperties.builder()
             .addProperty(EsConstants.ES_FIELD_API_DURATION, LONG_PROP)
             .addProperty(EsConstants.ES_FIELD_API_END, DATE_PROP)
@@ -116,52 +104,132 @@ public class EsIndexPropertiesTest {
 
         ObjectMapper om = new ObjectMapper();
         String result = om.writerWithDefaultPrettyPrinter().writeValueAsString(propertiesMap);
-        System.err.println(result);
+        assertThatJson(result).isEqualTo(EXPECTED_INDEX_DEF_JSON);
     }
 
     private static final String EXPECTED_INDEX_DEF_JSON = "{\n"
-        + "  \"apiman_gateway_foo\" : {\n"
-        + "    \"mappings\" : {\n"
-        + "      \"properties\" : {\n"
-        + "        \"organizationName\" : {\n"
-        + "          \"type\" : \"text\",\n"
-        + "          \"fields\" : {\n"
-        + "            \"keyword\" : {\n"
-        + "              \"ignore_above\" : 256\n"
-        + "            }\n"
-        + "          }\n"
-        + "        },\n"
-        + "        \"apiPolicies\" : {\n"
-        + "          \"properties\" : {\n"
-        + "            \"policyImpl\" : {\n"
-        + "              \"type\" : \"text\",\n"
-        + "              \"fields\" : {\n"
-        + "                \"keyword\" : {\n"
-        + "                  \"type\" : \"keyword\",\n"
-        + "                  \"ignore_above\" : 256\n"
-        + "                }\n"
-        + "              }\n"
-        + "            },\n"
-        + "            \"data\" : {\n"
-        + "              \"type\" : \"binary\"\n"
-        + "            },\n"
-        + "            \"policyJsonConfig\" : {\n"
-        + "              \"type\" : \"text\",\n"
-        + "              \"fields\" : {\n"
-        + "                \"keyword\" : {\n"
-        + "                  \"type\" : \"keyword\",\n"
-        + "                  \"ignore_above\" : 256\n"
-        + "                }\n"
-        + "              }\n"
-        + "            }\n"
-        + "          }\n"
-        + "        },\n"
-        + "        \"apiId\" : {\n"
-        + "          \"type\" : \"keyword\"\n"
+        + "  \"properties\" : {\n"
+        + "    \"apiEnd\" : {\n"
+        + "      \"type\" : \"date\"\n"
+        + "    },\n"
+        + "    \"clientVersion\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"error\" : {\n"
+        + "      \"type\" : \"boolean\"\n"
+        + "    },\n"
+        + "    \"responseCode\" : {\n"
+        + "      \"type\" : \"long\"\n"
+        + "    },\n"
+        + "    \"apiVersion\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"bytesDownloaded\" : {\n"
+        + "      \"type\" : \"long\"\n"
+        + "    },\n"
+        + "    \"requestDuration\" : {\n"
+        + "      \"type\" : \"long\"\n"
+        + "    },\n"
+        + "    \"requestStart\" : {\n"
+        + "      \"type\" : \"date\"\n"
+        + "    },\n"
+        + "    \"clientOrgId\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"planId\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"apiId\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"remoteAddr\" : {\n"
+        + "      \"type\" : \"ip\"\n"
+        + "    },\n"
+        + "    \"bytesUploaded\" : {\n"
+        + "      \"type\" : \"long\"\n"
+        + "    },\n"
+        + "    \"apiOrgId\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"clientId\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"failureCode\" : {\n"
+        + "      \"type\" : \"long\"\n"
+        + "    },\n"
+        + "    \"method\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"resource\" : {\n"
+        + "      \"type\" : \"text\",\n"
+        + "      \"fields\" : {\n"
+        + "        \"keyword\" : {\n"
+        + "          \"type\" : \"keyword\",\n"
+        + "          \"ignore_above\" : 256\n"
+        + "        }\n"
+        + "      }\n"
+        + "    },\n"
+        + "    \"apiStart\" : {\n"
+        + "      \"type\" : \"date\"\n"
+        + "    },\n"
+        + "    \"errorMessage\" : {\n"
+        + "      \"type\" : \"text\",\n"
+        + "      \"fields\" : {\n"
+        + "        \"keyword\" : {\n"
+        + "          \"type\" : \"keyword\",\n"
+        + "          \"ignore_above\" : 256\n"
+        + "        }\n"
+        + "      }\n"
+        + "    },\n"
+        + "    \"url\" : {\n"
+        + "      \"type\" : \"text\",\n"
+        + "      \"fields\" : {\n"
+        + "        \"keyword\" : {\n"
+        + "          \"type\" : \"keyword\",\n"
+        + "          \"ignore_above\" : 256\n"
+        + "        }\n"
+        + "      }\n"
+        + "    },\n"
+        + "    \"failure\" : {\n"
+        + "      \"type\" : \"boolean\"\n"
+        + "    },\n"
+        + "    \"apiDuration\" : {\n"
+        + "      \"type\" : \"long\"\n"
+        + "    },\n"
+        + "    \"failureReason\" : {\n"
+        + "      \"type\" : \"text\",\n"
+        + "      \"fields\" : {\n"
+        + "        \"keyword\" : {\n"
+        + "          \"type\" : \"keyword\",\n"
+        + "          \"ignore_above\" : 256\n"
+        + "        }\n"
+        + "      }\n"
+        + "    },\n"
+        + "    \"contractId\" : {\n"
+        + "      \"type\" : \"keyword\"\n"
+        + "    },\n"
+        + "    \"requestEnd\" : {\n"
+        + "      \"type\" : \"date\"\n"
+        + "    },\n"
+        + "    \"responseMessage\" : {\n"
+        + "      \"type\" : \"text\",\n"
+        + "      \"fields\" : {\n"
+        + "        \"keyword\" : {\n"
+        + "          \"type\" : \"keyword\",\n"
+        + "          \"ignore_above\" : 256\n"
+        + "        }\n"
+        + "      }\n"
+        + "    },\n"
+        + "    \"user\" : {\n"
+        + "      \"type\" : \"text\",\n"
+        + "      \"fields\" : {\n"
+        + "        \"keyword\" : {\n"
+        + "          \"type\" : \"keyword\",\n"
+        + "          \"ignore_above\" : 256\n"
         + "        }\n"
         + "      }\n"
         + "    }\n"
         + "  }\n"
-        + "}\n";
+        + "}";
 
 }

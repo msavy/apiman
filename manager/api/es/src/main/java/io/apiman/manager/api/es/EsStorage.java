@@ -37,27 +37,6 @@ import static io.apiman.common.es.util.EsConstants.INDEX_MANAGER_POSTFIX_POLICY_
 import static io.apiman.common.es.util.EsConstants.INDEX_MANAGER_POSTFIX_ROLE;
 import static io.apiman.common.es.util.EsConstants.INDEX_MANAGER_POSTFIX_ROLE_MEMBERSHIP;
 import static io.apiman.common.es.util.EsConstants.INDEX_MANAGER_POSTFIX_USER;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_API;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_API_DEFINITION;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_API_POLICIES;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_API_VERSION;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_AUDIT_ENTRY;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_CLIENT;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_CLIENT_POLICIES;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_CLIENT_VERSION;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_CONTRACT;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_DEVELOPER;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_DOWNLOAD;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_MEMBERSHIP;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_METADATA;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_ORGANIZATION;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_PLAN;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_PLAN_POLICIES;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_PLAN_VERSION;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_PLUGIN;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_POLICY_DEF;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_ROLE;
-import static io.apiman.manager.api.es.EsStorageIndexes.MANAGER_USER;
 
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.EsConstants;
@@ -2782,6 +2761,10 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
 
     @Override
     public Map<String, EsIndexProperties> getEsIndices() {
+        return indexDefinitions();
+    }
+
+    public static Map<String, EsIndexProperties> indexDefinitions() {
         Map<String, EsIndexProperties> indexMap = new HashMap<>();
         indexMap.put(INDEX_MANAGER_POSTFIX_GATEWAY, EsStorageIndexes.MANAGER_GATEWAY);
         indexMap.put(INDEX_MANAGER_POSTFIX_DOWNLOAD, EsStorageIndexes.MANAGER_DOWNLOAD);

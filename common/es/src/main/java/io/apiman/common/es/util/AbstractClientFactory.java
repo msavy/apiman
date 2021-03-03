@@ -20,6 +20,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.common.logging.DefaultDelegateFactory;
 import io.apiman.common.logging.IApimanLogger;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
@@ -30,7 +36,6 @@ import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 
 import java.io.IOException;
-import java.util.*;
 import org.elasticsearch.common.xcontent.XContentType;
 
 /**
@@ -65,7 +70,6 @@ public abstract class AbstractClientFactory {
      * Called to initialize the storage.
      * @param client the es client
      * @param indexPrefix the index prefix of the ES index to initialize
-     * @param defaultIndices the default indices for the component
      */
     protected void initializeIndices(RestHighLevelClient client, Map<String, EsIndexProperties> indexDefs, String indexPrefix) {
         try {
@@ -80,14 +84,19 @@ public abstract class AbstractClientFactory {
             // There was occasions where a race occurred here when multiple threads try to
             // create the index simultaneously. This caused a non-fatal, but annoying, exception.
             synchronized (AbstractClientFactory.class) {
-                // check if indices exist - if not create them
-                for (String indexPostfix: Collections.<String>emptyList()) {
+                for (Entry<String, EsIndexProperties> entry : indexDefs.entrySet()) {
+
+                    String indexPostfix = entry.getKey();
+                    EsIndexProperties index = entry.getValue();
+
                     String fullIndexName = EsIndexMapping.getFullIndexName(indexPrefix, indexPostfix);
+
                     if (!createdIndices.contains(fullIndexName)) {
                         GetIndexRequest indexExistsRequest = new GetIndexRequest(fullIndexName);
-                        boolean indexExists = client.indices().exists(indexExistsRequest, RequestOptions.DEFAULT);
+                        boolean indexExists = client.indices()
+                            .exists(indexExistsRequest, RequestOptions.DEFAULT);
                         if (!indexExists) {
-                            this.createIndex(client, indexDefs, indexPrefix, indexPostfix); //$NON-NLS-1$
+                            this.createIndex(client, index, indexPrefix, indexPostfix); //$NON-NLS-1$
                             createdIndices.add(fullIndexName);
                         }
                     }
@@ -145,14 +154,12 @@ public abstract class AbstractClientFactory {
      * @throws Exception
      */
     @SuppressWarnings("nls")
-    protected void createIndex(RestHighLevelClient client, Map<String, EsIndexProperties> indexDef, String indexPrefix, String indexPostfix) throws Exception {
+    protected void createIndex(RestHighLevelClient client, EsIndexProperties indexDef, String indexPrefix, String indexPostfix) throws Exception {
         String indexToCreate = EsIndexMapping.getFullIndexName(indexPrefix, indexPostfix);
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexToCreate);
         try {
-            for (EsIndexProperties index : indexDef) {
-                // Create index using a full definition.
-                createIndexRequest.mapping(objectMapper.writeValueAsString(index), XContentType.JSON);
-            }
+            // Create index using a full definition.
+            createIndexRequest.mapping(objectMapper.writeValueAsString(indexDef), XContentType.JSON);
         } catch (JsonProcessingException jpe) {
             logger.warn("The EsIndex definition provided by {} definition cannot be marshalled", this.getClass().getCanonicalName());
             throw jpe;

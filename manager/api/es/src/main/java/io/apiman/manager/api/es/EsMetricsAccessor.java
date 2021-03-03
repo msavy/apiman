@@ -23,6 +23,7 @@ import io.apiman.manager.api.beans.metrics.*;
 import io.apiman.manager.api.core.IMetricsAccessor;
 import io.apiman.manager.api.core.logging.ApimanLogger;
 import io.apiman.manager.api.core.metrics.MetricsAccessorHelper;
+import java.util.Collections;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -748,6 +749,6 @@ public class EsMetricsAccessor extends AbstractEsComponent implements IMetricsAc
 
     @Override
     public Map<String, EsIndexProperties> getEsIndices() {
-        return null;
+        return Collections.emptyMap();
     }
 }

@@ -653,7 +653,10 @@ public class EsRegistry extends AbstractEsComponent implements IRegistry {
 
     @Override
     public Map<String, EsIndexProperties> getEsIndices() {
-        return null;
+        Map<String, EsIndexProperties> indexMap = new HashMap<>();
+        indexMap.put(EsConstants.INDEX_APIS, EsRegistryIndexes.GATEWAY_APIS);
+        indexMap.put(EsConstants.INDEX_CLIENTS, EsRegistryIndexes.GATEWAY_CLIENTS);
+        return indexMap;
     }
 
 }

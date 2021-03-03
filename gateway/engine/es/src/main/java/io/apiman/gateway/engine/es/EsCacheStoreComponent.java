@@ -28,6 +28,8 @@ import io.apiman.gateway.engine.io.IApimanBuffer;
 import io.apiman.gateway.engine.io.ISignalReadStream;
 import io.apiman.gateway.engine.io.ISignalWriteStream;
 import io.apiman.gateway.engine.storage.model.CacheEntry;
+import java.util.Collections;
+import java.util.HashMap;
 import org.apache.commons.codec.binary.Base64;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -232,7 +234,10 @@ public class EsCacheStoreComponent extends AbstractEsComponent implements ICache
 
     @Override
     public Map<String, EsIndexProperties> getEsIndices() {
-        return null;
+//        Map<String, EsIndexProperties> indexMap = new HashMap<>();
+//        indexMap.put(EsConstants.INDEX_CACHE_CACHE_ENTRY, );
+        // TODO where is the definition for this?
+        return Collections.emptyMap();
     }
 
     /**
