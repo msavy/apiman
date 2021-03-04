@@ -9,8 +9,13 @@ public class IndexUtils {
     public static final EsIndexProperty OBJECT_PROP = EsIndexProperty.builder().setType("object").build();
     public static final EsField KEYWORD_PROP = KeywordEntryEs.builder().build();
     public static final EsIndexProperty TEXT_AND_KEYWORD_PROP_256 =
-        EsIndexProperty.builder().setType("text")
+        EsIndexProperty.builder()
+            .setType("text")
             .addField("keyword",
                 KeywordEntryEs.builder().setIgnoreAbove(256).build())
             .build();
+//
+//    static  {
+//        TEXT_AND_KEYWORD_PROP_256.setFieldData(true);
+//    }
 }

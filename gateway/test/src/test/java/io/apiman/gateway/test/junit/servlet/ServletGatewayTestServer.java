@@ -83,7 +83,7 @@ public class ServletGatewayTestServer implements IGatewayTestServer {
     private static final int ES_CLIENT_TIMEOUT = -1;
     public static RestHighLevelClient ES_CLIENT = null;
 
-    private static ElasticsearchContainer node;
+    public static ElasticsearchContainer node;
 
     /*
      * Database related.

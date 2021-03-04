@@ -93,8 +93,7 @@ public abstract class AbstractClientFactory {
 
                     if (!createdIndices.contains(fullIndexName)) {
                         GetIndexRequest indexExistsRequest = new GetIndexRequest(fullIndexName);
-                        boolean indexExists = client.indices()
-                            .exists(indexExistsRequest, RequestOptions.DEFAULT);
+                        boolean indexExists = client.indices().exists(indexExistsRequest, RequestOptions.DEFAULT);
                         if (!indexExists) {
                             this.createIndex(client, index, indexPrefix, indexPostfix); //$NON-NLS-1$
                             createdIndices.add(fullIndexName);
@@ -157,9 +156,11 @@ public abstract class AbstractClientFactory {
     protected void createIndex(RestHighLevelClient client, EsIndexProperties indexDef, String indexPrefix, String indexPostfix) throws Exception {
         String indexToCreate = EsIndexMapping.getFullIndexName(indexPrefix, indexPostfix);
         CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexToCreate);
+        String mapping;
         try {
+            mapping = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(indexDef);
             // Create index using a full definition.
-            createIndexRequest.mapping(objectMapper.writeValueAsString(indexDef), XContentType.JSON);
+            createIndexRequest = createIndexRequest.mapping(mapping, XContentType.JSON);
         } catch (JsonProcessingException jpe) {
             logger.warn("The EsIndex definition provided by {} definition cannot be marshalled", this.getClass().getCanonicalName());
             throw jpe;
@@ -176,6 +177,7 @@ public abstract class AbstractClientFactory {
             logger.error("Failed to create ES index: '" + indexToCreate + "' Reason: request was not acknowledged by shards.", new Exception());
         } else {
             logger.info("ES index created: " + indexToCreate);
+            logger.debug("Creating an index => " + mapping);
         }
     }
 

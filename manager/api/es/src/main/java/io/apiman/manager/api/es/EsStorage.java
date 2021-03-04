@@ -1192,7 +1192,7 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
         SearchSourceBuilder builder = new SearchSourceBuilder()
                 .fetchSource(fields, null)
                 .query(query)
-                .sort(new FieldSortBuilder("name").order(SortOrder.ASC))
+                .sort(new FieldSortBuilder("name.keyword").order(SortOrder.ASC))
                 .size(200);
         List<SearchHit> hits = listEntities(INDEX_MANAGER_POSTFIX_PLUGIN, builder);
         List<PluginSummaryBean> rval = new ArrayList<>(hits.size());
@@ -1211,7 +1211,7 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
         @SuppressWarnings("nls")
         String[] fields = {"id", "name", "description", "type"};
         SearchSourceBuilder builder = new SearchSourceBuilder().fetchSource(fields, null)
-                .sort(new FieldSortBuilder("name").order(SortOrder.ASC)).size(100); //$NON-NLS-1$
+                .sort(new FieldSortBuilder("name.keyword").order(SortOrder.ASC)).size(100); //$NON-NLS-1$
         List<SearchHit> hits = listEntities(INDEX_MANAGER_POSTFIX_GATEWAY, builder);
         List<GatewaySummaryBean> rval = new ArrayList<>(hits.size());
         for (SearchHit hit : hits) {
@@ -1368,7 +1368,7 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
 
         @SuppressWarnings("nls")
         SearchSourceBuilder builder = new SearchSourceBuilder()
-                .sort(new FieldSortBuilder("name").order(SortOrder.ASC))
+                .sort(new FieldSortBuilder("name.keyword").order(SortOrder.ASC))
                 .query(query)
                 .size(500);
         List<SearchHit> hits = listEntities(INDEX_MANAGER_POSTFIX_ORGANIZATION, builder);
@@ -1387,8 +1387,8 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
     public List<ClientSummaryBean> getClientsInOrgs(Set<String> organizationIds) throws StorageException {
         @SuppressWarnings("nls")
         SearchSourceBuilder builder = new SearchSourceBuilder()
-                .sort("organizationName", SortOrder.ASC)
-                .sort("name", SortOrder.ASC)
+                .sort("organizationName.keyword", SortOrder.ASC)
+                .sort("name.keyword", SortOrder.ASC)
                 .size(500);
         TermsQueryBuilder query = QueryBuilders.termsQuery("organizationId", organizationIds.toArray(new String[organizationIds.size()])); //$NON-NLS-1$
         builder.query(query);
@@ -1503,8 +1503,8 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
     public List<ApiSummaryBean> getApisInOrgs(Set<String> organizationIds) throws StorageException {
         @SuppressWarnings("nls")
         SearchSourceBuilder builder = new SearchSourceBuilder()
-                .sort(new FieldSortBuilder("organizationName").order(SortOrder.ASC))
-                .sort(new FieldSortBuilder("name").order(SortOrder.ASC))
+                .sort(new FieldSortBuilder("organizationName.keyword").order(SortOrder.ASC))
+                .sort(new FieldSortBuilder("name.keyword").order(SortOrder.ASC))
                 .size(500);
         TermsQueryBuilder query = QueryBuilders.termsQuery("organizationId", organizationIds.toArray(new String[organizationIds.size()])); //$NON-NLS-1$
         builder.query(query);
@@ -1586,8 +1586,8 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
     public List<PlanSummaryBean> getPlansInOrgs(Set<String> organizationIds) throws StorageException {
         @SuppressWarnings("nls")
         SearchSourceBuilder builder = new SearchSourceBuilder()
-                .sort(new FieldSortBuilder("organizationName").order(SortOrder.ASC))
-                .sort(new FieldSortBuilder("name").order(SortOrder.ASC))
+                .sort(new FieldSortBuilder("organizationName.keyword").order(SortOrder.ASC))
+                .sort(new FieldSortBuilder("name.keyword").order(SortOrder.ASC))
                 .size(500);
         TermsQueryBuilder query = QueryBuilders.termsQuery("organizationId", organizationIds.toArray(new String[organizationIds.size()])); //$NON-NLS-1$
         builder.query(query);
@@ -1688,7 +1688,7 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
         SearchSourceBuilder builder = new SearchSourceBuilder()
                 .fetchSource(fields, null)
                 .query(query)
-                .sort(new FieldSortBuilder("name").order(SortOrder.ASC)) //$NON-NLS-1$
+                .sort(new FieldSortBuilder("name.keyword").order(SortOrder.ASC)) //$NON-NLS-1$
                 .size(100);
         List<SearchHit> hits = listEntities(INDEX_MANAGER_POSTFIX_POLICY_DEF, builder); //$NON-NLS-1$
         List<PolicyDefinitionSummaryBean> rval = new ArrayList<>(hits.size());
@@ -1748,7 +1748,7 @@ public class EsStorage extends AbstractEsComponent implements IStorage, IStorage
         SearchSourceBuilder builder = new SearchSourceBuilder()
                 .fetchSource(fields, null)
                 .query(qb)
-                .sort(new FieldSortBuilder("name").order(SortOrder.ASC))
+                .sort(new FieldSortBuilder("name.keyword").order(SortOrder.ASC))
                 .size(100); //$NON-NLS-1$
         List<SearchHit> hits = listEntities(INDEX_MANAGER_POSTFIX_POLICY_DEF, builder); //$NON-NLS-1$
         List<PolicyDefinitionSummaryBean> rval = new ArrayList<>(hits.size());

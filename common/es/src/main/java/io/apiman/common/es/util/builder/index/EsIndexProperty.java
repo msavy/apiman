@@ -35,10 +35,21 @@ public class EsIndexProperty implements AllowableIndexPropertyEntry, AllowableFi
     @JsonProperty("fields")
     private final Map<String, AllowableFieldEntry> fieldMap;
     private final String type;
+    @JsonProperty("fielddata")
+    private Boolean fieldData = null;
 
     private EsIndexProperty(EsIndexPropertyBuilder builder) {
         fieldMap = builder.fieldMap;
         type = builder.type;
+    }
+
+    public Boolean getFieldData() {
+        return fieldData;
+    }
+
+    public EsIndexProperty setFieldData(Boolean fieldData) {
+        this.fieldData = fieldData;
+        return this;
     }
 
     /**

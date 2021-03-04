@@ -82,7 +82,7 @@ public class ManagerApiTestServer {
     /*
      * The elasticsearch node - only if using ES
      */
-    private static ElasticsearchContainer node;
+    public static ElasticsearchContainer node;
     private static final int ES_CLIENT_TIMEOUT = -1;
     private static final String ES_DEFAULT_INDEX = EsConstants.MANAGER_INDEX_NAME;
 
