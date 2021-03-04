@@ -33,6 +33,8 @@ public interface IEsClientFactory {
      * @param esIndices the index definitions for the component
      * @param defaultIndexPrefix the default index prefix
      */
-    RestHighLevelClient createClient(Map<String, String> config, Map<String, EsIndexProperties> esIndices, String defaultIndexPrefix);
+    RestHighLevelClient createClient(Map<String, String> config,
+        Map<String, EsIndexProperties> esIndices,
+        String defaultIndexPrefix);
 
 }

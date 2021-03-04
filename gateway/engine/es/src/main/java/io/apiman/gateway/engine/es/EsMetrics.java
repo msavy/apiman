@@ -30,6 +30,7 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 
 import java.util.*;
@@ -58,7 +59,7 @@ public class EsMetrics extends AbstractEsComponent implements IMetrics {
     private final BlockingQueue<RequestMetric> queue;
     private final int batchSize;
 
-    private IApimanLogger logger = new DefaultDelegateFactory().createLogger(PollCachingEsRegistry.class);
+    private IApimanLogger logger = new DefaultDelegateFactory().createLogger(EsMetrics.class);
 
     /**
      * Constructor.
@@ -66,7 +67,6 @@ public class EsMetrics extends AbstractEsComponent implements IMetrics {
      */
     public EsMetrics(Map<String, String> config) {
         super(config);
-
         int queueSize = DEFAULT_QUEUE_SIZE;
         String queueSizeConfig = config.get("queue.size"); //$NON-NLS-1$
         if (queueSizeConfig != null) {
@@ -126,6 +126,7 @@ public class EsMetrics extends AbstractEsComponent implements IMetrics {
      */
     protected void processQueue() {
         try {
+            RestHighLevelClient client = getClient();
             Collection<RequestMetric> batch = new ArrayList<>(this.batchSize);
             RequestMetric rm = queue.take();
             batch.add(rm);
@@ -149,7 +150,7 @@ public class EsMetrics extends AbstractEsComponent implements IMetrics {
                     logger.error("Failed to add metric(s) to ES", e); //$NON-NLS-1$
                 }
             };
-            getClient().bulkAsync(request, RequestOptions.DEFAULT, listener);
+            client.bulkAsync(request, RequestOptions.DEFAULT, listener);
         } catch (InterruptedException | JsonProcessingException e) {
             logger.error("Failed to add metric(s) to ES", e); //$NON-NLS-1$
         }
