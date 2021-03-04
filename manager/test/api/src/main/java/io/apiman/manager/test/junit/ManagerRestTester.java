@@ -17,9 +17,6 @@ package io.apiman.manager.test.junit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import io.apiman.manager.api.core.util.PolicyTemplateUtil;
 import io.apiman.manager.test.junit.ManagerRestTester.TestInfo;
 import io.apiman.manager.test.server.ManagerApiTestServer;
@@ -233,23 +230,6 @@ public class ManagerRestTester extends ParentRunner<TestInfo> {
         log("");
 
         try {
-
-
-            int port = ManagerApiTestServer.node.getFirstMappedPort();
-            OkHttpClient client = new OkHttpClient();
-
-            Request request = new Request.Builder()
-                .url("http://localhost:"+port+"/_mapping")
-                .build();
-            Response response = null;
-            try {
-                response = client.newCall(request).execute();
-                System.out.println(response.body().string());
-                System.out.println("stop here");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
             super.run(notifier);
         } finally {
             try {

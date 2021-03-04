@@ -17,11 +17,7 @@ package io.apiman.gateway.test.junit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import io.apiman.gateway.test.junit.GatewayRestTester.TestInfo;
-import io.apiman.gateway.test.junit.servlet.ServletGatewayTestServer;
 import io.apiman.test.common.plan.TestGroupType;
 import io.apiman.test.common.plan.TestPlan;
 import io.apiman.test.common.plan.TestType;
