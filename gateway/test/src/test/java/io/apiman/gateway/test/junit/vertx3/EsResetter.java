@@ -20,6 +20,7 @@ import io.apiman.common.es.util.EsConstants;
 import io.apiman.common.es.util.AbstractEsComponent;
 import io.apiman.common.es.util.builder.index.EsIndexProperties;
 import io.apiman.gateway.platforms.vertx3.common.config.VertxEngineConfig;
+import java.util.Collections;
 import java.util.Map;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.client.RequestOptions;
@@ -80,15 +81,6 @@ public class EsResetter extends AbstractEsComponent implements Resetter {
 
     @Override
     public Map<String, EsIndexProperties> getEsIndices() {
-        return null;
+        return Collections.emptyMap();
     }
-
-//    /**
-//     * @see AbstractEsComponent#getDefaultIndices()
-//     * @return default indices
-//     */
-//    @Override
-//    protected List<String> getDefaultIndices() {
-//        return Arrays.asList(EsConstants.GATEWAY_INDEX_POSTFIXES);
-//    }
 }

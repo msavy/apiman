@@ -185,7 +185,7 @@ public class VertxPluginRegistry extends DefaultPluginRegistry {
             if (!"none".equalsIgnoreCase(noProxy)) noProxyAddresses.add(InetAddress.getByName(noProxy));
         } catch (UnknownHostException e) {
             //Non blocking error while trying to get no proxy addresses. Proxy will be always applied if configured.
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         //Configure http client options following artifact url
