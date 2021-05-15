@@ -18,6 +18,17 @@
     "url": "https://github.com/apiman/apiman/issues"
   },
   "homepage": "https://github.com/apiman/apiman#readme",
+  "scripts": {
+    "apiman:build-latest-docker": "mvn -f ../../../distro/wildfly/pom.xml install -Pdocker",
+    "apiman:rebuild": "mvn -f ../../../pom.xml clean install -DskipTests -Dmaven.javadoc.skip -T1C -B -Pdocker",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "test": "yarn cy:open",
+    "test:headless": "yarn cy:run"
+  },
+  "resolutions": {
+    "graceful-fs": "^4.2.4"
+  },
   "dependencies": {
     "angular": "1.4.7",
     "angular-animate": "1.4.7",
@@ -71,7 +82,9 @@
     "vinyl-source-stream": "1.1.0",
     "which": "1.0.8"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "cypress": "^7.3.0"
+  },
   "optionalDependencies": {
     "fsevents": "*"
   }
