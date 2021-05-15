@@ -1,9 +1,15 @@
-describe('My First Test', () => {
+describe('Apiman e2e UI smoke test', () => {
 
     before(() => {
         cy.clearCookies();
+        cy.exec('docker run --name apiman-e2e -d -p 8080:8080 apiman/on-wildfly:latest &')
+        cy.exec('yarn run wait-on -c waitOnConfig.js http://localhost:8080/apiman/system/status')
         cy.visit('localhost:8080/apimanui');
         cy.typeLogin('admin', 'admin123!')
+    });
+
+    after(() => {
+        cy.exec('docker rm -f apiman-e2e')
     });
 
     beforeEach(() => {
