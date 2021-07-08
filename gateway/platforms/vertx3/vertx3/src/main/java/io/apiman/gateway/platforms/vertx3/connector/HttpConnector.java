@@ -109,22 +109,22 @@ class HttpConnector implements IApiConnectionResponse, IApiConnection {
      */
     public HttpConnector(Vertx vertx, HttpClient client, ApiRequest request, Api api, ApimanHttpConnectorOptions options,
             IConnectorConfig connectorConfig, IAsyncResultHandler<IApiConnectionResponse> resultHandler) {
-       this.client = client;
-       this.api = api;
-       this.apiRequest = request;
-       this.connectorConfig = connectorConfig;
+        this.client = client;
+        this.api = api;
+        this.apiRequest = request;
+        this.connectorConfig = connectorConfig;
 
-       this.resultHandler = resultHandler;
-       this.exceptionHandler = new ExceptionHandler();
-       this.apiEndpoint = options.getUri();
-       this.options = options;
+        this.resultHandler = resultHandler;
+        this.exceptionHandler = new ExceptionHandler();
+        this.apiEndpoint = options.getUri();
+        this.options = options;
 
-       apiHost = apiEndpoint.getHost();
-       apiPort = getPort();
-       apiPath = apiEndpoint.getPath().isEmpty() || apiEndpoint.getPath().equals("/") ? "" : apiEndpoint.getPath();
-       destination = apiRequest.getDestination() == null ? "" : apiRequest.getDestination();
+        apiHost = apiEndpoint.getHost();
+        apiPort = getPort();
+        apiPath = apiEndpoint.getPath().isEmpty() || apiEndpoint.getPath().equals("/") ? "" : apiEndpoint.getPath();
+        destination = apiRequest.getDestination() == null ? "" : apiRequest.getDestination();
 
-       verifyConnection();
+        verifyConnection();
     }
 
     private int getPort() {

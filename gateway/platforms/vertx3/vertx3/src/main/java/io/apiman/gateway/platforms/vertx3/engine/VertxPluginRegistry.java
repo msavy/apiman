@@ -218,7 +218,7 @@ public class VertxPluginRegistry extends DefaultPluginRegistry {
     }
 
     private ProxyType translateProxyType(HttpProxy proxy) {
-        switch(proxy.getProxyType()) {
+        switch (proxy.getProxyType()) {
             case HTTP:
                 return ProxyType.HTTP;
             case SOCKS4:

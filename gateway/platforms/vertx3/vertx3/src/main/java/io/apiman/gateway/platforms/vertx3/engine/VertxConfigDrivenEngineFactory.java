@@ -46,7 +46,7 @@ public class VertxConfigDrivenEngineFactory extends ConfigDrivenEngineFactory {
 
     @Override
     protected IConnectorFactory createConnectorFactory(IPluginRegistry pluginRegistry) {
-        return new ConnectorFactory(vertx, vxConfig.getConnectorFactoryConfig());
+        return new ConnectorFactory(vertx, vxConfig.getConnectorFactoryConfig(), vxConfig.getConnectorFactoryConfigJson());
     }
 
     @Override

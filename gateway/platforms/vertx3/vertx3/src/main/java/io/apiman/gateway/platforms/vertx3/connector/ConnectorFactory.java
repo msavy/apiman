@@ -25,20 +25,24 @@ import io.apiman.gateway.engine.IConnectorFactory;
 import io.apiman.gateway.engine.auth.RequiredAuthType;
 import io.apiman.gateway.engine.beans.Api;
 import io.apiman.gateway.engine.beans.ApiRequest;
+import io.apiman.gateway.platforms.vertx3.common.config.InheritingHttpClientOptions;
+import io.apiman.gateway.platforms.vertx3.common.config.InheritingHttpClientOptionsConverter;
 import io.apiman.gateway.platforms.vertx3.http.HttpClientOptionsFactory;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Create Vert.x connectors to the enable apiman to connect to a backend API.
+ * Create Vert.x connectors to enable apiman to connect to a backend API.
  *
  * @author Marc Savy {@literal <msavy@redhat.com>}
  */
@@ -50,10 +54,11 @@ public class ConnectorFactory implements IConnectorFactory {
         SUPPRESSED_HEADERS.add("X-API-Key"); //$NON-NLS-1$
     }
 
-    private Vertx vertx;
-    private TLSOptions tlsOptions;
-    private Map<String, String> config;
-    private LoadingCache<ApimanHttpConnectorOptions, HttpClient> clientCache = CacheBuilder.newBuilder()
+    private final Vertx vertx;
+    private final TLSOptions tlsOptions;
+    private final JsonObject connectorFactoryConfigJson;
+    private final Map<String, String> config;
+    private final LoadingCache<ApimanHttpConnectorOptions, HttpClient> clientCache = CacheBuilder.newBuilder()
                 // TODO make this tuneable.
                 .maximumSize(2000)
                 // Close any evicted connections.
@@ -62,13 +67,26 @@ public class ConnectorFactory implements IConnectorFactory {
                 .build(new CacheLoader<ApimanHttpConnectorOptions, HttpClient>() {
 
                     @Override
-                    public HttpClient load(ApimanHttpConnectorOptions opts) throws Exception {
+                    public HttpClient load(ApimanHttpConnectorOptions opts) {
                         HttpClientOptions vxClientOptions = HttpClientOptionsFactory.parseTlsOptions(opts.getTlsOptions(), opts.getUri())
                                 .setConnectTimeout(opts.getConnectionTimeout())
                                 .setIdleTimeout(opts.getIdleTimeout())
                                 .setKeepAlive(opts.isKeepAlive())
                                 .setTryUseCompression(opts.isTryUseCompression());
-                        return vertx.createHttpClient(vxClientOptions);
+
+                        InheritingHttpClientOptions ihco = new InheritingHttpClientOptions(vxClientOptions);
+
+                        Optional.ofNullable(connectorFactoryConfigJson.getJsonObject("httpClient"))
+                            .ifPresent(httpClientJsonObj -> {
+                                    // Take options defined in httpClient segment and write into InheritingHttpClientOptions
+                                    InheritingHttpClientOptionsConverter.fromJson(
+                                        httpClientJsonObj,
+                                        ihco
+                                    );
+                                }
+                            );
+
+                        return vertx.createHttpClient(ihco);
                     }
                 });
 
@@ -76,11 +94,14 @@ public class ConnectorFactory implements IConnectorFactory {
      * Constructor
      * @param vertx a vertx instance
      * @param config the config
+     * @param connectorFactoryConfigJson
      */
-    public ConnectorFactory(Vertx vertx, Map<String, String> config) {
+    public ConnectorFactory(Vertx vertx, Map<String, String> config,
+        JsonObject connectorFactoryConfigJson) {
         this.vertx = vertx;
         this.config = config;
         this.tlsOptions = new TLSOptions(config);
+        this.connectorFactoryConfigJson = connectorFactoryConfigJson;
     }
 
     // In the future we can switch to different back-end implementations here!

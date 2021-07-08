@@ -166,6 +166,10 @@ public class VertxEngineConfig implements IEngineConfig {
         return getConfig(config, GATEWAY_CONNECTOR_FACTORY_PREFIX);
     }
 
+    public JsonObject getConnectorFactoryConfigJson() {
+        return config.getJsonObject(GATEWAY_CONNECTOR_FACTORY_PREFIX);
+    }
+
     @Override
     public Class<? extends IPolicyFactory> getPolicyFactoryClass(IPluginRegistry pluginRegistry) {
         return loadConfigClass(getClassname(config, GATEWAY_POLICY_FACTORY_PREFIX),

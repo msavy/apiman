@@ -19,6 +19,9 @@ package io.apiman.gateway.platforms.vertx3.connector;
 import io.apiman.common.config.options.AbstractOptions;
 import io.apiman.common.config.options.TLSOptions;
 import io.apiman.gateway.engine.auth.RequiredAuthType;
+import io.apiman.gateway.platforms.vertx3.common.config.InheritingHttpClientOptions;
+import io.apiman.gateway.platforms.vertx3.common.config.InheritingHttpClientOptionsConverter;
+
 import io.vertx.core.http.HttpClientOptions;
 
 import java.net.URI;
@@ -42,6 +45,7 @@ public class ApimanHttpConnectorOptions extends AbstractOptions {
     private TLSOptions tlsOptions;
     private URI endpoint;
     private boolean isSsl;
+
 
     public ApimanHttpConnectorOptions() {
         super();
