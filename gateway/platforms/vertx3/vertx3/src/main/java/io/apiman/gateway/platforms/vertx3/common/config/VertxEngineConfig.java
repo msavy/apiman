@@ -152,7 +152,7 @@ public class VertxEngineConfig implements IEngineConfig {
     }
 
     public JsonObject getPluginRegistryConfigJson() {
-        return config.getJsonObject(GATEWAY_PLUGIN_REGISTRY_PREFIX);
+        return config.getJsonObject(GATEWAY_PLUGIN_REGISTRY_PREFIX, new JsonObject());
     }
 
     @Override
@@ -167,7 +167,8 @@ public class VertxEngineConfig implements IEngineConfig {
     }
 
     public JsonObject getConnectorFactoryConfigJson() {
-        return config.getJsonObject(GATEWAY_CONNECTOR_FACTORY_PREFIX);
+        return config.getJsonObject(GATEWAY_CONNECTOR_FACTORY_PREFIX, new JsonObject())
+            .getJsonObject("config", new JsonObject());
     }
 
     @Override
