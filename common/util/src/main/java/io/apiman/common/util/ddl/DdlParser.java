@@ -66,16 +66,18 @@ public class DdlParser {
         StringBuilder builder = new StringBuilder();
         boolean isInMultiLineStatement = false;
         while ( (line = reader.readLine()) != null) {
-            if (line.startsWith("--")) {
+            String trimmedLine = line.trim();
+
+            if (trimmedLine.startsWith("--")) {
                 continue;
             }
-            if (line.trim().isEmpty()) {
+            if (trimmedLine.isEmpty()) {
                 continue;
             }
-            if (line.endsWith("'") || line.endsWith("(")) {
+            if (trimmedLine.endsWith("'") || trimmedLine.endsWith("(")) {
                 isInMultiLineStatement = true;
             }
-            if (line.startsWith("'") || line.startsWith(")")) {
+            if (trimmedLine.startsWith("'") || trimmedLine.startsWith(")")) {
                 isInMultiLineStatement = false;
             }
             builder.append(line);
