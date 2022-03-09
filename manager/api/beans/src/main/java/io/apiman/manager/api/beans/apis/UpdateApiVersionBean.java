@@ -21,7 +21,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -194,30 +196,43 @@ public class UpdateApiVersionBean implements Serializable {
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
     @Override
-    @SuppressWarnings("nls")
-    public String toString() {
-        final int maxLen = 10;
-        return "UpdateApiVersionBean [endpoint=" + endpoint + ", endpointType=" + endpointType
-                + ", endpointProperties=" + toString(this.endpointProperties.entrySet(), maxLen)
-                + ", gateways=" + (gateways != null ? toString(gateways, maxLen) : null) + ", publicAPI="
-                + publicAPI + ", plans=" + (plans != null ? toString(plans, maxLen) : null) + "]";
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        UpdateApiVersionBean that = (UpdateApiVersionBean) o;
+        return Objects.equals(endpoint, that.endpoint) && endpointType == that.endpointType && endpointContentType == that.endpointContentType
+                       && Objects.equals(endpointProperties, that.endpointProperties) && Objects.equals(gateways, that.gateways)
+                       && Objects.equals(parsePayload, that.parsePayload) && Objects.equals(publicAPI, that.publicAPI) && Objects.equals(
+                disableKeysStrip, that.disableKeysStrip) && Objects.equals(plans, that.plans) && Objects.equals(extendedDescription,
+                that.extendedDescription) && Objects.equals(exposeInPortal, that.exposeInPortal);
     }
 
-    @SuppressWarnings("nls")
-    private String toString(Collection<?> collection, int maxLen) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("[");
-        int i = 0;
-        for (Iterator<?> iterator = collection.iterator(); iterator.hasNext() && i < maxLen; i++) {
-            if (i > 0)
-                builder.append(", ");
-            builder.append(iterator.next());
-        }
-        builder.append("]");
-        return builder.toString();
+    @Override
+    public int hashCode() {
+        return Objects.hash(endpoint, endpointType, endpointContentType, endpointProperties, gateways, parsePayload, publicAPI, disableKeysStrip, plans,
+                extendedDescription,
+                exposeInPortal);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", UpdateApiVersionBean.class.getSimpleName() + "[", "]")
+                .add("endpoint='" + endpoint + "'")
+                .add("endpointType=" + endpointType)
+                .add("endpointContentType=" + endpointContentType)
+                .add("endpointProperties=" + endpointProperties)
+                .add("gateways=" + gateways)
+                .add("parsePayload=" + parsePayload)
+                .add("publicAPI=" + publicAPI)
+                .add("disableKeysStrip=" + disableKeysStrip)
+                .add("plans=" + plans)
+                .add("extendedDescription='" + extendedDescription + "'")
+                .add("exposeInPortal=" + exposeInPortal)
+                .toString();
     }
 }

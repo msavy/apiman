@@ -125,6 +125,7 @@ public class ApiService implements DataAccessUtilMixin {
     private IGatewayLinkFactory gatewayLinkFactory;
     private PolicyService policyService;
     private IBlobStore blobStore;
+    private final ApiVersionMapper apiVersionMapper = ApiVersionMapper.INSTANCE;
     private final ApiMapper apiMapper = ApiMapper.INSTANCE;
     private final KeyValueTagMapper tagMapper = KeyValueTagMapper.INSTANCE;
 
@@ -641,16 +642,21 @@ public class ApiService implements DataAccessUtilMixin {
         }
         avb.setModifiedBy(securityContext.getCurrentUser());
         avb.setModifiedOn(new Date());
-        Set<ApiPlanBean> updatedPlans = ApiVersionMapper.INSTANCE.fromDto(bean.getPlans());
+        Set<ApiPlanBean> updatedPlans = apiVersionMapper.fromDto(bean.getPlans());
         EntityUpdatedData data = new EntityUpdatedData();
         if (AuditUtils.valueChanged(avb.getPlans(), bean.getPlans())) {
             data.addChange("plans", AuditUtils.asString_ApiPlanBeans(avb.getPlans()), AuditUtils.asString_ApiPlanBeans(updatedPlans)); //$NON-NLS-1$
             if (avb.getPlans() == null) {
                 avb.setPlans(new HashSet<>());
             }
-            avb.getPlans().clear();
+
             if (bean.getPlans() != null) {
-                avb.getPlans().addAll(updatedPlans);
+                updatedPlans.forEach(updatedPlan -> {
+                    avb.getPlans().stream()
+                            .filter(p -> p.equals(updatedPlan)).findAny()
+                            .ifPresent(destPlan -> apiVersionMapper.merge(updatedPlan, destPlan));
+                    avb.setPlans(updatedPlans);
+                });
             }
         }
         if (AuditUtils.valueChanged(avb.getGateways(), bean.getGateways())) {
