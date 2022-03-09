@@ -22,6 +22,8 @@ import java.util.StringJoiner;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
+import org.hibernate.annotations.ColumnDefault;
+
 /**
  * Models a plan+version that is available for use with a particular API.  This
  * makes the Plan available when forming a Contract between an app and an API.
@@ -38,8 +40,10 @@ public class ApiPlanBean implements Serializable {
     @Column(name = "version", nullable = false)
     private String version;
     @Column(name = "expose_in_portal", nullable = false)
+    @ColumnDefault("false")
     private Boolean exposeInPortal = false;
     @Column(name = "requires_approval", nullable = false)
+    @ColumnDefault("false")
     private Boolean requiresApproval = false;
 
     /**
