@@ -70,12 +70,15 @@ public class SimpleMailNotificationService {
         this.config = config;
         if (!config.getEmailNotificationProperties().isEmpty()) {
             var smtpConfig = new SmtpEmailConfiguration(config.getEmailNotificationProperties());
-            this.emailSender = new EmailSender(smtpConfig);
-            if (smtpConfig.isMock()) {
-                emailSender = new MockEmailSender();
+            if (smtpConfig.isEnabled()) {
+                if (smtpConfig.isMock()) {
+                    emailSender = new MockEmailSender();
+                } else {
+                    emailSender = new EmailSender(smtpConfig);
+                }
             }
         } else {
-            emailSender = new MockEmailSender();
+            emailSender = new NullEmailSender();
         }
         readEmailNotificationTemplatesFromFile();
     }
@@ -234,4 +237,17 @@ public class SimpleMailNotificationService {
      * Helpful for making Jackson deserialization a bit easier.
      */
     private static final class ReasonMap extends HashMap<String, EmailTemplateFileEntry> { }
+
+    private static final class NullEmailSender implements IEmailSender {
+
+        @Override
+        public void sendPlaintext(String toEmail, String toName, String subject, String body, Map<String, String> headers) throws EmailException {
+
+        }
+
+        @Override
+        public void sendHtml(String toEmail, String toName, String subject, String htmlBody, String plainBody, Map<String, String> headers) throws EmailException {
+
+        }
+    }
 }
