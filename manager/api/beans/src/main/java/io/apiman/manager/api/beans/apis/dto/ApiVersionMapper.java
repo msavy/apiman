@@ -40,10 +40,6 @@ public interface ApiVersionMapper {
     Set<ApiPlanBeanDto> toDto(Set<ApiPlanBean> plans);
 
     Set<ApiPlanBean> fromDto(Set<ApiPlanBeanDto> plans);
-
-
-    // void merge(Set<ApiPlanBean> source1, Set<ApiPlanBean> source2, @MappingTarget Set<ApiPlanBean> target);
-
-    // void merge(Set<ApiPlanBean> source, @MappingTarget Set<ApiPlanBean> target);
+    
     void merge(ApiPlanBean source, @MappingTarget ApiPlanBean target);
 }
