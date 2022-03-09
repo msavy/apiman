@@ -1,6 +1,9 @@
 package io.apiman.manager.api.beans.apis.dto;
 
+import io.apiman.manager.api.beans.apis.ApiPlanBean;
 import io.apiman.manager.api.beans.apis.UpdateApiVersionBean;
+
+import java.util.Set;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,4 +28,7 @@ public interface ApiVersionMapper {
             @Mapping(source = "plans", target = "plans")
     })
     UpdateApiVersionBean toPublishedUpdateBean(UpdateApiVersionBean uvb);
+
+    Set<ApiPlanBeanDto> toDto(Set<ApiPlanBean> plans);
+    Set<ApiPlanBean> fromDto(Set<ApiPlanBeanDto> plans);
 }

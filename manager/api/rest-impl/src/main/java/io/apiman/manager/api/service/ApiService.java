@@ -21,6 +21,7 @@ import io.apiman.manager.api.beans.apis.NewApiVersionBean;
 import io.apiman.manager.api.beans.apis.UpdateApiBean;
 import io.apiman.manager.api.beans.apis.UpdateApiVersionBean;
 import io.apiman.manager.api.beans.apis.dto.ApiBeanDto;
+import io.apiman.manager.api.beans.apis.dto.ApiPlanBeanDto;
 import io.apiman.manager.api.beans.apis.dto.ApiVersionMapper;
 import io.apiman.manager.api.beans.apis.dto.KeyValueTagDto;
 import io.apiman.manager.api.beans.apis.dto.KeyValueTagMapper;
@@ -345,7 +346,8 @@ public class ApiService implements DataAccessUtilMixin {
                 updatedApi.setEndpointProperties(cloneSource.getEndpointProperties());
                 updatedApi.setGateways(cloneSource.getGateways());
                 if (bean.getPlans() == null) {
-                    updatedApi.setPlans(cloneSource.getPlans());
+                    Set<ApiPlanBeanDto> plans = ApiVersionMapper.INSTANCE.toDto(cloneSource.getPlans());
+                    updatedApi.setPlans(plans);
                 }
                 if (bean.getPublicAPI() == null) {
                     updatedApi.setPublicAPI(cloneSource.isPublicAPI());
@@ -639,15 +641,16 @@ public class ApiService implements DataAccessUtilMixin {
         }
         avb.setModifiedBy(securityContext.getCurrentUser());
         avb.setModifiedOn(new Date());
+        Set<ApiPlanBean> updatedPlans = ApiVersionMapper.INSTANCE.fromDto(bean.getPlans());
         EntityUpdatedData data = new EntityUpdatedData();
         if (AuditUtils.valueChanged(avb.getPlans(), bean.getPlans())) {
-            data.addChange("plans", AuditUtils.asString_ApiPlanBeans(avb.getPlans()), AuditUtils.asString_ApiPlanBeans(bean.getPlans())); //$NON-NLS-1$
+            data.addChange("plans", AuditUtils.asString_ApiPlanBeans(avb.getPlans()), AuditUtils.asString_ApiPlanBeans(updatedPlans)); //$NON-NLS-1$
             if (avb.getPlans() == null) {
                 avb.setPlans(new HashSet<>());
             }
             avb.getPlans().clear();
             if (bean.getPlans() != null) {
-                avb.getPlans().addAll(bean.getPlans());
+                avb.getPlans().addAll(updatedPlans);
             }
         }
         if (AuditUtils.valueChanged(avb.getGateways(), bean.getGateways())) {
@@ -1120,6 +1123,11 @@ public class ApiService implements DataAccessUtilMixin {
         public final String version;
 
         public PlanIdVersion(ApiPlanBean pvb) {
+            this.id = pvb.getPlanId();
+            this.version = pvb.getVersion();
+        }
+
+        public PlanIdVersion(ApiPlanBeanDto pvb) {
             this.id = pvb.getPlanId();
             this.version = pvb.getVersion();
         }

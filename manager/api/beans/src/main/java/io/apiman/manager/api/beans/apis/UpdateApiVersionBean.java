@@ -15,6 +15,8 @@
  */
 package io.apiman.manager.api.beans.apis;
 
+import io.apiman.manager.api.beans.apis.dto.ApiPlanBeanDto;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
@@ -42,7 +44,7 @@ public class UpdateApiVersionBean implements Serializable {
     private Boolean parsePayload;
     private Boolean publicAPI;
     private Boolean disableKeysStrip;
-    private Set<ApiPlanBean> plans;
+    private Set<ApiPlanBeanDto> plans;
     private String extendedDescription;
     private Boolean exposeInPortal;
 
@@ -111,14 +113,14 @@ public class UpdateApiVersionBean implements Serializable {
     /**
      * @return the plans
      */
-    public Set<ApiPlanBean> getPlans() {
+    public Set<ApiPlanBeanDto> getPlans() {
         return plans;
     }
 
     /**
      * @param plans the plans to set
      */
-    public void setPlans(Set<ApiPlanBean> plans) {
+    public void setPlans(Set<ApiPlanBeanDto> plans) {
         this.plans = plans;
     }
 
