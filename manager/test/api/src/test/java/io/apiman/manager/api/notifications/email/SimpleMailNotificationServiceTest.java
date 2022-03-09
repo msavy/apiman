@@ -47,6 +47,7 @@ public class SimpleMailNotificationServiceTest {
     };
 
     Map<String, String> TEST_CONFIG = Map.of(
+            "enabled", "true",
          "smtp.mock", "false",
          "smtp.ssl", "false",
          "smtp.startTLSMode", "DISABLED",

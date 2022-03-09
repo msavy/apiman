@@ -54,7 +54,7 @@ public class SimpleMailNotificationService {
     private static final IApimanLogger LOGGER = ApimanLoggerFactory.getLogger(SimpleMailNotificationService.class);
     private static final Map<String, String> DEFAULT_HEADERS = Map.of("X-Notification-Producer", "Apiman");
 
-    private IEmailSender emailSender;
+    private IEmailSender emailSender = new NullEmailSender();
     private ApiManagerConfig config;
     private QuteTemplateEngine templateEngine;
     // String -> Map<Locale, EmailNotificationTemplate>
@@ -77,8 +77,6 @@ public class SimpleMailNotificationService {
                     emailSender = new EmailSender(smtpConfig);
                 }
             }
-        } else {
-            emailSender = new NullEmailSender();
         }
         readEmailNotificationTemplatesFromFile();
     }
