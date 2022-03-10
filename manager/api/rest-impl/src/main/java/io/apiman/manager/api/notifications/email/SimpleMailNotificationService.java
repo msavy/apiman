@@ -68,14 +68,12 @@ public class SimpleMailNotificationService {
     public SimpleMailNotificationService(ApiManagerConfig config, QuteTemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
         this.config = config;
-        if (!config.getEmailNotificationProperties().isEmpty()) {
-            var smtpConfig = new SmtpEmailConfiguration(config.getEmailNotificationProperties());
-            if (smtpConfig.isEnabled()) {
-                if (smtpConfig.isMock()) {
-                    emailSender = new MockEmailSender();
-                } else {
-                    emailSender = new EmailSender(smtpConfig);
-                }
+        var smtpConfig = new SmtpEmailConfiguration(config.getEmailNotificationProperties());
+        if (smtpConfig.isEnabled()) {
+            if (smtpConfig.isMock()) {
+                emailSender = new MockEmailSender();
+            } else {
+                emailSender = new EmailSender(smtpConfig);
             }
         }
         readEmailNotificationTemplatesFromFile();

@@ -38,7 +38,7 @@ public class SmtpEmailConfiguration extends GenericOptionsParser {
     @Override
     protected void parse(Map<String, String> options) {
         super.parse(options);
-        this.enabled = getBool(keys("enabled"), false);
+        this.enabled = getBool(keys("enable"), false);
         if (enabled) {
             this.mock = getBool(keys(PREFIX + "mock"), false);
             this.ssl = getBool(keys(PREFIX + "ssl"), true);
