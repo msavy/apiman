@@ -22,8 +22,9 @@ _module.controller("Apiman.AdminPluginsController",
             var pageData = {
                 plugins: $q(function(resolve, reject) {
                     ApimanSvcs.query({ entityType: 'plugins' }, function(plugins) {
-                        angular.forEach(plugins.entries(), function(p) {
-                            p.isSnapshot = p.version.indexOf("-SNAPSHOT", this.length - "-SNAPSHOT".length) !== -1;
+                        angular.forEach(plugins, function(plugin, _) {
+                            console.log(plugin);
+                            plugin.isSnapshot = plugin.version.endsWith('snapshot');
                         });
                         resolve(plugins);
                     }, reject);
@@ -44,7 +45,7 @@ _module.controller("Apiman.AdminPluginsController",
                 });
                 return rval;
             };
-            
+
             var removePlugin = function(plugin) {
                 var index = -1;
                 var i = 0;
@@ -60,7 +61,7 @@ _module.controller("Apiman.AdminPluginsController",
 
             $scope.uninstallPlugin = function(plugin) {
                 plugin.deleting = true;
-                
+
                 Modals.confirm(
                     'Confirm Uninstall Plugin',
                     'Do you really want to uninstall this plugin?  Any policies it provided will no longer be available.',
@@ -105,7 +106,7 @@ _module.controller("Apiman.AdminPluginsController",
                     }
                 );
             };
-            
+
             var refreshPlugins = function() {
                 angular.forEach($scope.plugins, function(ip) {
                   delete ip.latestVersion;
@@ -128,7 +129,7 @@ _module.controller("Apiman.AdminPluginsController",
                     }
                 });
             };
-            
+
             PageLifecycle.loadPage('AdminPlugins', 'admin', pageData, $scope, function() {
                 PageLifecycle.setPageTitle('admin-plugins');
                 refreshPlugins();
